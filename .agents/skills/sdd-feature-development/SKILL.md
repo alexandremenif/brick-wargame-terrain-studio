@@ -46,6 +46,10 @@ Before writing any application code:
    * If tests require classes that do not yet exist:
      * **Always prefer creating a pure interface** describing the contract.
      * If a concrete class is strictly necessary, create a **minimal skeleton** (methods throwing `throw new Error('Not implemented')`) so tests compile but fail at runtime.
+4. **Adversarial Test Audit (Non-Complacent Check)**:
+   * Once you (the primary agent) have written the tests, submit them to the `test-auditor` subagent for audit.
+   * Do not delegate the writing of tests to the subagent; the subagent's role is strictly adversarial inspection (detecting shallow assertions, weak coverage, lack of negative cases, or false positives).
+   * Resolve any complacency smells flagged by `test-auditor` before moving to implementation.
 
 ---
 
@@ -58,7 +62,7 @@ Before writing any application code:
    * If you discover an unforeseen technical impossibility or a contradiction between the spec and the tests:
      * **STOP IMMEDIATELY**: Do NOT attempt a silent workaround.
      * Present the conflict to the user along with viable options, and wait for their decision.
-3. **Final Verification**:
+3. **Final Verification & Test Audit Confirmation**:
    * Run the test suite:
      ```bash
      npm run test
@@ -67,3 +71,4 @@ Before writing any application code:
      ```bash
      npm run build
      ```
+   * Confirm that all test suites have been validated and approved by the `test-auditor` subagent.
