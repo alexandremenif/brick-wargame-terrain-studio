@@ -1,0 +1,17 @@
+{
+  "name": "@lego-wargame-terrain-studio/web-studio",
+  "version": "1.0.0",
+  "description": "Web Studio frontend client and Canvas editor",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test:bdd": "NODE_OPTIONS='--import tsx' cucumber-js -p ui"
+  },
+  "dependencies": {
+    "@lego-wargame-terrain-studio/core-engine": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}

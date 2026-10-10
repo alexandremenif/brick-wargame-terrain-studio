@@ -26,11 +26,12 @@ Before writing any application code:
    * Once approved by the user, update the declarative files in `specs/`:
      * Contract definitions (e.g. `domain.proto`, `services.proto` in the domain specification).
      * Relational schemas (e.g. `schema.dbml` in the persistence specification).
-     * Corresponding Markdown documentation (including acceptance criteria with test IDs e.g. `TEST-xxx`).
+     * **BDD Scenarios (Gherkin)**: Add canonical feature files in `specs/01_domain/features/*.feature` (for domain invariants) or `specs/05_ui_specification/features/*.feature` (for UI workflows).
+     * Corresponding Markdown documentation referencing these features.
 
 ---
 
-## Step 2: Automated Codegen & RED Tests (TDD)
+## Step 2: Automated Codegen & RED Tests (TDD & BDD)
 
 1. **Execute Automated Codegen**:
    * Run the codegen script:
@@ -38,10 +39,16 @@ Before writing any application code:
      npm run codegen
      ```
    * *Golden Rule*: Contract and DTO code in `src/generated/*` is generated strictly by this command, never by you manually.
-2. **Write Failing Tests (RED)**:
-   * Write unit or integration tests directly implementing the acceptance criteria described in the Markdown spec.
-   * Place tests inside the corresponding package's `test/` directory.
-   * Verify that these tests fail (RED).
+2. **Write Failing Tests & Steps (RED)**:
+   * Write or update domain step definitions in `packages/core-engine/test/steps/domain_steps.ts` delegating to `this.driver` (`EngineDriver`).
+   * **Multi-Adapter Completeness**: Ensure the operation is represented across all 3 transport drivers:
+     * `InMemoryDriver` in `packages/core-engine/test/support/memory_driver.ts` (direct aggregate).
+     * `JsonRpcDriver` in `packages/server/test/support/jsonrpc_driver.ts` (JSON-RPC 2.0 facade).
+     * `McpDriver` in `packages/server/test/support/mcp_driver.ts` (MCP AI tool invocation).
+   * Verify that tests fail as expected (RED) by running:
+     ```bash
+     npm run test:bdd:headless
+     ```
 3. **Handling Missing Classes (Interfaces & Skeletons)**:
    * If tests require classes that do not yet exist:
      * **Always prefer creating a pure interface** describing the contract.

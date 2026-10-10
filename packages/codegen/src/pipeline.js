@@ -100,7 +100,7 @@ export async function runCodegen(options) {
     const cmd = `"${grpcToolsProtoc}" \
       --plugin=protoc-gen-ts_proto="${tsProtoPlugin}" \
       --ts_proto_out="${targetDomainDir}" \
-      --ts_proto_opt=outputServices=generic-definitions,outputServices=default,env=node,esModuleInterop=true \
+      --ts_proto_opt=outputServices=generic-definitions,outputServices=default,env=node,esModuleInterop=true,importSuffix=.js \
       ${protoPathArgs} \
       ${protoFiles.map(f => `"${f}"`).join(' ')}`;
 

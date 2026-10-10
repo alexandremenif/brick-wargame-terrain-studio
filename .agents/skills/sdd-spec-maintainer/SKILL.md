@@ -20,6 +20,8 @@ This skill provides reference guides and procedures for authoring and maintainin
   Every section under `specs/` (e.g. `01_domain/`, `02_system_architecture/`, etc.) is a dedicated directory with an `index.md` file.
 * **Modular Specifications**:
   No single Markdown specification should become a monolithic document. Subsystems and components are documented in dedicated sibling Markdown files within the section folder (e.g. `sql_store.md`, `memory_store.md` in `specs/03_persistence/`, or component files in `specs/05_ui_specification/`).
+* **Executable BDD Scenarios (`features/`)**:
+  Acceptance criteria are expressed as executable Gherkin feature files within a dedicated `features/` directory in the relevant section (e.g. `specs/01_domain/features/` for domain behavior, or `specs/05_ui_specification/features/` for UI flows). Markdown specifications link to and contextualize these scenarios.
 
 ---
 
