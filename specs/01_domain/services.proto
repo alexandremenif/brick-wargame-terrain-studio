@@ -141,6 +141,7 @@ message RenderBBoxImageResponse {
   string base64_data = 4;
 }
 
+// @jsonrpc
 service TerrainEngineService {
   rpc PaintArea (PaintAreaCommand) returns (PaintAreaResponse);
   rpc PlacePreset (PlacePresetCommand) returns (PlacePresetResponse);
