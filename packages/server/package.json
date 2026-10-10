@@ -1,0 +1,20 @@
+{
+  "name": "@lego-wargame-terrain-studio/server",
+  "version": "1.0.0",
+  "description": "Unified server: MCP for AI agents (Antigravity/Claude) and HTTP/WebSocket for Web Studio",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@lego-wargame-terrain-studio/core-engine": "*",
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "ws": "^8.18.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "@types/ws": "^8.5.14",
+    "typescript": "^5.8.2"
+  }
+}

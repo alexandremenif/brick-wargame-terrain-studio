@@ -1,0 +1,19 @@
+{
+  "name": "@lego-wargame-terrain-studio/core-engine",
+  "version": "1.0.0",
+  "description": "Headless domain and persistence SDK for LEGO Wargame Terrain Studio",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.13.10",
+    "typescript": "^5.8.2"
+  }
+}
