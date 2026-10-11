@@ -1,6 +1,6 @@
 # Server Architecture & Adapters Specification
 
-The `specs/server/` directory defines technical inbound and outbound adapters bridging the domain engine with network transports, AI tools, and relational persistence.
+The `specs/server/` directory defines technical inbound and outbound adapters bridging the domain engine with HTTP transports, AI tools, and relational persistence.
 
 ---
 
@@ -15,13 +15,14 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
            │                            │                            │
  ┌─────────┴─────────┐        ┌─────────┴─────────┐        ┌─────────┴─────────┐
  │   OpenRPC Router  │        │   MCP AI Adapter  │        │   SQLite Storage  │
- │  (JSON-RPC 2.0)   │        │ (Streamable HTTP) │        │    (WAL Mode)     │
+ │ (HTTP POST /rpc)  │        │ (Streamable HTTP) │        │    (WAL Mode)     │
  └───────────────────┘        └───────────────────┘        └───────────────────┘
 ```
 
-1. **Wire Protocol Adapter**:
+1. **Wire Protocol Adapter (Commands & Queries)**:
    * Defined in [`openrpc.yaml`](./openrpc.yaml).
-   * Exposes JSON-RPC 2.0 endpoints over WebSocket and HTTP.
+   * Exposes standard JSON-RPC 2.0 endpoints over **HTTP POST (`/rpc`)**.
+   * Clients send standard JSON-RPC requests via HTTP POST and receive synchronous JSON-RPC responses.
    * Enforces automatic schema validation of inbound parameters against domain schemas, returning error code `-32602` upon validation failure.
 
 2. **AI Tooling Adapter**:
@@ -48,4 +49,4 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 
 Acceptance criteria for server infrastructure are located in `features/`:
 * [`features/persistence.feature`](./features/persistence.feature): Verifies restart recovery and transaction durability.
-* [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature): Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`) and batch request execution.
+* [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature): Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`) and request execution over HTTP.

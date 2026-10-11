@@ -1,34 +1,55 @@
 # End-to-End Data Flows
 
-This document details the sequence and boundaries of data flows across the system layers.
+This document details the sequence and boundaries of data flows across the system layers for user interactions and external AI agent tool execution.
 
 ---
 
-## 1. End-to-End Flow: UI / MCP -> OpenRPC -> Domain -> SQLite
+## 1. Flow A: User Direct Interaction (Optimistic Canvas + HTTP JSON-RPC)
+
+When the user draws on the interactive HTML5 2D canvas:
 
 ```mermaid
 sequenceDiagram
   autonumber
-  actor User as Human / AI Agent
-  participant Adapter as UI (WebSocket) / MCP (Streamable HTTP)
+  actor User as User in Web Studio
+  participant Canvas as UI (<CanvasViewport>)
+  participant Api as TerrainApiClient (fetch)
   participant Router as OpenRPC Router (@open-rpc/server-js)
   participant Domain as Domain Engine (Asset)
   participant Store as SQLite Storage (WAL Mode)
 
-  User->>Adapter: User action / MCP tool call
-  Adapter->>Router: JSON-RPC 2.0 Request (e.g. paintArea)
-  Note over Router: Automatic JSON Schema validation (params)
-  alt Schema Validation Fails
-    Router-->>Adapter: Error Response -32602 (Invalid params)
-    Adapter-->>User: Display validation error
-  else Schema Validation Passes
-    Router->>Domain: Dispatch domain command
-    Note over Domain: Clip painting to asset surface (out-of-bounds cells ignored)
-    Domain->>Domain: Mutate asset cells
-    Domain->>Store: Persist affected cells to SQLite
-    Store-->>Domain: Transaction committed
-    Domain-->>Router: Command response (affectedCellsCount)
-    Router-->>Adapter: JSON-RPC 2.0 Success Result
-    Adapter-->>User: Updated state rendered on Canvas viewport
-  end
+  User->>Canvas: Drags brush across studs
+  Canvas->>Canvas: Instant local draw (Optimistic UI @ 60+ FPS)
+  Canvas->>Api: paintArea({ assetId, boundingBox, colorId })
+  Api->>Router: HTTP POST /rpc (JSON-RPC 2.0)
+  Router->>Domain: Dispatch PaintAreaCommand
+  Note over Domain: Clip to asset surface (lenient bounds)
+  Domain->>Domain: Mutate in-memory cells
+  Domain->>Store: Persist affected cells
+  Store-->>Domain: Transaction committed
+  Domain-->>Router: Command response (affectedCells)
+  Router-->>Api: HTTP 200 {"result": {"affectedCells": 16}}
+```
+
+---
+
+## 2. Flow B: External AI Mutation via MCP (Streamable HTTP)
+
+When an external AI agent manipulates an asset via MCP tooling:
+
+```mermaid
+sequenceDiagram
+  autonumber
+  actor AI as External AI Agent
+  participant MCP as MCP Server Adapter
+  participant Domain as Domain Engine (Asset)
+  participant Store as SQLite Storage (WAL Mode)
+
+  AI->>MCP: callTool("paint_area", { boundingBox, colorId })
+  MCP->>Domain: Execute PaintAreaCommand
+  Domain->>Domain: Mutate in-memory cells
+  Domain->>Store: Persist cells to SQLite
+  Store-->>Domain: Transaction committed
+  Domain-->>MCP: Tool execution result
+  MCP-->>AI: HTTP Response (MCP tool response)
 ```

@@ -26,12 +26,11 @@ flowchart TD
   end
 
   Agent ---|"Streamable HTTP (JSON-RPC MCP)"| Server
-  WebApp ---|"WebSockets (Live Sync) & JSON-RPC 2.0"| Server
+  WebApp ---|"HTTP POST /rpc (JSON-RPC 2.0)"| Server
   WebApp -.->|"Consumes Type Contracts"| Api
   Server -.->|"Implements OpenRPC Methods"| Api
 
   Server ---|"Internal Engine Calls"| SQLite
-  Server -.->|"Real-time Events (assetChanged, bboxUpdated)"| WebApp
 ```
 
 ---

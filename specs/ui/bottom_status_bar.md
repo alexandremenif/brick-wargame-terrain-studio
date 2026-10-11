@@ -9,8 +9,9 @@ The `<BottomStatusBar>` provides persistent real-time feedback along the bottom 
   * Shows `Stud: (-- , --)` when the pointer is outside the asset grid.
 * **Asset Statistics**:
   * Displays painted cells count vs total grid capacity: `Painted: 240 / 1024 studs (23.4%)`.
-* **Transport / MCP Sync Indicator**:
-  * Live connection indicator badge: `● Connected (Live Sync)` with green pulsing status dot.
+* **Server Status Indicator**:
+  * Live server status indicator: `● Server: Online` with green dot.
+  * Shows `● Server: Offline` with red dot if backend HTTP requests fail.
 
 ## 3. Visual Ergonomics & Layout
 * Height: 28px fixed bar (`h-7`).
@@ -20,3 +21,4 @@ The `<BottomStatusBar>` provides persistent real-time feedback along the bottom 
 ## 4. Acceptance Criteria & Test IDs
 * `TEST-UI-STATUS-01`: Moving the mouse over stud $(x, y)$ updates the status bar stud coordinate display.
 * `TEST-UI-STATUS-02`: Painting or clearing cells updates the painted count metric in real time.
+* `TEST-UI-STATUS-03`: Displays server status indicator based on HTTP connectivity.
