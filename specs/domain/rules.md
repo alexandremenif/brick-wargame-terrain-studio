@@ -9,7 +9,7 @@ This document formalizes the fundamental rules and invariants governing the doma
 1. **Stud Metric Unit**:
    * All spatial coordinates (`x`, `y`) and dimensions (`width`, `height`) are strictly measured in integral stud counts.
    * Standard physical stud pitch is $8.0\text{ mm} \times 8.0\text{ mm}$.
-2. **Configurable Asset Dimensions & Resizing (Option A: Crop & Drop)**:
+2. **Configurable Asset Dimensions & Resizing (Crop & Drop)**:
    * An asset has a name and positive stud dimensions ($width \ge 1$, $height \ge 1$).
    * When an asset is resized to smaller dimensions, any cells that fall outside the new boundary ($x \ge width$ or $y \ge height$) are **permanently cropped and dropped**.
    * If an active bounding box overflows the new dimensions, its boundaries are automatically clamped to fit within the new dimensions, or cleared if entirely outside.
@@ -22,8 +22,12 @@ This document formalizes the fundamental rules and invariants governing the doma
 
 ---
 
-## 2. Official LEGO Color Constraints
+## 2. Official LEGO Color Definitions & Invariants
 
-* Stud colors must map to standard official LEGO / BrickLink color identifiers (`colorId`).
-* Unpainted cells have no applied color ID (`null` / transparent base).
-* Standard core palette includes official LEGO shades (such as Bright Green, Dark Tan, Reddish Brown, Medium Stone Grey, Bright Blue, Black, White).
+* **Canonical Colors List**: Defined in [`specs/domain/colors.csv`](./colors.csv) containing the 41 supported official LEGO colors.
+* **Triple Definition**: Each color is strictly defined by:
+  * `id`: Numeric code ($1 \dots 41$).
+  * `name`: **Official LEGO name** (e.g. `Medium Stone Grey`, `Dark Stone Grey`, `Earth Green`, `Bright Red`). Unofficial or community names (e.g. "Light Bluish Gray") are strictly excluded.
+  * `hex`: Hexadecimal RGB string (`#RRGGBB`).
+* **Cell Storage**: Cells in an asset store only the numeric `colorId`.
+* **Unpainted State**: Unpainted cells have no applied color ID (`null` / transparent base).

@@ -57,3 +57,4 @@ Feature: Asset Management & Spatial Invariants
     When I paint the area (-2, -2, 5, 5) with LEGO color ID 37
     Then exactly 9 cells should be painted
     And the cell at (0, 0) should have LEGO color ID 37
+

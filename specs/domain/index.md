@@ -10,13 +10,14 @@ The domain layer encapsulates the core logic, entities, invariants, and commands
 * **Asset**: A 2D discrete coordinate grid with a name and configurable dimensions ($width \times height$) holding cells.
 * **Cell**: A discrete stud position $(x, y)$ that can be unpainted or customized with an official LEGO color.
 * **BoundingBox**: An axis-aligned rectangular region defined by $(x, y, width, height)$ in studs.
-* **LegoColor**: An official LEGO brick color identified by numeric code, standard name, and hexadecimal RGB value.
+* **LegoColor**: An official LEGO brick color identified by numeric code, official name, and hexadecimal RGB value.
 
 ---
 
-## 2. Declarative Domain Schemas
+## 2. Declarative Domain Schemas & Catalogs
 
-Domain entities and command contracts are formally specified using protocol-agnostic JSON Schema:
+Domain entities, command contracts, and static catalogs are formally specified under `specs/domain/`:
+* [`colors.csv`](./colors.csv): Canonical tabular list of all 41 official LEGO colors (`id`, `name`, `hex`).
 * [`schemas/model.yaml`](./schemas/model.yaml): Domain entities (`BoundingBox`, `LegoColor`, `CellData`, `Asset`).
 * [`schemas/commands.yaml`](./schemas/commands.yaml): Domain commands (`CreateAssetCommand`, `UpdateAssetDimensionsCommand`, `SetBoundingBoxCommand`, `PaintAreaCommand`, `ListAssetsCommand`, `ListColorsCommand`, `GetAssetImageCommand`).
 
@@ -24,5 +25,7 @@ Domain entities and command contracts are formally specified using protocol-agno
 
 ## 3. Invariants & Acceptance Scenarios
 
-* **Domain Rules**: Defined in [`rules.md`](./rules.md).
-* **Executable BDD Scenarios**: Implemented in [`features/terrain_domain.feature`](./features/terrain_domain.feature) validating asset creation, dimension updates, bounding box setting, and lenient brush painting clipping.
+* **Domain Rules & Color Invariants**: Defined in [`rules.md`](./rules.md).
+* **Executable BDD Scenarios**:
+  * [`features/asset.feature`](./features/asset.feature): Validates asset creation, dimension updates, bounding box setting, and lenient brush painting clipping.
+  * [`features/colors.feature`](./features/colors.feature): Validates listing official LEGO colors and verifying palette completeness and attributes.

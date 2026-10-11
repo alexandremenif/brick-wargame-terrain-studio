@@ -6,15 +6,10 @@
 PRAGMA journal_mode = WAL;
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE "project_metadata" (
-  "key" varchar PRIMARY KEY,
-  "value" text NOT NULL
-);
-
-CREATE TABLE "lego_colors" (
-  "id" integer PRIMARY KEY,
-  "name" varchar NOT NULL,
-  "hex" varchar(7) NOT NULL
+CREATE TABLE "schema_migrations" (
+  "version" integer PRIMARY KEY,
+  "name" varchar(100) NOT NULL,
+  "applied_at" timestamp DEFAULT (CURRENT_TIMESTAMP)
 );
 
 CREATE TABLE "assets" (
@@ -32,10 +27,9 @@ CREATE TABLE "cells" (
   "y" integer NOT NULL,
   "color_id" integer NOT NULL,
   PRIMARY KEY ("asset_id", "x", "y"),
-  FOREIGN KEY ("asset_id") REFERENCES "assets" ("id") ON DELETE CASCADE,
-  FOREIGN KEY ("color_id") REFERENCES "lego_colors" ("id") ON DELETE RESTRICT
+  FOREIGN KEY ("asset_id") REFERENCES "assets" ("id") ON DELETE CASCADE
 );
 
 CREATE INDEX "idx_cells_spatial" ON "cells" ("asset_id", "x", "y");
 
-INSERT OR IGNORE INTO project_metadata (key, value) VALUES ('schema_version', '1');
+INSERT OR IGNORE INTO "schema_migrations" ("version", "name") VALUES (1, '0001_initial_schema');

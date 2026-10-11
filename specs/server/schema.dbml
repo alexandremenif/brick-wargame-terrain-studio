@@ -8,17 +8,11 @@ Project lego_wargame_terrain_studio {
   Note: 'First iteration persistence schema for LEGO Wargame Terrain Studio'
 }
 
-Table project_metadata {
-  key varchar [pk, note: 'Configuration key']
-  value text [not null]
-  Note: 'Global project metadata'
-}
-
-Table lego_colors {
-  id integer [pk, note: 'Official LEGO / BrickLink code']
-  name varchar [not null, note: 'Standard color name (e.g., Bright Green, Dark Tan)']
-  hex varchar(7) [not null, note: 'Hexadecimal format #RRGGBB']
-  Note: 'Official LEGO color palette'
+Table schema_migrations {
+  version integer [pk, note: 'Monotonic migration version (e.g., 1)']
+  name varchar(100) [not null, note: 'Migration name (e.g., 0001_initial_schema)']
+  applied_at timestamp [default: `CURRENT_TIMESTAMP`, note: 'Execution timestamp']
+  Note: 'Explicit record of applied database schema migrations'
 }
 
 Table assets {
@@ -35,7 +29,7 @@ Table cells {
   asset_id varchar(36) [not null]
   x integer [not null, note: 'X coordinate in studs (0 <= x < width)']
   y integer [not null, note: 'Y coordinate in studs (0 <= y < height)']
-  color_id integer [not null, note: 'Applied LEGO color code']
+  color_id integer [not null, note: 'Official LEGO color ID from static catalog']
   Note: 'Customized studs matrix'
 
   indexes {
@@ -46,4 +40,3 @@ Table cells {
 
 // Relationships & Foreign Keys
 Ref: cells.asset_id > assets.id [delete: cascade]
-Ref: cells.color_id > lego_colors.id [delete: restrict]

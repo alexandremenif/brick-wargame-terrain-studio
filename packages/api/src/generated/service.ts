@@ -21,7 +21,6 @@ import type {
   PaintAreaResponse,
   UpdateAssetCommand,
   UpdateAssetResponse,
-  Vector,
 } from './types.js';
 
 export interface TerrainEngineService {

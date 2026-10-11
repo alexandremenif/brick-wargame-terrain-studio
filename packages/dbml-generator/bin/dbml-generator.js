@@ -22,8 +22,8 @@ if (!fs.existsSync(dbmlPath)) {
 fs.mkdirSync(migrationsDir, { recursive: true });
 const dbmlContent = fs.readFileSync(dbmlPath, 'utf-8');
 const sql = compileDbmlToSqlite(dbmlContent, {
-  metadataTable: 'project_metadata',
-  schemaVersion: '1'
+  migrationName: '0001_initial_schema',
+  schemaVersion: 1
 });
 
 const outPath = path.join(migrationsDir, '0001_initial_schema.sql');

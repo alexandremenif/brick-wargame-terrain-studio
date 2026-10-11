@@ -2,49 +2,43 @@ $schema: "http://json-schema.org/draft-07/schema#"
 title: DomainModel
 description: Pure protocol-agnostic domain entities for LEGO Wargame Terrain Studio
 definitions:
-  Vector:
-    title: Vector
-    type: object
-    description: 2D discrete grid vector or coordinate measured in studs
-    properties:
-      x:
-        type: integer
-        description: Stud X coordinate
-      y:
-        type: integer
-        description: Stud Y coordinate
-    required:
-      - x
-      - y
-    additionalProperties: false
-
   BoundingBox:
     title: BoundingBox
     type: object
-    description: 2D rectangular region measured in studs, defined by min and max corner vectors (inclusive min, exclusive max)
+    description: 2D rectangular region measured in studs
     properties:
-      min:
-        $ref: "#/definitions/Vector"
-        description: Top-left minimum corner (inclusive)
-      max:
-        $ref: "#/definitions/Vector"
-        description: Bottom-right maximum corner (exclusive)
+      x:
+        type: integer
+        description: Top-left X coordinate in studs
+      y:
+        type: integer
+        description: Top-left Y coordinate in studs
+      width:
+        type: integer
+        minimum: 1
+        description: Width in studs
+      height:
+        type: integer
+        minimum: 1
+        description: Height in studs
     required:
-      - min
-      - max
+      - x
+      - y
+      - width
+      - height
     additionalProperties: false
 
   LegoColor:
     title: LegoColor
     type: object
-    description: Official LEGO / BrickLink color definition
+    description: Official LEGO color definition
     properties:
       id:
         type: integer
         description: Color numeric ID
       name:
         type: string
-        description: Standard color name (e.g. Bright Green)
+        description: Official LEGO color name (e.g. Bright Green)
       hex:
         type: string
         pattern: "^#[0-9A-Fa-f]{6}$"
@@ -60,14 +54,18 @@ definitions:
     type: object
     description: Individual stud coordinate with applied LEGO color ID
     properties:
-      position:
-        $ref: "#/definitions/Vector"
-        description: Stud position in grid coordinates
+      x:
+        type: integer
+        description: Stud X coordinate
+      y:
+        type: integer
+        description: Stud Y coordinate
       colorId:
         type: integer
         description: Applied LEGO color ID
     required:
-      - position
+      - x
+      - y
       - colorId
     additionalProperties: false
 
@@ -121,6 +119,8 @@ definitions:
         type: integer
         minimum: 1
         description: Grid height in studs
+      boundingBox:
+        $ref: "#/definitions/BoundingBox"
       paintedCellsCount:
         type: integer
         minimum: 0

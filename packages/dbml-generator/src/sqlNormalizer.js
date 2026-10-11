@@ -82,19 +82,19 @@ export function inlineForeignKeys(sql) {
 
 /**
  * 5. Formats the script with generator header comments, SQLite PRAGMAs,
- * collapsed whitespaces, and optional metadata version insertion.
+ * collapsed whitespaces, and optional schema_migrations version record.
  *
  * @param {string} sql
  * @param {object} [options]
  * @param {string} [options.sourcePath='schema.dbml']
- * @param {string} [options.metadataTable]
- * @param {string} [options.schemaVersion='1']
+ * @param {string} [options.migrationName='0001_initial_schema']
+ * @param {number} [options.schemaVersion=1]
  * @returns {string}
  */
 export function formatSqliteScript(sql, options = {}) {
   const sourcePath = options.sourcePath || 'schema.dbml';
-  const metadataTable = options.metadataTable;
-  const schemaVersion = options.schemaVersion || '1';
+  const migrationName = options.migrationName || '0001_initial_schema';
+  const schemaVersion = options.schemaVersion || 1;
 
   // Collapse consecutive empty lines
   const cleanedSql = sql.replace(/\n{3,}/g, '\n\n').trim();
@@ -106,9 +106,7 @@ export function formatSqliteScript(sql, options = {}) {
     `PRAGMA journal_mode = WAL;\nPRAGMA foreign_keys = ON;\n\n` +
     cleanedSql + '\n';
 
-  if (metadataTable) {
-    header += `\nINSERT OR IGNORE INTO ${metadataTable} (key, value) VALUES ('schema_version', '${schemaVersion}');\n`;
-  }
+  header += `\nINSERT OR IGNORE INTO "schema_migrations" ("version", "name") VALUES (${schemaVersion}, '${migrationName}');\n`;
 
   return header;
 }
@@ -119,8 +117,8 @@ export function formatSqliteScript(sql, options = {}) {
  * @param {string} rawSql - PostgreSQL DDL from exporter
  * @param {object} [options]
  * @param {string} [options.sourcePath='schema.dbml']
- * @param {string} [options.metadataTable]
- * @param {string} [options.schemaVersion='1']
+ * @param {string} [options.migrationName]
+ * @param {number} [options.schemaVersion]
  * @returns {string} Fully normalized SQLite migration script
  */
 export function normalizePostgresSqlToSqlite(rawSql, options = {}) {

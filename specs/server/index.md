@@ -15,26 +15,36 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
            │                            │                            │
  ┌─────────┴─────────┐        ┌─────────┴─────────┐        ┌─────────┴─────────┐
  │   OpenRPC Router  │        │   MCP AI Adapter  │        │   SQLite Storage  │
- │  (JSON-RPC 2.0)   │        │     (stdio)       │        │    (WAL Mode)     │
+ │  (JSON-RPC 2.0)   │        │ (Streamable HTTP) │        │    (WAL Mode)     │
  └───────────────────┘        └───────────────────┘        └───────────────────┘
 ```
 
 1. **Wire Protocol Adapter**:
    * Defined in [`openrpc.yaml`](./openrpc.yaml).
-   * Exposes JSON-RPC 2.0 endpoints over WebSocket and IPC.
+   * Exposes JSON-RPC 2.0 endpoints over WebSocket and HTTP.
    * Enforces automatic schema validation of inbound parameters against domain schemas, returning error code `-32602` upon validation failure.
 
 2. **AI Tooling Adapter**:
    * Defined in [`mcp.md`](./mcp.md).
-   * Implements the Model Context Protocol (MCP) to allow external AI agents to manipulate maps and inspect coordinates.
+   * Implements the Model Context Protocol (MCP) over Streamable HTTP allowing external AI agents to manipulate assets and inspect SVG images with parity.
 
-3. **Relational Storage Adapter**:
+3. **Relational Storage Adapter (SQLite)**:
    * Defined in [`schema.dbml`](./schema.dbml).
-   * Generates SQLite DDL migrations with foreign key enforcement and Write-Ahead Logging (WAL) concurrency.
+   * Generates SQLite DDL migrations (`assets` and `cells` tables) with foreign key enforcement and Write-Ahead Logging (WAL) concurrency.
 
 ---
 
-## 2. Server Infrastructure BDD Scenarios
+## 2. Server Color Management
+
+* **Static In-Memory Catalog**:
+  * LEGO colors are static reference data defined authoritatively in [`specs/domain/colors.csv`](../domain/colors.csv).
+  * **Not Stored in Database**: The server loads the colors list into memory from the static file (compiled at build time). There is no `lego_colors` table or seed migration in SQLite.
+  * In SQLite, the `cells` table stores only the numeric `color_id INTEGER NOT NULL`.
+  * The server exposes the static catalog via the `list_colors` endpoint (JSON-RPC and MCP tool), ensuring both the UI and AI agents query the exact same color definitions dynamically.
+
+---
+
+## 3. Server Infrastructure BDD Scenarios
 
 Acceptance criteria for server infrastructure are located in `features/`:
 * [`features/persistence.feature`](./features/persistence.feature): Verifies restart recovery and transaction durability.
