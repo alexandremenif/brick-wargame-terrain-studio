@@ -40,8 +40,10 @@ It operates purely in-memory, ensuring that the database remains unpolluted with
   * Exactly 41 official colors must be parsed into memory.
 * **Error Handling**:
   * If the file is missing, unreadable, or contains corrupted rows during startup, the server startup must abort with a descriptive fatal error.
-* **Immutability**:
-  * Once loaded at server startup, the in-memory color catalog is strictly read-only.
+* **Immutability & Permanent In-Memory Caching**:
+  * **Zero Repeated Disk I/O**: The CSV file is read and parsed exactly once upon initialization.
+  * All 41 `BrickColor` records are retained in an immutable in-memory cache (e.g., indexed by ID via a Map or hash lookup table) for the entire lifetime of the server process.
+  * Subsequent calls to `listColors()`, `getColorById(id)`, and `isValidColorId(id)` serve responses exclusively from this high-performance in-memory cache in $O(1)$ time with zero file system access.
 * **Integration with Inbound Adapters**:
   * Powers the `list_colors` JSON-RPC method (`openrpc.yaml`).
   * Powers the `list_colors` MCP tool (`mcp.md`).
@@ -54,3 +56,4 @@ It operates purely in-memory, ensuring that the database remains unpolluted with
 * `TEST-SRV-COLOR-01`: `ColorService` correctly parses all 41 colors with valid integer `id`, string `name`, and `#RRGGBB` `hex`.
 * `TEST-SRV-COLOR-02`: Validates color IDs (`true` for official IDs like 194, 28, 37; `false` for nonexistent IDs like 9999, -1).
 * `TEST-SRV-COLOR-03`: `listColors` returns the complete list of 41 `BrickColor` records.
+* `TEST-SRV-COLOR-04`: After initial load, repeated calls to `listColors`, `getColorById`, and `isValidColorId` are served strictly from the in-memory cache without re-reading the CSV file.
