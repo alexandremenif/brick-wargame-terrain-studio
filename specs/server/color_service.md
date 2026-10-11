@@ -7,39 +7,28 @@ It operates purely in-memory, ensuring that the database remains unpolluted with
 
 ---
 
-## 2. Interface Specification
+## 2. Operations & Contract
 
-```typescript
-export interface BrickColor {
-  id: number;
-  name: string;
-  hex: string;
-}
+* **Data Model**:
+  * `BrickColor`: structured record containing integer `id`, string `name`, and hex color string `hex` (format `#RRGGBB`). Defined in [`specs/domain/schemas/model.yaml`](../../domain/schemas/model.yaml).
 
-export interface ColorService {
-  /**
-   * Loads and parses the colors CSV file into an in-memory collection.
-   * Called once during server startup / bootstrap.
-   */
-  loadColors(filePath?: string): Promise<void>;
-
-  /**
-   * Returns all available official brick colors.
-   */
-  listColors(): BrickColor[];
-
-  /**
-   * Retrieves a specific brick color by its official ID.
-   * Returns undefined if the ID does not exist.
-   */
-  getColorById(id: number): BrickColor | undefined;
-
-  /**
-   * Validates whether a given numeric ID is an official brick color.
-   */
-  isValidColorId(id: number): boolean;
-}
-```
+* **Operations**:
+  * **Load Colors**:
+    * Input: optional file path (defaults to static catalog location).
+    * Behavior: Reads and parses CSV file once during server startup / bootstrap.
+    * Output: None (asynchronous initialization).
+  * **List Colors**:
+    * Input: None.
+    * Behavior: Returns all available official brick colors.
+    * Output: Array of `BrickColor` records.
+  * **Get Color by ID**:
+    * Input: numeric color identifier `id`.
+    * Behavior: Retrieves specific brick color by ID.
+    * Output: `BrickColor` record, or undefined/null if ID does not exist.
+  * **Validate Color ID**:
+    * Input: numeric color identifier `id`.
+    * Behavior: Checks whether the given numeric ID exists in the catalog.
+    * Output: Boolean (`true` if valid, `false` otherwise).
 
 ---
 
@@ -62,6 +51,6 @@ export interface ColorService {
 
 ## 4. Acceptance Criteria & Test IDs
 
-* `TEST-SRV-COLOR-01`: `ColorService.loadColors()` correctly parses all 41 colors with valid integer `id`, string `name`, and `#RRGGBB` `hex`.
-* `TEST-SRV-COLOR-02`: `isValidColorId(id)` returns `true` for valid color IDs (e.g. 194, 28, 37) and `false` for nonexistent IDs (e.g. 9999, -1).
-* `TEST-SRV-COLOR-03`: `listColors()` returns the complete array of 41 `BrickColor` objects.
+* `TEST-SRV-COLOR-01`: `ColorService` correctly parses all 41 colors with valid integer `id`, string `name`, and `#RRGGBB` `hex`.
+* `TEST-SRV-COLOR-02`: Validates color IDs (`true` for official IDs like 194, 28, 37; `false` for nonexistent IDs like 9999, -1).
+* `TEST-SRV-COLOR-03`: `listColors` returns the complete list of 41 `BrickColor` records.

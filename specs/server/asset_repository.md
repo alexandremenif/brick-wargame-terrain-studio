@@ -10,49 +10,33 @@ Following Domain-Driven Design (DDD) principles:
 
 ---
 
-## 2. Interface Specification
+## 2. Operations & Contract
 
-```typescript
-import { Asset } from '../../domain/schemas/model';
+* **Data Types**:
+  * `Asset`: Complete domain aggregate root containing identifier `id`, string `name`, dimensions `width` and `height`, timestamps, and array of child `CellData` elements. Defined in [`specs/domain/schemas/model.yaml`](../../domain/schemas/model.yaml).
+  * `AssetSummary`: Lightweight projection of the `Asset` containing `id`, `name`, `width`, `height`, `created_at`, `updated_at`, without loading cell records.
 
-export type AssetSummary = Omit<Asset, 'cells'>;
-
-export interface AssetRepository {
-  /**
-   * Persists a newly created Asset aggregate root and its initial cells.
-   * Executed within an atomic SQLite transaction.
-   */
-  create(asset: Asset): Promise<void>;
-
-  /**
-   * Retrieves an Asset by its unique identifier, reconstituting the full aggregate root
-   * including its dimensions, name, and all painted cells.
-   * Returns null if no asset with the specified ID exists.
-   */
-  findById(id: string): Promise<Asset | null>;
-
-  /**
-   * Lists all asset summaries (id, name, width, height, created_at, updated_at).
-   * Does not load cells into memory for lightweight dropdown listing.
-   */
-  listAll(): Promise<AssetSummary[]>;
-
-  /**
-   * Persists changes to an existing Asset aggregate root:
-   * - Updates name, width, height, and updated_at in the `assets` table.
-   * - Synchronizes the state of cells (upserts modified cells, removes erased cells).
-   * - Trims any cells that fall outside updated dimensions (x >= width OR y >= height).
-   * Executed within an atomic SQLite transaction.
-   */
-  update(asset: Asset): Promise<void>;
-
-  /**
-   * Permanently deletes an Asset aggregate and cascades deletion to all associated cells.
-   * Executed within an atomic SQLite transaction.
-   */
-  delete(id: string): Promise<void>;
-}
-```
+* **Repository Operations**:
+  * **Create Asset**:
+    * Input: `Asset` aggregate root.
+    * Behavior: Persists the newly created asset record and any initial cells within an atomic transaction.
+    * Output: None (asynchronous completion).
+  * **Find Asset by ID**:
+    * Input: string asset identifier `id`.
+    * Behavior: Reconstitutes the full aggregate root from the `assets` and `cells` tables.
+    * Output: Complete `Asset` aggregate root, or null if not found.
+  * **List All Assets**:
+    * Input: None.
+    * Behavior: Queries all asset summary records sorted by creation date descending (`created_at DESC`), omitting cell data for low latency.
+    * Output: Array of `AssetSummary` records.
+  * **Update Asset**:
+    * Input: Modified `Asset` aggregate root.
+    * Behavior: Atomically updates asset metadata, synchronizes cell states (upserting painted cells, deleting erased cells), and trims cells outside updated dimensions ($x \ge W$ or $y \ge H$).
+    * Output: None (asynchronous completion).
+  * **Delete Asset**:
+    * Input: string asset identifier `id`.
+    * Behavior: Permanently deletes the asset record, relying on database foreign key cascade to remove all associated child cells.
+    * Output: None (asynchronous completion).
 
 ---
 

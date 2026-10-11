@@ -10,64 +10,43 @@ It coordinates application use-cases on the `Asset` aggregate root:
 
 ---
 
-## 2. Interface Specification
+## 2. Operations & Contract
 
-```typescript
-import {
-  CreateAssetCommand,
-  CreateAssetResponse,
-  UpdateAssetCommand,
-  UpdateAssetResponse,
-  GetAssetCommand,
-  GetAssetResponse,
-  DeleteAssetCommand,
-  DeleteAssetResponse,
-  PaintAreaCommand,
-  PaintAreaResponse,
-  ListAssetsResponse,
-} from '../../domain/schemas/commands';
+All command and response payloads are formally defined in declarative YAML schemas ([`specs/domain/schemas/commands.yaml`](../../domain/schemas/commands.yaml)).
 
-export interface AssetService {
-  /**
-   * Creates a new Asset aggregate with validated dimensions and persists it.
-   */
-  createAsset(cmd: CreateAssetCommand): Promise<CreateAssetResponse>;
+* **Create Asset**:
+  * Input: `CreateAssetCommand` (name, width, height).
+  * Behavior: Validates dimensions ($1 \le W, H \le 1000$), constructs a new `Asset` aggregate with a generated UUID, and persists via `AssetRepository.create`.
+  * Output: `CreateAssetResponse` containing created `Asset`.
 
-  /**
-   * Retrieves an Asset by its ID. Throws NotFound error if not present.
-   */
-  getAsset(cmd: GetAssetCommand): Promise<GetAssetResponse>;
+* **Get Asset**:
+  * Input: `GetAssetCommand` (assetId).
+  * Behavior: Retrieves asset via `AssetRepository.findById`. Throws not found error if absent.
+  * Output: `GetAssetResponse` containing complete `Asset` aggregate with all painted cells.
 
-  /**
-   * Lists summaries of all existing assets for dropdown selection.
-   */
-  listAssets(): Promise<ListAssetsResponse>;
+* **List Assets**:
+  * Input: None.
+  * Behavior: Fetches asset summaries from `AssetRepository.listAll`.
+  * Output: `ListAssetsResponse` containing array of `AssetSummary` records.
 
-  /**
-   * Updates an Asset's name and/or dimensions.
-   * Enforces dimension bounds ($1 \le W, H \le 1000$).
-   * If downsized, cells outside new dimensions are automatically trimmed.
-   */
-  updateAsset(cmd: UpdateAssetCommand): Promise<UpdateAssetResponse>;
+* **Update Asset**:
+  * Input: `UpdateAssetCommand` (assetId, optional name, optional width, optional height).
+  * Behavior: Loads aggregate, validates new dimensions ($1 \le W, H \le 1000$), applies updates, and persists via `AssetRepository.update`. If downsized, cells outside new dimensions are trimmed.
+  * Output: `UpdateAssetResponse` containing updated `Asset`.
 
-  /**
-   * Deletes an Asset and cascades deletion to all associated cells.
-   */
-  deleteAsset(cmd: DeleteAssetCommand): Promise<DeleteAssetResponse>;
+* **Delete Asset**:
+  * Input: `DeleteAssetCommand` (assetId).
+  * Behavior: Cascades deletion of asset and all cells via `AssetRepository.delete`.
+  * Output: `DeleteAssetResponse` with `success: true`.
 
-  /**
-   * Paints or erases a rectangular area on the Asset aggregate:
-   * 1. Loads Asset aggregate via AssetRepository.
-   * 2. Validates colorId against ColorService (if not null).
-   * 3. Executes aggregate domain method `asset.paintArea(cmd.bbox, cmd.colorId)`:
-   *    - Clips coordinates to asset bounds ($[0, W-1] \times [0, H-1]$).
-   *    - Updates internal cell collection.
-   * 4. Persists the modified aggregate via AssetRepository.update(asset).
-   * 5. Returns updated asset state and modified cell count.
-   */
-  paintArea(cmd: PaintAreaCommand): Promise<PaintAreaResponse>;
-}
-```
+* **Paint Area**:
+  * Input: `PaintAreaCommand` (assetId, bbox, colorId).
+  * Behavior:
+    1. Loads `Asset` aggregate via `AssetRepository.findById`.
+    2. Validates `colorId` against `ColorService` (when `colorId` is non-null).
+    3. Invokes aggregate domain method `asset.paintArea(bbox, colorId)` which leniently clips coordinates to $[0, W-1] \times [0, H-1]$ and updates internal cells (or clears them if `colorId` is null).
+    4. Persists the modified aggregate via `AssetRepository.update(asset)`.
+  * Output: `PaintAreaResponse` containing updated `Asset` and number of modified cells.
 
 ---
 
