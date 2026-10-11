@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "node --test 'test/**/*.test.js'",
+    "test": "tsx --test 'test/**/*.test.ts' 'test/**/*.test.js'",
     "test:bdd": "NODE_OPTIONS='--import tsx' cucumber-js -p domain"
   },
   "dependencies": {

@@ -23,6 +23,7 @@ export class StudioWorld extends World {
   public jsonRpcService: TerrainEngineService | null = null;
   public lastJsonRpcResponse: any = null;
   public lastRequestId: string | number | null = null;
+  public colorsList: any[] | null = null;
 
   // Persistence scenario context
   public tempDbPath: string | null = null;

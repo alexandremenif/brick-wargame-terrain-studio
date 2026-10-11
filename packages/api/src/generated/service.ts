@@ -3,16 +3,14 @@ import type {
   Asset,
   AssetSummary,
   BoundingBox,
+  BrickColor,
   CellData,
   CreateAssetCommand,
   CreateAssetResponse,
   DeleteAssetCommand,
   DeleteAssetResponse,
   GetAssetCommand,
-  GetAssetImageCommand,
-  GetAssetImageResponse,
   GetAssetResponse,
-  LegoColor,
   ListAssetsCommand,
   ListAssetsResponse,
   ListColorsCommand,
@@ -45,7 +43,7 @@ export interface TerrainEngineService {
   deleteAsset(command: DeleteAssetCommand): Promise<DeleteAssetResponse>;
 
   /**
-   * Paint or erase a rectangular bounding box or 1x1 stud cell with an official LEGO color (or null to clear)
+   * Paint or erase a rectangular bounding box or 1x1 stud cell with an official brick color (or null to clear)
    */
   paintArea(command: PaintAreaCommand): Promise<PaintAreaResponse>;
 
@@ -55,12 +53,7 @@ export interface TerrainEngineService {
   listAssets(command: ListAssetsCommand): Promise<ListAssetsResponse>;
 
   /**
-   * List all official LEGO colors
+   * List all official brick colors
    */
   listColors(command: ListColorsCommand): Promise<ListColorsResponse>;
-
-  /**
-   * Get a rendered SVG image of the asset or optional bounding box
-   */
-  getAssetImage(command: GetAssetImageCommand): Promise<GetAssetImageResponse>;
 }

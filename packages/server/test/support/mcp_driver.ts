@@ -1,172 +1,139 @@
 import type { EngineDriver } from './driver.js';
-import { TerrainMap } from '../../src/domain/TerrainMap.js';
-import { getLegoColorIdByName } from '../../src/domain/colors.js';
-
-interface McpToolCallRequest {
-  name: string;
-  arguments: Record<string, unknown>;
-}
-
-interface McpToolCallResponse {
-  isError?: boolean;
-  content: Array<{ type: 'text'; text: string }>;
-}
+import Database from 'better-sqlite3';
+import fs from 'node:fs';
+import path from 'node:path';
+import { DefaultColorService } from '../../src/domain/ColorService.js';
+import { SqliteAssetRepository } from '../../src/persistence/SqliteAssetRepository.js';
+import { AssetService } from '../../src/domain/AssetService.js';
+import { createMcpServer } from '../../src/adapters/mcp.js';
+import type { BrickColor } from '@lego-wargame-terrain-studio/api';
 
 export class McpDriver implements EngineDriver {
-  private map: TerrainMap | null = null;
+  private db!: Database.Database;
+  private colorService!: DefaultColorService;
+  private repo!: SqliteAssetRepository;
+  private service!: AssetService;
+  private mcpServer: any;
+  private currentAssetId: string | null = null;
 
   async start(): Promise<void> {
-    // Initializes the MCP server tool registry
+    this.db = new Database(':memory:');
+    this.db.pragma('foreign_keys = ON');
+
+    const migrationPath = path.resolve('packages/server/src/persistence/migrations/0001_initial_schema.sql');
+    const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
+    this.db.exec(migrationSql);
+
+    this.colorService = new DefaultColorService();
+    await this.colorService.loadColors();
+
+    this.repo = new SqliteAssetRepository(this.db);
+    this.service = new AssetService(this.repo, this.colorService);
+    this.mcpServer = createMcpServer(this.service, this.colorService);
   }
 
   async stop(): Promise<void> {
-    this.map = null;
-  }
-
-  async createMap(width: number, height: number): Promise<void> {
-    this.map = new TerrainMap({ width, height });
-  }
-
-  private ensureMap(): TerrainMap {
-    if (!this.map) {
-      throw new Error('No active TerrainMap instance in McpDriver');
+    if (this.db) {
+      this.db.close();
     }
-    return this.map;
+    this.currentAssetId = null;
   }
 
-  /**
-   * Real MCP tool dispatcher exercising tool parameter validation and execution
-   */
-  public async executeMcpTool(request: McpToolCallRequest): Promise<McpToolCallResponse> {
-    const map = this.ensureMap();
-
-    switch (request.name) {
-      case 'paint_area': {
-        const { x, y, width, height, color_name } = request.arguments as {
-          x?: number;
-          y?: number;
-          width?: number;
-          height?: number;
-          color_name?: string;
-        };
-
-        if (x === undefined || y === undefined || width === undefined || height === undefined) {
-          return {
-            isError: true,
-            content: [{ type: 'text', text: 'Missing required bounding box parameters (x, y, width, height)' }]
-          };
-        }
-
-        if (!color_name || typeof color_name !== 'string') {
-          return {
-            isError: true,
-            content: [{ type: 'text', text: 'Missing or invalid color_name' }]
-          };
-        }
-
-        try {
-          const colorId = getLegoColorIdByName(color_name);
-          map.paintArea({ x, y, width, height }, colorId);
-          return {
-            isError: false,
-            content: [{ type: 'text', text: `Painted area (${x}, ${y}, ${width}, ${height}) with ${color_name}` }]
-          };
-        } catch (err) {
-          return {
-            isError: true,
-            content: [{ type: 'text', text: (err as Error).message }]
-          };
-        }
-      }
-
-      case 'paint_cell': {
-        const { x, y, color_id } = request.arguments as { x?: number; y?: number; color_id?: number };
-        if (x === undefined || y === undefined || color_id === undefined) {
-          return { isError: true, content: [{ type: 'text', text: 'Missing cell coordinates or color_id' }] };
-        }
-        try {
-          map.paintCell(x, y, color_id);
-          return { isError: false, content: [{ type: 'text', text: 'Cell painted' }] };
-        } catch (err) {
-          return { isError: true, content: [{ type: 'text', text: (err as Error).message }] };
-        }
-      }
-
-      case 'undo': {
-        try {
-          map.undo();
-          return { isError: false, content: [{ type: 'text', text: 'Undo operation completed' }] };
-        } catch (err) {
-          return { isError: true, content: [{ type: 'text', text: (err as Error).message }] };
-        }
-      }
-
-      default:
-        return {
-          isError: true,
-          content: [{ type: 'text', text: `Unknown MCP tool "${request.name}"` }]
-        };
+  private async callMcpTool(name: string, args: Record<string, unknown>): Promise<any> {
+    const handler = (this.mcpServer as any)._requestHandlers.get('tools/call');
+    if (!handler) {
+      throw new Error('MCP server does not have a tools/call handler registered');
     }
+    const res = await handler({
+      method: 'tools/call',
+      params: { name, arguments: args }
+    });
+
+    if (res.isError) {
+      throw new Error(res.content?.[0]?.text || 'MCP tool error');
+    }
+
+    return JSON.parse(res.content[0].text);
   }
 
-  async getMapDimensions(): Promise<{ width: number; height: number }> {
-    const map = this.ensureMap();
-    return { width: map.width, height: map.height };
+  async createAsset(name: string, width: number, height: number): Promise<string> {
+    const asset = await this.callMcpTool('create_asset', { name, width, height });
+    this.currentAssetId = asset.id;
+    return asset.id;
+  }
+
+  private ensureAssetId(): string {
+    if (!this.currentAssetId) {
+      throw new Error('No active asset ID in McpDriver');
+    }
+    return this.currentAssetId;
+  }
+
+  async getAssetDimensions(): Promise<{ width: number; height: number }> {
+    const id = this.ensureAssetId();
+    const asset = await this.callMcpTool('get_asset', { asset_id: id });
+    return { width: asset.width, height: asset.height };
+  }
+
+  async getAssetName(): Promise<string> {
+    const id = this.ensureAssetId();
+    const asset = await this.callMcpTool('get_asset', { asset_id: id });
+    return asset.name;
   }
 
   async getPaintedCellCount(): Promise<number> {
-    const map = this.ensureMap();
-    return map.getPaintedCellCount();
+    const id = this.ensureAssetId();
+    const asset = await this.callMcpTool('get_asset', { asset_id: id });
+    return asset.paintedCellsCount;
   }
 
-  async paintBoundingBox(x: number, y: number, w: number, h: number, colorName: string): Promise<void> {
-    const response = await this.executeMcpTool({
-      name: 'paint_area',
-      arguments: { x, y, width: w, height: h, color_name: colorName }
+  async getCellColor(x: number, y: number): Promise<number | null> {
+    const id = this.ensureAssetId();
+    const asset = await this.callMcpTool('get_asset', { asset_id: id });
+    const cell = asset.cells.find((c: any) => c.x === x && c.y === y);
+    return cell ? cell.colorId : null;
+  }
+
+  async updateDimensions(width: number, height: number): Promise<void> {
+    const id = this.ensureAssetId();
+    await this.callMcpTool('update_asset', { asset_id: id, width, height });
+  }
+
+  async updateName(name: string): Promise<void> {
+    const id = this.ensureAssetId();
+    await this.callMcpTool('update_asset', { asset_id: id, name });
+  }
+
+  async paintArea(x: number, y: number, width: number, height: number, colorId: number | null): Promise<number> {
+    const id = this.ensureAssetId();
+    const res = await this.callMcpTool('paint_area', {
+      asset_id: id,
+      x,
+      y,
+      width,
+      height,
+      color_id: colorId
     });
+    return res.affectedCellsCount;
+  }
 
-    if (response.isError) {
-      throw new Error(`MCP Tool Error: ${response.content[0]?.text ?? 'Unknown error'}`);
+  async deleteAsset(): Promise<void> {
+    const id = this.ensureAssetId();
+    await this.callMcpTool('delete_asset', { asset_id: id });
+    this.currentAssetId = null;
+  }
+
+  async assetExists(): Promise<boolean> {
+    if (!this.currentAssetId) return false;
+    try {
+      await this.callMcpTool('get_asset', { asset_id: this.currentAssetId });
+      return true;
+    } catch {
+      return false;
     }
   }
 
-  async paintCell(x: number, y: number, colorId: number): Promise<void> {
-    const response = await this.executeMcpTool({
-      name: 'paint_cell',
-      arguments: { x, y, color_id: colorId }
-    });
-
-    if (response.isError) {
-      throw new Error(`MCP Tool Error: ${response.content[0]?.text ?? 'Unknown error'}`);
-    }
-  }
-
-  async verifyBBoxColor(x: number, y: number, w: number, h: number, colorName: string): Promise<boolean> {
-    const map = this.ensureMap();
-    const expectedColorId = getLegoColorIdByName(colorName);
-    for (let currentX = x; currentX < x + w; currentX++) {
-      for (let currentY = y; currentY < y + h; currentY++) {
-        if (map.getCellColor(currentX, currentY) !== expectedColorId) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  async getUndoHistoryCount(): Promise<number> {
-    const map = this.ensureMap();
-    return map.getUndoHistoryCount();
-  }
-
-  async undo(): Promise<void> {
-    const response = await this.executeMcpTool({
-      name: 'undo',
-      arguments: {}
-    });
-
-    if (response.isError) {
-      throw new Error(`MCP Tool Error: ${response.content[0]?.text ?? 'Unknown error'}`);
-    }
+  async listColors(): Promise<BrickColor[]> {
+    return await this.callMcpTool('list_colors', {});
   }
 }

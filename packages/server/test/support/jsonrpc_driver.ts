@@ -1,151 +1,192 @@
 import type { EngineDriver } from './driver.js';
-import { TerrainMap } from '../../src/domain/TerrainMap.js';
-import { getLegoColorIdByName } from '../../src/domain/colors.js';
-import { dispatchJsonRpc, type TerrainEngineService } from '../../src/router.js';
+import Database from 'better-sqlite3';
+import fs from 'node:fs';
+import path from 'node:path';
+import { DefaultColorService } from '../../src/domain/ColorService.js';
+import { SqliteAssetRepository } from '../../src/persistence/SqliteAssetRepository.js';
+import { AssetService } from '../../src/domain/AssetService.js';
+import { dispatchJsonRpc } from '../../src/generated/router.js';
+import type { BrickColor } from '@lego-wargame-terrain-studio/api';
 
 export class JsonRpcDriver implements EngineDriver {
-  private map: TerrainMap | null = null;
-  private service!: TerrainEngineService;
+  private db!: Database.Database;
+  private colorService!: DefaultColorService;
+  private repo!: SqliteAssetRepository;
+  private service!: AssetService;
+  private currentAssetId: string | null = null;
 
   async start(): Promise<void> {
-    this.service = {
-      createMap: async (command) => {
-        this.map = new TerrainMap({ width: command.width, height: command.height });
-        return { mapId: command.mapId || 'main', width: this.map.width, height: this.map.height };
-      },
-      paintArea: async (command) => {
-        if (!this.map) throw new Error('No active map');
-        this.map.paintArea(
-          {
-            x: command.bbox?.x ?? 0,
-            y: command.bbox?.y ?? 0,
-            width: command.bbox?.width ?? 0,
-            height: command.bbox?.height ?? 0
-          },
-          command.colorId ?? 1
-        );
-        return { affectedCellsCount: (command.bbox?.width ?? 0) * (command.bbox?.height ?? 0) };
-      },
-      paintCell: async (command) => {
-        if (!this.map) throw new Error('No active map');
-        this.map.paintCell(command.x, command.y, command.colorId);
-        return { success: true };
-      },
-      undo: async () => {
-        if (!this.map) throw new Error('No active map');
-        const undone = this.map.undo();
-        return { undone, remainingUndoCount: this.map.getUndoHistoryCount() };
-      }
-    };
+    this.db = new Database(':memory:');
+    this.db.pragma('foreign_keys = ON');
+
+    const migrationPath = path.resolve('packages/server/src/persistence/migrations/0001_initial_schema.sql');
+    const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
+    this.db.exec(migrationSql);
+
+    this.colorService = new DefaultColorService();
+    await this.colorService.loadColors();
+
+    this.repo = new SqliteAssetRepository(this.db);
+    this.service = new AssetService(this.repo, this.colorService);
   }
 
   async stop(): Promise<void> {
-    this.map = null;
+    if (this.db) {
+      this.db.close();
+    }
+    this.currentAssetId = null;
   }
 
-  async createMap(width: number, height: number): Promise<void> {
-    if (!this.service) {
-      await this.start();
-    }
-    const response = await dispatchJsonRpc(this.service, {
+  async createAsset(name: string, width: number, height: number): Promise<string> {
+    const res = await dispatchJsonRpc(this.service, {
       jsonrpc: '2.0',
       id: 1,
-      method: 'createMap',
-      params: [{
-        mapId: 'main',
-        width,
-        height
-      }]
+      method: 'createAsset',
+      params: [{ name, width, height }]
     });
 
-    if (response.error) {
-      throw new Error(`JSON-RPC Error: ${response.error.message}`);
+    if (res.error) {
+      throw new Error(`JSON-RPC Error: ${res.error.message}`);
     }
+
+    this.currentAssetId = res.result.asset.id;
+    return this.currentAssetId!;
   }
 
-  private ensureMap(): TerrainMap {
-    if (!this.map) {
-      throw new Error('No active TerrainMap instance in JsonRpcDriver');
+  private ensureAssetId(): string {
+    if (!this.currentAssetId) {
+      throw new Error('No active asset ID in JsonRpcDriver');
     }
-    return this.map;
+    return this.currentAssetId;
   }
 
-  async getMapDimensions(): Promise<{ width: number; height: number }> {
-    const map = this.ensureMap();
-    return { width: map.width, height: map.height };
+  async getAssetDimensions(): Promise<{ width: number; height: number }> {
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getAsset',
+      params: [{ assetId: id }]
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    return { width: res.result.asset.width, height: res.result.asset.height };
+  }
+
+  async getAssetName(): Promise<string> {
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getAsset',
+      params: [{ assetId: id }]
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    return res.result.asset.name;
   }
 
   async getPaintedCellCount(): Promise<number> {
-    const map = this.ensureMap();
-    return map.getPaintedCellCount();
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getAsset',
+      params: [{ assetId: id }]
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    return res.result.asset.paintedCellsCount;
   }
 
-  async paintBoundingBox(x: number, y: number, w: number, h: number, colorName: string): Promise<void> {
-    const colorId = getLegoColorIdByName(colorName);
-    const response = await dispatchJsonRpc(this.service, {
+  async getCellColor(x: number, y: number): Promise<number | null> {
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'getAsset',
+      params: [{ assetId: id }]
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    const cell = res.result.asset.cells.find((c: any) => c.x === x && c.y === y);
+    return cell ? cell.colorId : null;
+  }
+
+  async updateDimensions(width: number, height: number): Promise<void> {
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'updateAsset',
+      params: [{ assetId: id, width, height }]
+    });
+
+    if (res.error) throw new Error(res.error.message);
+  }
+
+  async updateName(name: string): Promise<void> {
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'updateAsset',
+      params: [{ assetId: id, name }]
+    });
+
+    if (res.error) throw new Error(res.error.message);
+  }
+
+  async paintArea(x: number, y: number, width: number, height: number, colorId: number | null): Promise<number> {
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
       jsonrpc: '2.0',
       id: 1,
       method: 'paintArea',
       params: [{
-        mapId: 'main',
-        bbox: { x, y, width: w, height: h },
+        assetId: id,
+        bbox: { x, y, width, height },
         colorId
       }]
     });
 
-    if (response.error) {
-      throw new Error(`JSON-RPC Error: ${response.error.message}`);
-    }
+    if (res.error) throw new Error(res.error.message);
+    return res.result.affectedCellsCount;
   }
 
-  async paintCell(x: number, y: number, colorId: number): Promise<void> {
-    const response = await dispatchJsonRpc(this.service, {
+  async deleteAsset(): Promise<void> {
+    const id = this.ensureAssetId();
+    const res = await dispatchJsonRpc(this.service, {
       jsonrpc: '2.0',
       id: 1,
-      method: 'paintCell',
-      params: [{
-        mapId: 'main',
-        x,
-        y,
-        colorId
-      }]
+      method: 'deleteAsset',
+      params: [{ assetId: id }]
     });
 
-    if (response.error) {
-      throw new Error(`JSON-RPC Error: ${response.error.message}`);
-    }
+    if (res.error) throw new Error(res.error.message);
+    this.currentAssetId = null;
   }
 
-  async verifyBBoxColor(x: number, y: number, w: number, h: number, colorName: string): Promise<boolean> {
-    const map = this.ensureMap();
-    const expectedColorId = getLegoColorIdByName(colorName);
-    for (let currentX = x; currentX < x + w; currentX++) {
-      for (let currentY = y; currentY < y + h; currentY++) {
-        if (map.getCellColor(currentX, currentY) !== expectedColorId) {
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  async getUndoHistoryCount(): Promise<number> {
-    const map = this.ensureMap();
-    return map.getUndoHistoryCount();
-  }
-
-  async undo(): Promise<void> {
-    const response = await dispatchJsonRpc(this.service, {
+  async assetExists(): Promise<boolean> {
+    if (!this.currentAssetId) return false;
+    const res = await dispatchJsonRpc(this.service, {
       jsonrpc: '2.0',
       id: 1,
-      method: 'undo',
-      params: [{
-        mapId: 'main'
-      }]
+      method: 'getAsset',
+      params: [{ assetId: this.currentAssetId }]
+    });
+    return !res.error;
+  }
+
+  async listColors(): Promise<BrickColor[]> {
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'listColors',
+      params: [{}]
     });
 
-    if (response.error) {
-      throw new Error(`JSON-RPC Error: ${response.error.message}`);
-    }
+    if (res.error) throw new Error(res.error.message);
+    return res.result.colors;
   }
 }

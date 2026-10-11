@@ -1,32 +1,35 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import assert from 'node:assert/strict';
-import { TerrainMap } from '../../src/domain/TerrainMap.js';
-import { dispatchJsonRpc } from '../../src/router.js';
+import Database from 'better-sqlite3';
+import fs from 'node:fs';
+import path from 'node:path';
+import { DefaultColorService } from '../../src/domain/ColorService.js';
+import { SqliteAssetRepository } from '../../src/persistence/SqliteAssetRepository.js';
+import { AssetService } from '../../src/domain/AssetService.js';
+import { dispatchJsonRpc } from '../../src/generated/router.js';
 import type { StudioWorld } from '../support/world.js';
 
-Given('a running JSON-RPC server with an active map of {int} by {int} studs', function (this: StudioWorld, width: number, height: number) {
-  const map = new TerrainMap({ width, height });
-  this.jsonRpcService = {
-    createMap: async (cmd) => {
-      const created = new TerrainMap({ width: cmd.width, height: cmd.height });
-      return { mapId: cmd.mapId || 'test', width: created.width, height: created.height };
-    },
-    paintArea: async (cmd) => {
-      map.paintArea(
-        { x: cmd.bbox.x, y: cmd.bbox.y, width: cmd.bbox.width, height: cmd.bbox.height },
-        cmd.colorId
-      );
-      return { affectedCellsCount: cmd.bbox.width * cmd.bbox.height };
-    },
-    paintCell: async (cmd) => {
-      map.paintCell(cmd.x, cmd.y, cmd.colorId);
-      return { success: true };
-    },
-    undo: async () => {
-      const undone = map.undo();
-      return { undone, remainingUndoCount: map.getUndoHistoryCount() };
-    }
-  };
+Given('a running JSON-RPC server with an active asset of {int} by {int} studs', async function (this: StudioWorld, width: number, height: number) {
+  const db = new Database(':memory:');
+  db.pragma('foreign_keys = ON');
+
+  const migrationPath = path.resolve('packages/server/src/persistence/migrations/0001_initial_schema.sql');
+  const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
+  db.exec(migrationSql);
+
+  const colorService = new DefaultColorService();
+  await colorService.loadColors();
+
+  const repo = new SqliteAssetRepository(db);
+  this.jsonRpcService = new AssetService(repo, colorService) as any;
+
+  // Create active asset
+  const created = await (this.jsonRpcService as any).createAsset({
+    name: 'Active Studio Asset',
+    width,
+    height
+  });
+  this.persistedId = created.asset.id;
 });
 
 When(
@@ -39,7 +42,7 @@ When(
       id: this.lastRequestId,
       method,
       params: [{
-        mapId: 'main',
+        assetId: this.persistedId,
         bbox: { x, y, width: w, height: h },
         colorId
       }]
@@ -68,7 +71,7 @@ When('I send a JSON-RPC request for {string} with missing width and height', asy
     id: this.lastRequestId,
     method,
     params: [{
-      mapId: 'main',
+      assetId: this.persistedId,
       bbox: { x: 5, y: 5 }, // Missing width and height violates schema
       colorId: 1
     }]
@@ -94,4 +97,41 @@ When('I send a JSON-RPC request for {string}', async function (this: StudioWorld
     method,
     params: []
   });
+});
+
+When(
+  'I send a JSON-RPC request for {string} with valid bounding box \\({int}, {int}, {int}, {int}\\) and invalid color ID {int}',
+  async function (this: StudioWorld, method: string, x: number, y: number, w: number, h: number, colorId: number) {
+    assert.ok(this.jsonRpcService, 'Service must be initialized');
+    this.lastRequestId = 104;
+    this.lastJsonRpcResponse = await dispatchJsonRpc(this.jsonRpcService, {
+      jsonrpc: '2.0',
+      id: this.lastRequestId,
+      method,
+      params: [{
+        assetId: this.persistedId,
+        bbox: { x, y, width: w, height: h },
+        colorId
+      }]
+    });
+  }
+);
+
+When('I send a JSON-RPC request for {string} to inspect the active asset', async function (this: StudioWorld, method: string) {
+  assert.ok(this.jsonRpcService, 'Service must be initialized');
+  this.lastRequestId = 105;
+  this.lastJsonRpcResponse = await dispatchJsonRpc(this.jsonRpcService, {
+    jsonrpc: '2.0',
+    id: this.lastRequestId,
+    method,
+    params: [{
+      assetId: this.persistedId
+    }]
+  });
+});
+
+Then('the JSON-RPC response should contain {int} painted cells', function (this: StudioWorld, expectedCount: number) {
+  assert.ok(this.lastJsonRpcResponse?.result?.asset, 'Response must contain asset result');
+  assert.strictEqual(this.lastJsonRpcResponse.result.asset.paintedCellsCount, expectedCount);
+  assert.strictEqual(this.lastJsonRpcResponse.result.asset.cells.length, expectedCount);
 });

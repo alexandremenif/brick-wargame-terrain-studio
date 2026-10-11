@@ -93,13 +93,13 @@ describe('SQLite Migrations Sequential Execution', () => {
       'Custom indices created by migrations must programmatically match schema.dbml'
     );
 
-    // 4. Verify system metadata records schema_version matching migration sequence count
-    const versionRow = db.prepare("SELECT value FROM project_metadata WHERE key = 'schema_version'").get();
-    const expectedVersion = String(migrationFiles.length);
+    // 4. Verify schema_migrations records version matching migration sequence count
+    const versionRow = db.prepare("SELECT MAX(version) as max_version FROM schema_migrations").get();
+    const expectedVersion = migrationFiles.length;
     assert.strictEqual(
-      versionRow?.value,
+      versionRow?.max_version,
       expectedVersion,
-      `project_metadata.schema_version must equal applied migration count (${expectedVersion})`
+      `schema_migrations.version must equal applied migration count (${expectedVersion})`
     );
 
     db.close();

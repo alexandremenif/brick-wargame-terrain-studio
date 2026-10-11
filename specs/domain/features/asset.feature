@@ -26,6 +26,7 @@ Feature: Asset Management & Spatial Invariants
     And the cell at (15, 15) should have brick color ID 37
     When I update the asset to dimensions 32 by 32 studs
     Then exactly 256 cells should be painted
+    And the cell at (16, 16) should be unpainted
 
   Scenario: Painting an area with official brick color
     When I paint the area (10, 10, 10, 10) with brick color ID 37
@@ -33,9 +34,13 @@ Feature: Asset Management & Spatial Invariants
     And exactly 100 cells should be painted
 
   Scenario: Painting a single cell via 1x1 area
-    When I paint the area (5, 5, 1, 1) with brick color ID 212
-    Then the cell at (5, 5) should have brick color ID 212
+    When I paint the area (5, 5, 1, 1) with brick color ID 1
+    Then the cell at (5, 5) should have brick color ID 1
     And exactly 1 cells should be painted
+
+  Scenario: Rejecting painting with invalid color ID
+    When I attempt to paint the area (5, 5, 1, 1) with brick color ID 212
+    Then an invalid action error should be raised
 
   Scenario: Erasing an area by passing null color ID
     When I paint the area (10, 10, 5, 5) with brick color ID 37

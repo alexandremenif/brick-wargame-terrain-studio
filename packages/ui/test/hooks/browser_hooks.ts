@@ -1,12 +1,18 @@
-import { Before, After } from '@cucumber/cucumber';
-import type { PlaywrightWorld } from '../support/playwright_world.js';
+import { Before, After, AfterAll } from '@cucumber/cucumber';
+import { PlaywrightWorld, closeSharedBrowser } from '../support/playwright_world.js';
 
 Before({ tags: '@ui' }, async function (this: PlaywrightWorld) {
-  // In a full browser setup, launch playwright chromium:
-  // this.browser = await chromium.launch({ headless: true });
-  // this.page = await this.browser.newPage();
-  this.activeTool = 'Select';
-  this.selectedColor = 'None';
+  this.toolMode = 'Brush';
+  this.brushSize = '1x1';
+  if (this.colors.length > 0) {
+    this.selectedColor = this.colors[0];
+  } else {
+    this.selectedColor = {
+      id: 1,
+      name: 'White',
+      hex: '#FFFFFF',
+    };
+  }
 });
 
 After({ tags: '@ui' }, async function (this: PlaywrightWorld) {
@@ -14,8 +20,8 @@ After({ tags: '@ui' }, async function (this: PlaywrightWorld) {
     await this.page.close();
     this.page = null;
   }
-  if (this.browser) {
-    await this.browser.close();
-    this.browser = null;
-  }
+});
+
+AfterAll(async function () {
+  await closeSharedBrowser();
 });

@@ -1,12 +1,17 @@
+import type { AssetSummary, BrickColor } from '@lego-wargame-terrain-studio/api';
+
 export interface EngineDriver {
   start(): Promise<void>;
   stop(): Promise<void>;
-  createMap(width: number, height: number): Promise<void>;
-  getMapDimensions(): Promise<{ width: number; height: number }>;
+  createAsset(name: string, width: number, height: number): Promise<string>;
+  getAssetDimensions(): Promise<{ width: number; height: number }>;
+  getAssetName(): Promise<string>;
   getPaintedCellCount(): Promise<number>;
-  paintBoundingBox(x: number, y: number, w: number, h: number, colorName: string): Promise<void>;
-  paintCell(x: number, y: number, colorId: number): Promise<void>;
-  verifyBBoxColor(x: number, y: number, w: number, h: number, colorName: string): Promise<boolean>;
-  getUndoHistoryCount(): Promise<number>;
-  undo(): Promise<void>;
+  getCellColor(x: number, y: number): Promise<number | null>;
+  updateDimensions(width: number, height: number): Promise<void>;
+  updateName(name: string): Promise<void>;
+  paintArea(x: number, y: number, width: number, height: number, colorId: number | null): Promise<number>;
+  deleteAsset(): Promise<void>;
+  assetExists(): Promise<boolean>;
+  listColors(): Promise<BrickColor[]>;
 }
