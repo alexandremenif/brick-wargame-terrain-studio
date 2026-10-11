@@ -1,10 +1,15 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { StudioApp } from './components/StudioApp.js';
 import './index.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <StudioApp />
-  </React.StrictMode>
-);
+const rootEl = document.getElementById('root');
+if (rootEl) {
+  const root = ReactDOM.createRoot(rootEl);
+  root.render(
+    <React.StrictMode>
+      <div className="flex h-screen w-screen items-center justify-center bg-zinc-950 text-white font-sans">
+        <h1 className="text-xl font-bold tracking-tight">LEGO Wargame Terrain Studio</h1>
+      </div>
+    </React.StrictMode>
+  );
+}

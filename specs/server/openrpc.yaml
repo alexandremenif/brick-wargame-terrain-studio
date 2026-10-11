@@ -7,17 +7,51 @@ servers:
   - name: "Local WebSocket Server"
     url: "ws://localhost:4000"
 methods:
-  - name: "createMap"
-    description: "Create a new terrain map asset with specified dimensions"
+  - name: "createAsset"
+    description: "Create a new terrain asset with specified name and dimensions"
     params:
       - name: "command"
         required: true
         schema:
-          $ref: "../domain/schemas/commands.yaml#/definitions/CreateMapCommand"
+          $ref: "../domain/schemas/commands.yaml#/definitions/CreateAssetCommand"
     result:
       name: "result"
       schema:
-        $ref: "../domain/schemas/commands.yaml#/definitions/CreateMapResponse"
+        $ref: "../domain/schemas/commands.yaml#/definitions/CreateAssetResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+
+  - name: "updateAssetDimensions"
+    description: "Update the dimensions of an existing asset"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/UpdateAssetDimensionsCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/UpdateAssetDimensionsResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+
+  - name: "setBoundingBox"
+    description: "Set the active bounding box region of an asset"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/SetBoundingBoxCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/SetBoundingBoxResponse"
     errors:
       - code: -32602
         message: "Invalid params"
@@ -25,7 +59,7 @@ methods:
         message: "Internal engine error"
 
   - name: "paintArea"
-    description: "Paint a rectangular bounding box with an official LEGO color"
+    description: "Paint a rectangular bounding box or 1x1 stud cell with an official LEGO color"
     params:
       - name: "command"
         required: true
@@ -41,34 +75,51 @@ methods:
       - code: -32000
         message: "Internal engine error"
 
-  - name: "paintCell"
-    description: "Paint an individual stud cell"
+  - name: "listAssets"
+    description: "List all existing terrain assets"
     params:
       - name: "command"
         required: true
         schema:
-          $ref: "../domain/schemas/commands.yaml#/definitions/PaintCellCommand"
+          $ref: "../domain/schemas/commands.yaml#/definitions/ListAssetsCommand"
     result:
       name: "result"
       schema:
-        $ref: "../domain/schemas/commands.yaml#/definitions/PaintCellResponse"
+        $ref: "../domain/schemas/commands.yaml#/definitions/ListAssetsResponse"
     errors:
       - code: -32602
         message: "Invalid params"
       - code: -32000
         message: "Internal engine error"
 
-  - name: "undo"
-    description: "Undo the most recent command on the specified map"
+  - name: "listColors"
+    description: "List all official LEGO colors"
     params:
       - name: "command"
         required: true
         schema:
-          $ref: "../domain/schemas/commands.yaml#/definitions/UndoCommand"
+          $ref: "../domain/schemas/commands.yaml#/definitions/ListColorsCommand"
     result:
       name: "result"
       schema:
-        $ref: "../domain/schemas/commands.yaml#/definitions/UndoResponse"
+        $ref: "../domain/schemas/commands.yaml#/definitions/ListColorsResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+
+  - name: "getAssetImage"
+    description: "Get a rendered SVG image of the asset or bounding box"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/GetAssetImageCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/GetAssetImageResponse"
     errors:
       - code: -32602
         message: "Invalid params"

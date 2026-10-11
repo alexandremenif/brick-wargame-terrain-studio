@@ -3,4 +3,4 @@
  * Generated from OpenRPC specification
  */
 export * from './generated/types.js';
-export * from './service.js';
+export * from './generated/service.js';

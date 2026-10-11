@@ -1,3 +1,1 @@
-export * from './components/StudioApp.js';
-export * from './core/service.js';
-export * from './core/transport.js';
+export const UI_NAME = 'lego-wargame-terrain-studio-ui';

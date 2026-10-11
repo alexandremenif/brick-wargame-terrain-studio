@@ -1,15 +1,15 @@
 // ============================================================================
 // LEGO Wargame Terrain Studio - DBML Schema (Database Markup Language)
-// DBMS-agnostic standard format (generates SQLite, PostgreSQL, MySQL, etc.)
+// Initial Schema Iteration (v1) for Single Asset Studio & Parity MVP
 // ============================================================================
 
 Project lego_wargame_terrain_studio {
   database_type: 'SQLite'
-  Note: 'Agnostic persistence schema for LEGO Wargame Terrain Studio'
+  Note: 'First iteration persistence schema for LEGO Wargame Terrain Studio'
 }
 
 Table project_metadata {
-  key varchar [pk, note: 'Configuration key (e.g., schema_version, created_with)']
+  key varchar [pk, note: 'Configuration key']
   value text [not null]
   Note: 'Global project metadata'
 }
@@ -18,82 +18,36 @@ Table lego_colors {
   id integer [pk, note: 'Official LEGO / BrickLink code']
   name varchar [not null, note: 'Standard color name (e.g., Bright Green, Dark Tan)']
   hex varchar(7) [not null, note: 'Hexadecimal format #RRGGBB']
-  category varchar [not null, note: 'solid | transparent | metallic']
   Note: 'Official LEGO color palette'
 }
 
-Table textures {
-  id varchar [pk, note: 'Unique identifier (e.g., moss, stone_pavement)']
-  name varchar [not null, note: 'Human-readable label']
-  svg_path text [not null, note: 'Normalized vector path viewBox 8x8']
-  created_at timestamp [default: `CURRENT_TIMESTAMP`]
-  Note: 'Catalog of superimposable SVG vector patterns'
-}
-
-Table tilemaps {
-  id varchar(36) [pk, note: 'UUID v4']
-  name varchar(100) [not null, note: 'Map or preset name']
-  is_root_map boolean [not null, default: false, note: 'true for the primary playmat (118x225)']
-  width integer [not null, note: 'Width in stud count']
-  height integer [not null, note: 'Height in stud count']
-  base_color_id integer [null, note: 'Default uniform background color (null = transparent)']
+Table assets {
+  id varchar(36) [pk, note: 'Unique asset identifier']
+  name varchar(100) [not null, note: 'Asset name']
+  width integer [not null, note: 'Width in stud count (>= 1)']
+  height integer [not null, note: 'Height in stud count (>= 1)']
+  bbox_x integer [null, note: 'Active bounding box X']
+  bbox_y integer [null, note: 'Active bounding box Y']
+  bbox_width integer [null, note: 'Active bounding box width']
+  bbox_height integer [null, note: 'Active bounding box height']
   created_at timestamp [default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [default: `CURRENT_TIMESTAMP`]
-  Note: 'Unified entity representing a map or reusable preset'
+  Note: 'Single editable asset'
 }
 
 Table cells {
-  tilemap_id varchar(36) [not null]
+  asset_id varchar(36) [not null]
   x integer [not null, note: 'X coordinate in studs (0 <= x < width)']
   y integer [not null, note: 'Y coordinate in studs (0 <= y < height)']
-  color_id integer [null, note: 'Stud color (null = transparent)']
-  texture_id varchar [null, note: 'Superimposed vector pattern']
-  texture_rotation integer [default: 0, note: '0 | 90 | 180 | 270']
-  Note: 'Spatial matrix grid of customized studs'
+  color_id integer [not null, note: 'Applied LEGO color code']
+  Note: 'Customized studs matrix'
 
   indexes {
-    (tilemap_id, x, y) [pk]
-    (tilemap_id, x, y) [name: 'idx_cells_spatial']
-  }
-}
-
-Table preset_instances {
-  instance_id varchar(36) [pk, note: 'Unique UUID v4 of the instance']
-  parent_tilemap_id varchar(36) [not null, note: 'Receiving parent tilemap']
-  preset_id varchar(36) [not null, note: 'Instantiated tilemap preset']
-  x integer [not null, note: 'Top-left anchor X position']
-  y integer [not null, note: 'Top-left anchor Y position']
-  rotation integer [default: 0, note: '0 | 90 | 180 | 270']
-  z_index integer [default: 0, note: 'Stacking order']
-  locked boolean [default: false, note: 'Manipulation lock']
-  created_at timestamp [default: `CURRENT_TIMESTAMP`]
-  Note: 'Preset instances placed on a map or another preset'
-
-  indexes {
-    (parent_tilemap_id, z_index) [name: 'idx_instances_parent_zindex']
-  }
-}
-
-Table action_log {
-  sequence_id integer [pk, increment, note: 'Monotonic sequential identifier']
-  tilemap_id varchar(36) [not null]
-  timestamp timestamp [default: `CURRENT_TIMESTAMP`]
-  action_type varchar [not null, note: 'SET_BASE_COLOR | PAINT_CELLS | ADD_INSTANCE | etc.']
-  payload_json text [not null, note: 'Applied command payload (JSON)']
-  rollback_json text [not null, note: 'Compensating payload for Undo (JSON)']
-  is_undone boolean [default: false, note: 'Undo flag for Redo tracking']
-  Note: 'Immutable event log for Event Sourcing and unlimited Undo / Redo'
-
-  indexes {
-    (tilemap_id, sequence_id) [name: 'idx_action_log_order']
+    (asset_id, x, y) [pk]
+    (asset_id, x, y) [name: 'idx_cells_spatial']
   }
 }
 
 // Relationships & Foreign Keys
-Ref: tilemaps.base_color_id > lego_colors.id [delete: set null]
-Ref: cells.tilemap_id > tilemaps.id [delete: cascade]
-Ref: cells.color_id > lego_colors.id [delete: set null]
-Ref: cells.texture_id > textures.id [delete: set null]
-Ref: preset_instances.parent_tilemap_id > tilemaps.id [delete: cascade]
-Ref: preset_instances.preset_id > tilemaps.id [delete: restrict]
-Ref: action_log.tilemap_id > tilemaps.id [delete: cascade]
+Ref: cells.asset_id > assets.id [delete: cascade]
+Ref: cells.color_id > lego_colors.id [delete: restrict]

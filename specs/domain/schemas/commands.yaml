@@ -1,15 +1,17 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 title: DomainCommands
-description: Pure protocol-agnostic domain command and response schemas
+description: Pure protocol-agnostic domain command and response schemas for Single Asset Studio & Parity MVP
 definitions:
-  CreateMapCommand:
-    title: CreateMapCommand
+  CreateAssetCommand:
+    title: CreateAssetCommand
     type: object
-    description: Command to initialize a new terrain map asset of arbitrary dimensions
+    description: Command to initialize a new terrain asset
     properties:
-      mapId:
+      name:
         type: string
-        description: Unique map identifier (generated if omitted)
+        minLength: 1
+        maxLength: 100
+        description: Name of the asset
       width:
         type: integer
         minimum: 1
@@ -21,42 +23,98 @@ definitions:
         maximum: 1000
         description: Height in studs
     required:
+      - name
       - width
       - height
     additionalProperties: false
 
-  CreateMapResponse:
-    title: CreateMapResponse
+  CreateAssetResponse:
+    title: CreateAssetResponse
     type: object
-    description: Result of creating a map asset
+    description: Result of creating an asset
     properties:
-      mapId:
+      asset:
+        $ref: "model.yaml#/definitions/Asset"
+    required:
+      - asset
+    additionalProperties: false
+
+  UpdateAssetDimensionsCommand:
+    title: UpdateAssetDimensionsCommand
+    type: object
+    description: Command to update/resize asset dimensions
+    properties:
+      assetId:
         type: string
+        description: Target asset identifier
       width:
         type: integer
+        minimum: 1
+        maximum: 1000
+        description: New width in studs
       height:
         type: integer
+        minimum: 1
+        maximum: 1000
+        description: New height in studs
     required:
-      - mapId
+      - assetId
       - width
       - height
+    additionalProperties: false
+
+  UpdateAssetDimensionsResponse:
+    title: UpdateAssetDimensionsResponse
+    type: object
+    description: Result of updating asset dimensions
+    properties:
+      asset:
+        $ref: "model.yaml#/definitions/Asset"
+    required:
+      - asset
+    additionalProperties: false
+
+  SetBoundingBoxCommand:
+    title: SetBoundingBoxCommand
+    type: object
+    description: Command to set the active bounding box of an asset
+    properties:
+      assetId:
+        type: string
+        description: Target asset identifier
+      bbox:
+        $ref: "model.yaml#/definitions/BoundingBox"
+    required:
+      - assetId
+      - bbox
+    additionalProperties: false
+
+  SetBoundingBoxResponse:
+    title: SetBoundingBoxResponse
+    type: object
+    description: Result of setting bounding box
+    properties:
+      asset:
+        $ref: "model.yaml#/definitions/Asset"
+    required:
+      - asset
     additionalProperties: false
 
   PaintAreaCommand:
     title: PaintAreaCommand
     type: object
-    description: Command to paint a rectangular bounding box with a LEGO color
+    description: Command to paint a rectangular area or a single 1x1 cell
     properties:
-      mapId:
+      assetId:
         type: string
-        description: Target map identifier
+        description: Target asset identifier
       bbox:
         $ref: "model.yaml#/definitions/BoundingBox"
       colorId:
         type: integer
-        description: LEGO color ID to apply
+        description: Official LEGO color ID to apply
     required:
-      - mapId
+      - assetId
       - bbox
       - colorId
     additionalProperties: false
@@ -64,7 +122,7 @@ definitions:
   PaintAreaResponse:
     title: PaintAreaResponse
     type: object
-    description: Result of painting a bounding box area
+    description: Result of painting an area
     properties:
       affectedCellsCount:
         type: integer
@@ -73,64 +131,78 @@ definitions:
       - affectedCellsCount
     additionalProperties: false
 
-  PaintCellCommand:
-    title: PaintCellCommand
+  ListAssetsCommand:
+    title: ListAssetsCommand
     type: object
-    description: Command to paint a single stud cell
+    description: Command to list all available assets
+    properties: {}
+    additionalProperties: false
+
+  ListAssetsResponse:
+    title: ListAssetsResponse
+    type: object
+    description: List of available assets
     properties:
-      mapId:
+      assets:
+        type: array
+        items:
+          $ref: "model.yaml#/definitions/Asset"
+    required:
+      - assets
+    additionalProperties: false
+
+  ListColorsCommand:
+    title: ListColorsCommand
+    type: object
+    description: Command to list all available official LEGO colors
+    properties: {}
+    additionalProperties: false
+
+  ListColorsResponse:
+    title: ListColorsResponse
+    type: object
+    description: Catalog of official LEGO colors
+    properties:
+      colors:
+        type: array
+        items:
+          $ref: "model.yaml#/definitions/LegoColor"
+    required:
+      - colors
+    additionalProperties: false
+
+  GetAssetImageCommand:
+    title: GetAssetImageCommand
+    type: object
+    description: Command to query a rendered SVG image representation of the asset or bounding box
+    properties:
+      assetId:
         type: string
-        description: Target map identifier
-      x:
-        type: integer
-        description: Stud X coordinate
-      y:
-        type: integer
-        description: Stud Y coordinate
-      colorId:
-        type: integer
-        description: LEGO color ID to apply
+        description: Target asset identifier
+      bbox:
+        $ref: "model.yaml#/definitions/BoundingBox"
     required:
-      - mapId
-      - x
-      - y
-      - colorId
+      - assetId
     additionalProperties: false
 
-  PaintCellResponse:
-    title: PaintCellResponse
+  GetAssetImageResponse:
+    title: GetAssetImageResponse
     type: object
-    description: Result of painting a single cell
+    description: Rendered SVG image representation
     properties:
-      success:
-        type: boolean
-    required:
-      - success
-    additionalProperties: false
-
-  UndoCommand:
-    title: UndoCommand
-    type: object
-    description: Command to revert the most recent operation on a map
-    properties:
-      mapId:
+      image:
         type: string
-        description: Target map identifier
-    required:
-      - mapId
-    additionalProperties: false
-
-  UndoResponse:
-    title: UndoResponse
-    type: object
-    description: Result of undo operation
-    properties:
-      undone:
-        type: boolean
-      remainingUndoCount:
+        description: SVG string representation of the asset rendering
+      format:
+        type: string
+        enum: ["svg"]
+      width:
         type: integer
-        minimum: 0
+      height:
+        type: integer
     required:
-      - undone
-      - remainingUndoCount
+      - image
+      - format
+      - width
+      - height
     additionalProperties: false

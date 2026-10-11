@@ -52,7 +52,7 @@ definitions:
   CellData:
     title: CellData
     type: object
-    description: Individual stud coordinate with optional applied color
+    description: Individual stud coordinate with applied LEGO color ID
     properties:
       x:
         type: integer
@@ -62,20 +62,24 @@ definitions:
         description: Stud Y coordinate (0 <= y < height)
       colorId:
         type: integer
-        description: Applied LEGO color ID (null / omitted if unpainted)
+        description: Applied LEGO color ID
     required:
       - x
       - y
+      - colorId
     additionalProperties: false
 
-  TerrainMapSummary:
-    title: TerrainMapSummary
+  Asset:
+    title: Asset
     type: object
-    description: Summary metadata of a terrain map or asset
+    description: Editable terrain asset entity
     properties:
       id:
         type: string
         description: Unique asset identifier
+      name:
+        type: string
+        description: Asset name
       width:
         type: integer
         minimum: 1
@@ -84,12 +88,15 @@ definitions:
         type: integer
         minimum: 1
         description: Grid height in studs
+      boundingBox:
+        $ref: "#/definitions/BoundingBox"
       paintedCellsCount:
         type: integer
         minimum: 0
         description: Total count of painted cells
     required:
       - id
+      - name
       - width
       - height
       - paintedCellsCount
