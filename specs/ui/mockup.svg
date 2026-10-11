@@ -28,27 +28,34 @@
   <text x="50" y="30" class="text-title">Brick Wargame Terrain Studio</text>
 
   <!-- Asset Selector -->
-  <rect x="290" y="10" width="220" height="28" class="btn" />
-  <text x="302" y="28" class="text-bold">Modular Outpost</text>
-  <text x="420" y="28" class="text-xs">(32x32)</text>
-  <text x="492" y="27" class="text-xs">▼</text>
+  <rect x="280" y="10" width="195" height="28" class="btn" />
+  <text x="292" y="28" class="text-bold">Modular Outpost</text>
+  <text x="396" y="28" class="text-xs">(32x32)</text>
+  <text x="460" y="27" class="text-xs">▼</text>
 
   <!-- New Asset Button -->
-  <rect x="520" y="10" width="70" height="28" class="btn" />
-  <text x="534" y="28" class="text-body">+ New</text>
+  <rect x="485" y="10" width="65" height="28" class="btn" />
+  <text x="498" y="28" class="text-body">+ New</text>
+
+  <!-- Delete Asset Button (Destructive) -->
+  <rect x="558" y="10" width="75" height="28" class="btn" stroke="#7f1d1d" stroke-width="1" />
+  <svg x="566" y="16" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+  </svg>
+  <text x="588" y="28" fill="#ef4444" font-size="12px" font-weight="500">Delete</text>
 
   <!-- Dimension Inputs -->
-  <text x="620" y="28" class="text-body">Width:</text>
-  <rect x="665" y="10" width="55" height="28" class="btn" />
-  <text x="682" y="28" class="text-bold">32</text>
+  <text x="652" y="28" class="text-body">Width:</text>
+  <rect x="696" y="10" width="50" height="28" class="btn" />
+  <text x="712" y="28" class="text-bold">32</text>
 
-  <text x="735" y="28" class="text-body">Height:</text>
-  <rect x="785" y="10" width="55" height="28" class="btn" />
-  <text x="802" y="28" class="text-bold">32</text>
+  <text x="758" y="28" class="text-body">Height:</text>
+  <rect x="806" y="10" width="50" height="28" class="btn" />
+  <text x="822" y="28" class="text-bold">32</text>
 
   <!-- Grid Mode Toggle in Header -->
-  <rect x="855" y="10" width="110" height="28" class="btn" />
-  <text x="870" y="28" class="text-body">Grid: On</text>
+  <rect x="868" y="10" width="95" height="28" class="btn" />
+  <text x="882" y="28" class="text-body">Grid: On</text>
 
   <!-- ================= LEFT TOOLBOX SIDEBAR ================= -->
   <rect x="0" y="48" width="260" height="644" class="bg-panel" />

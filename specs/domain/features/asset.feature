@@ -58,3 +58,7 @@ Feature: Asset Management & Spatial Invariants
     Then exactly 9 cells should be painted
     And the cell at (0, 0) should have LEGO color ID 37
 
+  Scenario: Deleting an asset
+    When I delete the asset
+    Then the asset should no longer exist
+
