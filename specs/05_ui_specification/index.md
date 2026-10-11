@@ -1,6 +1,6 @@
 # User Interface Specification (UI & UX)
 
-This directory defines the visual ergonomics, React component architecture, and interaction rules for the playmat editor.
+This directory defines the visual ergonomics, functional studio component architecture, and interaction rules for the playmat editor.
 Following modular architecture principles, each major UI component is specified in its own dedicated Markdown file.
 
 ---
@@ -21,41 +21,35 @@ The studio layout is structured as follows:
 
 ---
 
-## 2. Component Architecture: Option B Separation
+## 2. Studio Layout & Visual Ergonomics
 
-The frontend code within `packages/client/src/` is organized with a strict boundary between generic UI primitives, domain components, and non-visual client logic:
+The application interface is organized into distinct functional workspaces designed for ergonomic playmat editing:
 
-* **`src/ui/` (Design System Primitives - Agnostic)**:
-  * Reusable, presentation-only components with **zero knowledge** of LEGO concepts, wargaming, or canvas math.
-  * Examples: `Button`, `NumberInput`, `DropdownMenu`, `Tooltip`, `Modal`, `Tabs`, `Card`, `icons/`.
-  * **Strict Minimal Dependency Rule**: Built purely with Tailwind CSS and modern native Web APIs (`<dialog>`, CSS `group-hover` tooltips, popovers). Zero third-party UI component libraries (no Radix, MUI, Mantine, or Ant Design).
-* **`src/components/` (Studio Domain Components)**:
-  * Application-specific components modeling playmat editor features and importing primitives from `src/ui/`.
-  * Examples: `TopHeaderBar`, `LeftToolboxSidebar`, `LegoColorPalette`, `BoundingBoxInspector`, `CanvasViewport`, `BottomStatusBar`.
-* **`src/core/` (Headless Client Logic & Transport)**:
-  * Non-visual logic: Viewport camera transform hooks, canvas state management, and transport adapters (`WebSocketTransport`) powering the generated `TerrainEngineServiceClient`.
+* **Top Control Zone (Header)**:
+  * Project-level metadata (table dimensions in centimeters and studs).
+  * History navigation (Undo / Redo), viewport reset, and export operations.
+* **Tool & Palette Zone (Left Sidebar)**:
+  * Active tool selection (drawing brush, eraser, selection marquee).
+  * Brush dimensions and official LEGO color palette with tactile swatches.
+* **Central Interactive Viewport (Canvas & Overlay)**:
+  * High-performance rendering of the full playmat terrain and stud grid.
+  * Direct manipulation canvas supporting camera navigation (pan/zoom) and drawing.
+  * Interactive bounding box overlay for selecting and framing areas for human or AI attention.
+* **Property & Library Zone (Right Sidebar)**:
+  * Numerical coordinate feedback and fine-tuning for selected regions.
+  * Reusable preset catalog for modular terrain pieces and stamp placement.
+* **Persistent Status Zone (Bottom Bar)**:
+  * Real-time cursor coordinates (physical scale in centimeters and grid studs).
+  * Engine connectivity indicator and current scale reference legend.
 
 ---
 
-## 3. Service Contract & Transport Abstraction (`TerrainEngineService`)
+## 3. Core Interaction Principles
 
-All React components are fully decoupled from networking and transport implementations via the canonical `TerrainEngineService` interface imported from `@lego-wargame-terrain-studio/api`:
-
-```ts
-import type { TerrainEngineService } from '@lego-wargame-terrain-studio/api';
-```
-
-The concrete client class in `packages/client/src/core/` (`TerrainEngineServiceClient`) implements `TerrainEngineService` and delegates RPC calls to a minimal transport interface:
-
-```ts
-export interface JsonRpcTransport {
-  call<TResult>(method: string, params: unknown): Promise<TResult>;
-}
-```
-
-* **Local Web Mode**: Connects via `WebSocketTransport` to `ws://localhost:4000`.
-* **Native Desktop Mode (Tauri / Electron)**: Connects via `IpcTransport` to native OS bindings.
-* **Testing & Headless Mode**: Plugs directly into an in-memory transport or mock.
+* **Direct Manipulation**: All terrain interactions (painting, erasing, selecting) operate directly on the central canvas with immediate visual feedback.
+* **Physical-to-Stud Fidelity**: Every UI dimension is anchored to the physical scale ($1\text{ stud} = 8\text{ mm}$), ensuring that visual designs map 1:1 to printed tabletop mats.
+* **Agentic Transparency**: Regions framed via bounding boxes can be inspected or acted upon by autonomous AI agents with clear visual overlays, keeping the user in full control of AI-assisted modifications.
+* **Keyboard Accessibility**: Core editing actions support primary keyboard shortcuts (`G` for grid toggle, `[`/`]` for brush size, `Ctrl+Z`/`Ctrl+Y` for history).
 
 ---
 
