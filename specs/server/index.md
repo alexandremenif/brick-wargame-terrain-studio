@@ -42,6 +42,11 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
   * Provides in-memory queries (`listColors`, `getColorById`, `isValidColorId`) for JSON-RPC handlers, MCP tools, and domain validation.
   * Keeps SQLite database completely free of static color tables.
 
+* **[`asset_service.md`](./asset_service.md)** (`AssetService`):
+  * Application service orchestrating domain use-cases on the `Asset` aggregate root.
+  * Mediates between inbound adapters (OpenRPC router, MCP adapter) and persistence (`AssetRepository`).
+  * Enforces cross-cutting business rules (validates colors via `ColorService`), handles lenient painting logic on the aggregate, and coordinates persistence.
+
 * **[`asset_repository.md`](./asset_repository.md)** (`AssetRepository`):
   * Manages the persistence lifecycle and CRUD operations for the `Asset` aggregate root in SQLite.
   * Adheres strictly to Domain-Driven Design (DDD): external callers interact exclusively with the `Asset` aggregate (`create`, `findById`, `listAll`, `update`, `delete`), never directly mutating raw cells in isolation.
