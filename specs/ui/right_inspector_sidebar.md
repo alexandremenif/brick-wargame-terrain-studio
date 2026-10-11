@@ -10,6 +10,7 @@ The `<RightInspectorSidebar>` hosts the `<BoundingBoxWindow>` region preview and
 * **Bounding Box Window**:
   * Hosts the `<BoundingBoxWindow>` component (see [`bounding_box_window.md`](./bounding_box_window.md)).
   * The window itself is the bounding box: it displays the framed subregion of studs without any internal bounding box overlay graphic.
+  * Dynamically scales studs so that any bounding box ($1\times 1$ up to full asset size) fits completely within the inspector preview viewport while preserving aspect ratio.
   * Dynamically updates whenever bounding box parameters change.
 * **Bounding Box Inputs**:
   * `X`: Origin stud X coordinate ($0 \le x < W$).

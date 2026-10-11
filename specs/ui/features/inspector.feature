@@ -13,3 +13,8 @@ Feature: Right Inspector Sidebar & Bounding Box Window
     When I click the "Fit to Asset" button in the inspector
     Then the inspector inputs should reflect X 0, Y 0, Width 32, Height 32
     And the inspector window should display the full asset (0, 0, 32, 32)
+
+  Scenario: Automatic stud scaling to fit inspector viewport
+    When I enter bounding box coordinates X 0, Y 0, Width 64, Height 64
+    Then all 64 by 64 studs should fit completely within the inspector window viewport without overflow
+    And the stud render size should be scaled to fit the window dimensions preserving aspect ratio
