@@ -27,7 +27,7 @@ import {
   ListAssetsResponse,
 } from '../../domain/schemas/commands';
 
-export interface IAssetService {
+export interface AssetService {
   /**
    * Creates a new Asset aggregate with validated dimensions and persists it.
    */
@@ -74,7 +74,7 @@ export interface IAssetService {
 ## 3. Operational Requirements & Domain Workflow
 
 * **Dependency Injection**:
-  * `AssetService` requires an instance of `IAssetRepository` and `IColorService`.
+  * `AssetService` requires an instance of `AssetRepository` and `ColorService`.
   * It has zero direct dependency on HTTP transports, JSON-RPC routers, or MCP SDKs.
 * **Domain Error Mapping**:
   * Missing asset ID $\rightarrow$ throws `AssetNotFoundError` (mapped by RPC router to `-32602` or custom application error).

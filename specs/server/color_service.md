@@ -16,7 +16,7 @@ export interface BrickColor {
   hex: string;
 }
 
-export interface IColorService {
+export interface ColorService {
   /**
    * Loads and parses the colors CSV file into an in-memory collection.
    * Called once during server startup / bootstrap.

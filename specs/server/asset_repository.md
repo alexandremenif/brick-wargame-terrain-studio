@@ -17,7 +17,7 @@ import { Asset } from '../../domain/schemas/model';
 
 export type AssetSummary = Omit<Asset, 'cells'>;
 
-export interface IAssetRepository {
+export interface AssetRepository {
   /**
    * Persists a newly created Asset aggregate root and its initial cells.
    * Executed within an atomic SQLite transaction.
