@@ -4,8 +4,8 @@ info:
   version: "1.0.0"
   description: "JSON-RPC 2.0 wire protocol specification for LEGO Wargame Terrain Studio"
 servers:
-  - name: "Local WebSocket Server"
-    url: "ws://localhost:4000"
+  - name: "Local HTTP Server"
+    url: "http://localhost:4000"
 methods:
   - name: "createAsset"
     description: "Create a new terrain asset with specified name and dimensions"
@@ -24,34 +24,51 @@ methods:
       - code: -32000
         message: "Internal engine error"
 
-  - name: "updateAssetDimensions"
-    description: "Update the dimensions of an existing asset"
+  - name: "updateAsset"
+    description: "Update the name or dimensions of an existing asset"
     params:
       - name: "command"
         required: true
         schema:
-          $ref: "../domain/schemas/commands.yaml#/definitions/UpdateAssetDimensionsCommand"
+          $ref: "../domain/schemas/commands.yaml#/definitions/UpdateAssetCommand"
     result:
       name: "result"
       schema:
-        $ref: "../domain/schemas/commands.yaml#/definitions/UpdateAssetDimensionsResponse"
+        $ref: "../domain/schemas/commands.yaml#/definitions/UpdateAssetResponse"
     errors:
       - code: -32602
         message: "Invalid params"
       - code: -32000
         message: "Internal engine error"
 
-  - name: "setBoundingBox"
-    description: "Set the active bounding box region of an asset"
+  - name: "getAsset"
+    description: "Retrieve an asset full state including painted cells"
     params:
       - name: "command"
         required: true
         schema:
-          $ref: "../domain/schemas/commands.yaml#/definitions/SetBoundingBoxCommand"
+          $ref: "../domain/schemas/commands.yaml#/definitions/GetAssetCommand"
     result:
       name: "result"
       schema:
-        $ref: "../domain/schemas/commands.yaml#/definitions/SetBoundingBoxResponse"
+        $ref: "../domain/schemas/commands.yaml#/definitions/GetAssetResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+
+  - name: "deleteAsset"
+    description: "Delete an asset and its cells"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/DeleteAssetCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/DeleteAssetResponse"
     errors:
       - code: -32602
         message: "Invalid params"
@@ -59,7 +76,7 @@ methods:
         message: "Internal engine error"
 
   - name: "paintArea"
-    description: "Paint a rectangular bounding box or 1x1 stud cell with an official LEGO color"
+    description: "Paint or erase a rectangular bounding box or 1x1 stud cell with an official LEGO color (or null to clear)"
     params:
       - name: "command"
         required: true
@@ -110,7 +127,7 @@ methods:
         message: "Internal engine error"
 
   - name: "getAssetImage"
-    description: "Get a rendered SVG image of the asset or bounding box"
+    description: "Get a rendered SVG image of the asset or optional bounding box"
     params:
       - name: "command"
         required: true

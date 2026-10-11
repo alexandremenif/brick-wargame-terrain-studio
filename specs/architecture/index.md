@@ -8,30 +8,30 @@ This document describes the technical architecture of **LEGO Wargame Terrain Stu
 
 ```mermaid
 flowchart TD
-  subgraph AIEnv["AI Environment (Antigravity 2.0 / Claude Desktop)"]
+  subgraph AIEnv["AI Environment (Antigravity 2.0 / Claude Desktop / Remote Agents)"]
     Agent["AI Agent (Multimodal LLM)"]
   end
 
   subgraph UserEnv["User Browser"]
-    WebApp["UI Studio (Vite + React 19 + Canvas)"]
+    WebApp["UI (Vite + React 19 + SVG Viewport)"]
   end
 
   subgraph SharedContracts["Pure Shared Contracts (Zero Node.js / Zero Native Deps)"]
     Api["packages/api (TypeScript Interfaces, DTOs, TerrainEngineService Contract)"]
   end
 
-  subgraph HostSystem["Local System (Node.js)"]
-    Server["packages/server (Unified: MCP stdio + OpenRPC Router + Domain Engine)"]
+  subgraph HostSystem["Server System (Node.js)"]
+    Server["packages/server (Unified: Streamable HTTP MCP + OpenRPC Router + Domain Engine)"]
     SQLite[("Local SQLite Database (terrain.db) - WAL Mode")]
   end
 
-  Agent ---|"stdio (JSON-RPC MCP)"| Server
+  Agent ---|"Streamable HTTP (JSON-RPC MCP)"| Server
   WebApp ---|"WebSockets (Live Sync) & JSON-RPC 2.0"| Server
   WebApp -.->|"Consumes Type Contracts"| Api
   Server -.->|"Implements OpenRPC Methods"| Api
 
   Server ---|"Internal Engine Calls"| SQLite
-  Server -.->|"Real-time Events (cellsChanged, syncBBox)"| WebApp
+  Server -.->|"Real-time Events (assetChanged, bboxUpdated)"| WebApp
 ```
 
 ---
@@ -39,6 +39,6 @@ flowchart TD
 ## 2. Monorepo Package Breakdown
 
 * **`packages/api`**: Pure shared contract package containing domain DTOs and the `TerrainEngineService` interface compiled from JSON Schema.
-* **`packages/server`**: Unified local server hosting domain logic, SQLite WAL persistence, OpenRPC JSON-RPC 2.0 router with schema validation, and MCP tools over stdio.
-* **`packages/ui`**: React 19 SPA frontend with high-performance Canvas viewport, Bounding Box selection overlay, and official LEGO color pickers.
+* **`packages/server`**: Server hosting domain logic, SQLite WAL persistence, OpenRPC JSON-RPC 2.0 router with schema validation, and streamable HTTP MCP tools (ready for remote or local hosting).
+* **`packages/ui`**: React 19 SPA frontend with high-performance SVG viewport, Bounding Box controls, and official LEGO color pickers.
 * **`packages/codegen`**: Build-time tooling compiling declarative schemas in `specs/` into typed TypeScript contracts and SQL migrations.

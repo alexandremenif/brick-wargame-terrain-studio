@@ -1,12 +1,17 @@
 /* Generated from OpenRPC specifications. DO NOT EDIT. */
 import type {
   Asset,
+  AssetSummary,
   BoundingBox,
   CellData,
   CreateAssetCommand,
   CreateAssetResponse,
+  DeleteAssetCommand,
+  DeleteAssetResponse,
+  GetAssetCommand,
   GetAssetImageCommand,
   GetAssetImageResponse,
+  GetAssetResponse,
   LegoColor,
   ListAssetsCommand,
   ListAssetsResponse,
@@ -14,10 +19,9 @@ import type {
   ListColorsResponse,
   PaintAreaCommand,
   PaintAreaResponse,
-  SetBoundingBoxCommand,
-  SetBoundingBoxResponse,
-  UpdateAssetDimensionsCommand,
-  UpdateAssetDimensionsResponse,
+  UpdateAssetCommand,
+  UpdateAssetResponse,
+  Vector,
 } from './types.js';
 
 export interface TerrainEngineService {
@@ -27,17 +31,22 @@ export interface TerrainEngineService {
   createAsset(command: CreateAssetCommand): Promise<CreateAssetResponse>;
 
   /**
-   * Update the dimensions of an existing asset
+   * Update the name or dimensions of an existing asset
    */
-  updateAssetDimensions(command: UpdateAssetDimensionsCommand): Promise<UpdateAssetDimensionsResponse>;
+  updateAsset(command: UpdateAssetCommand): Promise<UpdateAssetResponse>;
 
   /**
-   * Set the active bounding box region of an asset
+   * Retrieve an asset full state including painted cells
    */
-  setBoundingBox(command: SetBoundingBoxCommand): Promise<SetBoundingBoxResponse>;
+  getAsset(command: GetAssetCommand): Promise<GetAssetResponse>;
 
   /**
-   * Paint a rectangular bounding box or 1x1 stud cell with an official LEGO color
+   * Delete an asset and its cells
+   */
+  deleteAsset(command: DeleteAssetCommand): Promise<DeleteAssetResponse>;
+
+  /**
+   * Paint or erase a rectangular bounding box or 1x1 stud cell with an official LEGO color (or null to clear)
    */
   paintArea(command: PaintAreaCommand): Promise<PaintAreaResponse>;
 
@@ -52,7 +61,7 @@ export interface TerrainEngineService {
   listColors(command: ListColorsCommand): Promise<ListColorsResponse>;
 
   /**
-   * Get a rendered SVG image of the asset or bounding box
+   * Get a rendered SVG image of the asset or optional bounding box
    */
   getAssetImage(command: GetAssetImageCommand): Promise<GetAssetImageResponse>;
 }

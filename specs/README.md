@@ -16,16 +16,16 @@ The goal of this project is to build a modular game mat design and terrain gener
 
 ---
 
-### 1.2 Geometry & Arbitrary Asset Dimensions
+### 1.2 Geometry & Configurable Asset Dimensions
 * **Standard LEGO Stud Pitch**: **$8.0\text{ mm} \times 8.0\text{ mm}$**.
-* **Arbitrary Grid Scale**: Maps and presets are unified assets that can be created with **any arbitrary stud dimensions** ($width \ge 1, height \ge 1$).
-* **Common Preset**: Standard dining table ($95\text{ cm} \times 180\text{ cm} \approx 118 \times 225 = 26,550$ studs) is an optional preset.
+* **Configurable Grid Scale**: Assets are created with **configurable stud dimensions** ($width \ge 1, height \ge 1$) and names.
+* **Lenient Painting**: Modifying cells outside the asset surface is ignored, so loose brush strokes never trigger errors.
 
 ---
 
-### 1.3 AI Delegation & Hybrid Navigation
-* Terrain editing can be performed manually in the Web Studio or delegated to an external AI agent (Antigravity 2.0 / Claude Desktop) via the **Model Context Protocol (MCP)**.
-* The user inspects, pans, zooms, and selects **Bounding Boxes** on screen, copies stud coordinates for prompt injection, and watches AI edits render in real time.
+### 1.3 AI Delegation & Parity
+* Asset editing can be performed manually in the UI or delegated to an external AI agent (Antigravity 2.0 / Claude Desktop / Remote Agents) via the **Model Context Protocol (MCP)** over streamable HTTP.
+* The AI visual inspection (`get_asset_image`) returns the exact same SVG representation displayed in the UI, ensuring 100% visual parity.
 
 ---
 
@@ -34,17 +34,17 @@ The goal of this project is to build a modular game mat design and terrain gener
 The specifications are organized into 4 clean layers matching system boundaries:
 
 1. [**domain/**](./domain/index.md) - Pure Domain
-   * Domain entities ([`schemas/model.yaml`](./domain/schemas/model.yaml)), command contracts ([`schemas/commands.yaml`](./domain/schemas/commands.yaml)), official rules ([`rules.md`](./domain/rules.md)), and acceptance criteria ([`features/terrain_domain.feature`](./domain/features/terrain_domain.feature)).
+   * Domain entities ([`schemas/model.yaml`](./domain/schemas/model.yaml)), command contracts ([`schemas/commands.yaml`](./domain/schemas/commands.yaml)), official rules ([`rules.md`](./domain/rules.md)).
    * Zero network concepts, zero database dependencies.
 
 2. [**server/**](./server/index.md) - Server Adapters & Ports
    * JSON-RPC 2.0 wire protocol in OpenRPC 1.2+ ([`openrpc.yaml`](./server/openrpc.yaml)).
    * SQLite relational storage model in DBML ([`schema.dbml`](./server/schema.dbml)).
-   * AI agent tooling specification ([`mcp.md`](./server/mcp.md)).
+   * Streamable HTTP AI agent tooling specification ([`mcp.md`](./server/mcp.md)).
    * Server BDD scenarios ([`features/persistence.feature`](./server/features/persistence.feature), [`features/jsonrpc_protocol.feature`](./server/features/jsonrpc_protocol.feature)).
 
-3. [**ui/**](./ui/index.md) - Web Studio UI Presentation
-   * High-performance Canvas viewport, toolbars, color palettes, and inspector panels.
+3. [**ui/**](./ui/index.md) - UI Presentation
+   * High-performance SVG viewport, Bounding Box controls, and LEGO color palettes.
    * Playwright UI BDD scenarios ([`features/toolbox.feature`](./ui/features/toolbox.feature)).
 
 4. [**architecture/**](./architecture/index.md) - System Topology & Flows

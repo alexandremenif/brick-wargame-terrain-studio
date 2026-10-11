@@ -1,7 +1,7 @@
 Feature: JSON-RPC 2.0 Wire Protocol & OpenRPC Conformance
 
   Background:
-    Given a running JSON-RPC server with an active map of 100 by 100 studs
+    Given a running JSON-RPC server with an active asset of 100 by 100 studs
 
   Scenario: Successfully dispatching a valid OpenRPC method
     When I send a JSON-RPC request for "paintArea" with valid bounding box (5, 5, 10, 10) and color ID 1

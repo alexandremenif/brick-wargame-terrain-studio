@@ -2,6 +2,22 @@ $schema: "http://json-schema.org/draft-07/schema#"
 title: DomainModel
 description: Pure protocol-agnostic domain entities for LEGO Wargame Terrain Studio
 definitions:
+  Vector:
+    title: Vector
+    type: object
+    description: 2D discrete grid vector or coordinate measured in studs
+    properties:
+      x:
+        type: integer
+        description: Stud X coordinate
+      y:
+        type: integer
+        description: Stud Y coordinate
+    required:
+      - x
+      - y
+    additionalProperties: false
+
   BoundingBox:
     title: BoundingBox
     type: object
@@ -69,10 +85,10 @@ definitions:
       - colorId
     additionalProperties: false
 
-  Asset:
-    title: Asset
+  AssetSummary:
+    title: AssetSummary
     type: object
-    description: Editable terrain asset entity
+    description: Summary metadata of an asset
     properties:
       id:
         type: string
@@ -88,8 +104,6 @@ definitions:
         type: integer
         minimum: 1
         description: Grid height in studs
-      boundingBox:
-        $ref: "#/definitions/BoundingBox"
       paintedCellsCount:
         type: integer
         minimum: 0
@@ -100,4 +114,41 @@ definitions:
       - width
       - height
       - paintedCellsCount
+    additionalProperties: false
+
+  Asset:
+    title: Asset
+    type: object
+    description: Complete asset domain entity with painted cells
+    properties:
+      id:
+        type: string
+        description: Unique asset identifier
+      name:
+        type: string
+        description: Asset name
+      width:
+        type: integer
+        minimum: 1
+        description: Grid width in studs
+      height:
+        type: integer
+        minimum: 1
+        description: Grid height in studs
+      paintedCellsCount:
+        type: integer
+        minimum: 0
+        description: Total count of painted cells
+      cells:
+        type: array
+        items:
+          $ref: "#/definitions/CellData"
+        description: List of currently painted cells
+    required:
+      - id
+      - name
+      - width
+      - height
+      - paintedCellsCount
+      - cells
     additionalProperties: false

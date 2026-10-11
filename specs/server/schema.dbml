@@ -26,10 +26,6 @@ Table assets {
   name varchar(100) [not null, note: 'Asset name']
   width integer [not null, note: 'Width in stud count (>= 1)']
   height integer [not null, note: 'Height in stud count (>= 1)']
-  bbox_x integer [null, note: 'Active bounding box X']
-  bbox_y integer [null, note: 'Active bounding box Y']
-  bbox_width integer [null, note: 'Active bounding box width']
-  bbox_height integer [null, note: 'Active bounding box height']
   created_at timestamp [default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [default: `CURRENT_TIMESTAMP`]
   Note: 'Single editable asset'

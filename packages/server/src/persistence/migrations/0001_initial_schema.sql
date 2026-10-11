@@ -22,10 +22,6 @@ CREATE TABLE "assets" (
   "name" varchar(100) NOT NULL,
   "width" integer NOT NULL,
   "height" integer NOT NULL,
-  "bbox_x" integer,
-  "bbox_y" integer,
-  "bbox_width" integer,
-  "bbox_height" integer,
   "created_at" timestamp DEFAULT (CURRENT_TIMESTAMP),
   "updated_at" timestamp DEFAULT (CURRENT_TIMESTAMP)
 );

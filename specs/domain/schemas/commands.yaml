@@ -39,14 +39,19 @@ definitions:
       - asset
     additionalProperties: false
 
-  UpdateAssetDimensionsCommand:
-    title: UpdateAssetDimensionsCommand
+  UpdateAssetCommand:
+    title: UpdateAssetCommand
     type: object
-    description: Command to update/resize asset dimensions
+    description: Generic command to update asset properties (name, dimensions)
     properties:
       assetId:
         type: string
         description: Target asset identifier
+      name:
+        type: string
+        minLength: 1
+        maxLength: 100
+        description: New asset name
       width:
         type: integer
         minimum: 1
@@ -59,14 +64,12 @@ definitions:
         description: New height in studs
     required:
       - assetId
-      - width
-      - height
     additionalProperties: false
 
-  UpdateAssetDimensionsResponse:
-    title: UpdateAssetDimensionsResponse
+  UpdateAssetResponse:
+    title: UpdateAssetResponse
     type: object
-    description: Result of updating asset dimensions
+    description: Result of updating an asset
     properties:
       asset:
         $ref: "model.yaml#/definitions/Asset"
@@ -74,36 +77,56 @@ definitions:
       - asset
     additionalProperties: false
 
-  SetBoundingBoxCommand:
-    title: SetBoundingBoxCommand
+  GetAssetCommand:
+    title: GetAssetCommand
     type: object
-    description: Command to set the active bounding box of an asset
+    description: Command to retrieve an asset's full state
     properties:
       assetId:
         type: string
         description: Target asset identifier
-      bbox:
-        $ref: "model.yaml#/definitions/BoundingBox"
     required:
       - assetId
-      - bbox
     additionalProperties: false
 
-  SetBoundingBoxResponse:
-    title: SetBoundingBoxResponse
+  GetAssetResponse:
+    title: GetAssetResponse
     type: object
-    description: Result of setting bounding box
+    description: Detailed asset state
     properties:
       asset:
         $ref: "model.yaml#/definitions/Asset"
     required:
       - asset
+    additionalProperties: false
+
+  DeleteAssetCommand:
+    title: DeleteAssetCommand
+    type: object
+    description: Command to delete an asset
+    properties:
+      assetId:
+        type: string
+        description: Target asset identifier
+    required:
+      - assetId
+    additionalProperties: false
+
+  DeleteAssetResponse:
+    title: DeleteAssetResponse
+    type: object
+    description: Result of deleting an asset
+    properties:
+      success:
+        type: boolean
+    required:
+      - success
     additionalProperties: false
 
   PaintAreaCommand:
     title: PaintAreaCommand
     type: object
-    description: Command to paint a rectangular area or a single 1x1 cell
+    description: Command to paint or erase a rectangular area or 1x1 stud cell
     properties:
       assetId:
         type: string
@@ -111,8 +134,8 @@ definitions:
       bbox:
         $ref: "model.yaml#/definitions/BoundingBox"
       colorId:
-        type: integer
-        description: Official LEGO color ID to apply
+        type: ["integer", "null"]
+        description: Official LEGO color ID to apply, or null to erase/clear cells
     required:
       - assetId
       - bbox
@@ -122,7 +145,7 @@ definitions:
   PaintAreaResponse:
     title: PaintAreaResponse
     type: object
-    description: Result of painting an area
+    description: Result of painting or erasing an area
     properties:
       affectedCellsCount:
         type: integer
@@ -146,7 +169,7 @@ definitions:
       assets:
         type: array
         items:
-          $ref: "model.yaml#/definitions/Asset"
+          $ref: "model.yaml#/definitions/AssetSummary"
     required:
       - assets
     additionalProperties: false
