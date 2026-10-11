@@ -1,7 +1,8 @@
 import React from 'react';
 import type { BrickColor } from '@lego-wargame-terrain-studio/api';
+import { Button, Tooltip } from './design_system/index.js';
 
-export type ToolMode = 'Brush' | 'Eraser';
+export type ToolMode = 'Brush' | 'Eraser' | 'Pan';
 export type BrushSize = '1x1' | '2x2' | '4x4' | '8x8' | '16x16' | '32x32';
 
 export interface LeftToolboxSidebarProps {
@@ -25,6 +26,8 @@ export const LeftToolboxSidebar: React.FC<LeftToolboxSidebarProps> = ({
   onSelectBrushSize,
   onSelectColor,
 }) => {
+  const isColorDisabled = toolMode === 'Eraser' || toolMode === 'Pan';
+
   return (
     <aside className="flex w-64 flex-col border-r border-zinc-800 bg-zinc-900 text-zinc-100 select-none">
       {/* Tool Mode Buttons */}
@@ -32,33 +35,42 @@ export const LeftToolboxSidebar: React.FC<LeftToolboxSidebarProps> = ({
         <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
           Tool Mode
         </label>
-        <div className="mt-2 grid grid-cols-2 gap-2">
-          <button
-            type="button"
+        <div className="mt-2 grid grid-cols-3 gap-1.5">
+          <Button
             data-testid="tool-brush-btn"
+            variant="secondary"
+            size="sm"
+            isActive={toolMode === 'Brush'}
             onClick={() => onSelectToolMode('Brush')}
-            className={`flex items-center justify-center gap-1.5 rounded border py-1.5 text-xs font-medium transition-colors ${
-              toolMode === 'Brush'
-                ? 'border-amber-500/80 bg-amber-500/20 text-amber-300'
-                : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200'
-            }`}
+            className="flex items-center gap-1"
           >
             <span>🖌</span>
             <span>Brush</span>
-          </button>
-          <button
-            type="button"
+          </Button>
+
+          <Button
             data-testid="tool-eraser-btn"
+            variant="secondary"
+            size="sm"
+            isActive={toolMode === 'Eraser'}
             onClick={() => onSelectToolMode('Eraser')}
-            className={`flex items-center justify-center gap-1.5 rounded border py-1.5 text-xs font-medium transition-colors ${
-              toolMode === 'Eraser'
-                ? 'border-amber-500/80 bg-amber-500/20 text-amber-300'
-                : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200'
-            }`}
+            className="flex items-center gap-1"
           >
             <span>🧹</span>
             <span>Eraser</span>
-          </button>
+          </Button>
+
+          <Button
+            data-testid="tool-pan-btn"
+            variant="secondary"
+            size="sm"
+            isActive={toolMode === 'Pan'}
+            onClick={() => onSelectToolMode('Pan')}
+            className="flex items-center gap-1"
+          >
+            <span>✋</span>
+            <span>Pan</span>
+          </Button>
         </div>
       </div>
 
@@ -69,19 +81,16 @@ export const LeftToolboxSidebar: React.FC<LeftToolboxSidebarProps> = ({
         </label>
         <div className="mt-2 grid grid-cols-3 gap-1.5">
           {BRUSH_SIZES.map((size) => (
-            <button
+            <Button
               key={size}
-              type="button"
               data-testid={`brush-size-${size}`}
+              variant="secondary"
+              size="xs"
+              isActive={brushSize === size}
               onClick={() => onSelectBrushSize(size)}
-              className={`rounded border py-1 text-xs font-medium transition-colors ${
-                brushSize === size
-                  ? 'border-amber-500/80 bg-amber-500/20 text-amber-300'
-                  : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200'
-              }`}
             >
               {size}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -92,31 +101,41 @@ export const LeftToolboxSidebar: React.FC<LeftToolboxSidebarProps> = ({
           <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
             Official Colors ({colors.length})
           </label>
-          {toolMode === 'Eraser' && (
-            <span className="text-[10px] text-zinc-400 italic">(Disabled in Eraser)</span>
+          {isColorDisabled && (
+            <span className="text-[10px] text-zinc-400 italic">
+              (Disabled in {toolMode})
+            </span>
           )}
         </div>
 
-        <div className={`mt-2 grid grid-cols-6 gap-1.5 ${toolMode === 'Eraser' ? 'opacity-40 pointer-events-none' : ''}`}>
+        <div
+          className={`mt-2 grid grid-cols-6 gap-1.5 ${
+            isColorDisabled ? 'opacity-40 pointer-events-none' : ''
+          }`}
+        >
           {colors.map((color) => {
             const isSelected = selectedColorId === color.id && toolMode === 'Brush';
             return (
-              <button
+              <Tooltip
                 key={color.id}
-                type="button"
-                data-testid={`color-swatch-${color.name}`}
-                data-color-id={color.id}
-                data-color-name={color.name}
-                data-color-hex={color.hex}
-                title={`${color.name} (#${color.id})`}
-                onClick={() => onSelectColor(color.id)}
-                className={`relative aspect-square w-full rounded-sm border transition-all ${
-                  isSelected
-                    ? 'border-white ring-2 ring-white scale-105 z-10'
-                    : 'border-black/40 hover:scale-105 hover:border-zinc-400'
-                }`}
-                style={{ backgroundColor: color.hex }}
-              />
+                content={`${color.name} (${color.hex})`}
+                position="top"
+              >
+                <button
+                  type="button"
+                  data-testid={`color-swatch-${color.name}`}
+                  data-color-id={color.id}
+                  data-color-name={color.name}
+                  data-color-hex={color.hex}
+                  onClick={() => onSelectColor(color.id)}
+                  className={`relative aspect-square w-full rounded-sm border cursor-pointer transition-all ${
+                    isSelected
+                      ? 'border-white ring-2 ring-white scale-105 z-10'
+                      : 'border-black/40 hover:scale-105 hover:border-zinc-400'
+                  }`}
+                  style={{ backgroundColor: color.hex }}
+                />
+              </Tooltip>
             );
           })}
         </div>

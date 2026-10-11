@@ -147,7 +147,12 @@ Then('the asset {string} should be deleted', async function (this: PlaywrightWor
 
 Then('the active tool mode should be {string}', async function (this: PlaywrightWorld, expectedMode: string) {
   const page = this.getPage();
-  const selector = expectedMode === 'Brush' ? '[data-testid="tool-brush-btn"]' : '[data-testid="tool-eraser-btn"]';
+  let selector = '[data-testid="tool-brush-btn"]';
+  if (expectedMode === 'Eraser') {
+    selector = '[data-testid="tool-eraser-btn"]';
+  } else if (expectedMode === 'Pan') {
+    selector = '[data-testid="tool-pan-btn"]';
+  }
   const btnClass = await page.$eval(selector, (el) => el.className);
   assert.ok(btnClass.includes('border-amber-500'), `Expected ${expectedMode} button to have active styling`);
 });
@@ -172,6 +177,8 @@ When('I click the {string} tool button', async function (this: PlaywrightWorld, 
     await page.click('[data-testid="tool-eraser-btn"]');
   } else if (toolName === 'Brush') {
     await page.click('[data-testid="tool-brush-btn"]');
+  } else if (toolName === 'Pan') {
+    await page.click('[data-testid="tool-pan-btn"]');
   }
 });
 
@@ -439,10 +446,14 @@ Given(
     const wInput = page.locator('[data-testid="inspector-bbox-w"]');
     const hInput = page.locator('[data-testid="inspector-bbox-h"]');
 
+    // To prevent validation collisions when current (x, y) + new (w, h) exceeds asset dimensions:
+    // First shrink width and height so that (32 - current x) is not exceeded, or if current is 0,0:
     await wInput.fill(String(w));
     await wInput.blur();
     await hInput.fill(String(h));
     await hInput.blur();
+
+    // Now x and y can safely be set up to 32 - w/h:
     await xInput.fill(String(x));
     await xInput.blur();
     await yInput.fill(String(y));
@@ -496,7 +507,12 @@ When('I click the {string} button in the inspector', async function (this: Playw
   const page = this.getPage();
   if (btnName === 'Fit to Asset') {
     await page.click('[data-testid="inspector-fit-to-asset-btn"]');
+  } else if (btnName === 'Zoom In') {
+    await page.click('[data-testid="inspector-zoom-in-btn"]');
+  } else if (btnName === 'Zoom Out') {
+    await page.click('[data-testid="inspector-zoom-out-btn"]');
   }
+  await page.waitForTimeout(50);
 });
 
 Then(
@@ -531,3 +547,229 @@ Then(
     assert.strictEqual(style.height, '100%');
   }
 );
+
+// ============================================================================
+// Extended Navigation & Zoom Steps
+// ============================================================================
+
+Then(
+  'the bounding box width and height should decrease by approximately 25 percent',
+  async function (this: PlaywrightWorld) {
+    const page = this.getPage();
+    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    // Was 16x16, 25% decrease -> ~12 or 13
+    assert.ok(iw < 16 && iw >= 11, `Expected width to decrease by ~25%, got ${iw}`);
+    assert.ok(ih < 16 && ih >= 11, `Expected height to decrease by ~25%, got ${ih}`);
+  }
+);
+
+Then(
+  'the bounding box width and height should increase by approximately 25 percent',
+  async function (this: PlaywrightWorld) {
+    const page = this.getPage();
+    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    // Was 8x8, 25% increase -> ~10
+    assert.ok(iw > 8 && iw <= 11, `Expected width to increase by ~25%, got ${iw}`);
+    assert.ok(ih > 8 && ih <= 11, `Expected height to increase by ~25%, got ${ih}`);
+  }
+);
+
+Then(
+  'the center of the bounding box should remain approximately at \\({int}, {int}\\)',
+  async function (this: PlaywrightWorld, cx: number, cy: number) {
+    const page = this.getPage();
+    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+
+    const actualCx = ix + iw / 2;
+    const actualCy = iy + ih / 2;
+
+    assert.ok(Math.abs(actualCx - cx) <= 1.5, `Expected center X ~${cx}, got ${actualCx}`);
+    assert.ok(Math.abs(actualCy - cy) <= 1.5, `Expected center Y ~${cy}, got ${actualCy}`);
+  }
+);
+
+When(
+  'I click on the minimap at asset position \\({int}, {int}\\)',
+  async function (this: PlaywrightWorld, targetX: number, targetY: number) {
+    const page = this.getPage();
+    const canvas = page.locator('canvas[data-testid="minimap-canvas"]');
+    await canvas.scrollIntoViewIfNeeded();
+    const box = await canvas.boundingBox();
+    assert.ok(box, 'Minimap canvas bounding box must be available');
+
+    // Click relative to asset dimensions (32x32)
+    // Offset slightly into the stud cell (+ 0.5 stud) so rounding lands safely inside
+    const offsetX = Math.min(box.width - 2, Math.max(2, ((targetX + 0.5) / 32) * box.width));
+    const offsetY = Math.min(box.height - 2, Math.max(2, ((targetY + 0.5) / 32) * box.height));
+
+    await canvas.click({
+      position: { x: offsetX, y: offsetY },
+      force: true,
+    });
+    await page.waitForTimeout(50);
+  }
+);
+
+Then(
+  'the minimap bounding box indicator should be centered at position \\({int}, {int}\\)',
+  async function (this: PlaywrightWorld, cx: number, cy: number) {
+    const page = this.getPage();
+    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+
+    const actualCx = ix + iw / 2;
+    const actualCy = iy + ih / 2;
+
+    assert.strictEqual(actualCx, cx);
+    assert.strictEqual(actualCy, cy);
+  }
+);
+
+Then('the {string} button in the inspector should be disabled', async function (this: PlaywrightWorld, btnName: string) {
+  const page = this.getPage();
+  let selector = '';
+  if (btnName === 'Zoom In') selector = '[data-testid="inspector-zoom-in-btn"]';
+  else if (btnName === 'Zoom Out') selector = '[data-testid="inspector-zoom-out-btn"]';
+  else if (btnName === 'Fit to Asset') selector = '[data-testid="inspector-fit-to-asset-btn"]';
+
+  assert.ok(selector, `Unknown inspector button "${btnName}"`);
+  const isDisabled = await page.isDisabled(selector);
+  assert.ok(isDisabled, `Expected button "${btnName}" to be disabled`);
+});
+
+When(
+  'I drag the mouse across the canvas viewport by an offset corresponding to {int} studs horizontally and {int} studs vertically',
+  async function (this: PlaywrightWorld, studsX: number, studsY: number) {
+    const page = this.getPage();
+    const canvas = page.locator('canvas[data-testid="canvas-viewport"]');
+    const box = await canvas.boundingBox();
+    assert.ok(box, 'Canvas bounding box must be available');
+
+    const width = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
+    const studSize = box.width / width;
+
+    const startX = box.x + box.width / 2;
+    const startY = box.y + box.height / 2;
+
+    // Drag natural grab: dragging cursor moves canvas
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + studsX * studSize, startY + studsY * studSize, { steps: 5 });
+    await page.mouse.up();
+  }
+);
+
+When('I scroll the mouse wheel up over the canvas viewport', async function (this: PlaywrightWorld) {
+  const page = this.getPage();
+  await page.dispatchEvent('canvas[data-testid="canvas-viewport"]', 'wheel', {
+    deltaY: -100,
+    bubbles: true,
+    cancelable: true,
+  });
+  await page.waitForTimeout(50);
+});
+
+When('I scroll the mouse wheel down over the canvas viewport', async function (this: PlaywrightWorld) {
+  const page = this.getPage();
+  await page.dispatchEvent('canvas[data-testid="canvas-viewport"]', 'wheel', {
+    deltaY: 100,
+    bubbles: true,
+    cancelable: true,
+  });
+  await page.waitForTimeout(50);
+});
+
+// ============================================================================
+// Persistence Steps (persistence.feature)
+// ============================================================================
+
+Given(
+  'asset {string} has a persisted bounding box \\({int}, {int}, {int}, {int}\\) in storage',
+  async function (this: PlaywrightWorld, assetName: string, x: number, y: number, w: number, h: number) {
+    if (!this.page) {
+      await this.initLiveApp(assetName, 32, 32);
+    }
+    const page = this.getPage();
+    const key = `bwts:bbox:asset-test-1`; // Maps to active asset ID
+    await page.evaluate(
+      ([k, bbox]) => {
+        window.localStorage.setItem(k, JSON.stringify(bbox));
+      },
+      [key, { x, y, width: w, height: h }] as const
+    );
+    await page.reload();
+    await page.waitForSelector('[data-testid="header-asset-name"]');
+  }
+);
+
+Given('asset {string} has no persisted bounding box in storage', async function (this: PlaywrightWorld, assetName: string) {
+  if (!this.page) {
+    await this.initLiveApp(assetName, 32, 32);
+  }
+  const page = this.getPage();
+  await page.evaluate(() => {
+    window.localStorage.clear();
+  });
+});
+
+When(
+  'the UI is loaded with active asset {string} of {int} by {int} studs',
+  async function (this: PlaywrightWorld, assetName: string, width: number, height: number) {
+    // Re-init with this asset name and size
+    await this.initLiveApp(assetName, width, height);
+  }
+);
+
+When('the asset {string} dimensions are currently {int} by {int} studs', async function (this: PlaywrightWorld, _assetName: string, width: number, height: number) {
+  this.asset.width = width;
+  this.asset.height = height;
+});
+
+When('the UI is loaded with active asset {string}', async function (this: PlaywrightWorld, assetName: string) {
+  await this.initLiveApp(assetName, this.asset.width, this.asset.height);
+});
+
+Then(
+  'the persisted bounding box in storage for {string} should be self-healed to \\({int}, {int}, {int}, {int}\\)',
+  async function (this: PlaywrightWorld, _assetName: string, x: number, y: number, w: number, h: number) {
+    const page = this.getPage();
+    const key = `bwts:bbox:asset-test-1`;
+    const stored = await page.evaluate((k) => window.localStorage.getItem(k), key);
+    assert.ok(stored, 'Expected self-healed entry in localStorage');
+    const parsed = JSON.parse(stored);
+    assert.deepStrictEqual(parsed, { x, y, width: w, height: h });
+  }
+);
+
+Then(
+  'the storage entry for {string} should contain bounding box \\({int}, {int}, {int}, {int}\\)',
+  async function (this: PlaywrightWorld, _assetName: string, x: number, y: number, w: number, h: number) {
+    const page = this.getPage();
+    const key = `bwts:bbox:asset-test-1`;
+    // Wait for debounce write (150ms)
+    await page.waitForTimeout(200);
+    const stored = await page.evaluate((k) => window.localStorage.getItem(k), key);
+    assert.ok(stored, 'Expected bounding box to be stored in localStorage');
+    const parsed = JSON.parse(stored);
+    assert.deepStrictEqual(parsed, { x, y, width: w, height: h });
+  }
+);
+
+Then('the storage entry for {string} should be removed', async function (this: PlaywrightWorld, _assetName: string) {
+  const page = this.getPage();
+  const key = `bwts:bbox:asset-test-1`;
+  await page.waitForFunction(
+    (k) => window.localStorage.getItem(k) === null,
+    key,
+    { timeout: 2000 }
+  );
+  const stored = await page.evaluate((k) => window.localStorage.getItem(k), key);
+  assert.strictEqual(stored, null);
+});

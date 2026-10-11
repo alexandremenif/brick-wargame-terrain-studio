@@ -104,12 +104,14 @@ export class PlaywrightWorld extends World {
     }
   }
 
-  public async initLiveApp(assetName: string, width: number, height: number): Promise<Page> {
+  public async initLiveApp(assetName: string, width: number, height: number, existingStorage?: Record<string, string>): Promise<Page> {
     await ensureSharedServer();
     const browser = await getSharedBrowser();
-    this.page = await browser.newPage({
-      viewport: { width: 1280, height: 800 }
-    });
+    if (!this.page) {
+      this.page = await browser.newPage({
+        viewport: { width: 1280, height: 800 }
+      });
+    }
 
     this.asset = {
       id: 'asset-test-1',

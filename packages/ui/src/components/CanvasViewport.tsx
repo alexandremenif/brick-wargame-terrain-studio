@@ -11,6 +11,8 @@ export interface CanvasViewportProps {
   brushSize: BrushSize;
   selectedColorId: number;
   onPaint: (x: number, y: number, width: number, height: number, colorId: number | null) => void;
+  onPanBy?: (deltaX: number, deltaY: number) => void;
+  onZoom?: (factor: number) => void;
 }
 
 const BASEPLATE_COLOR = '#184632'; // Authentic dark green baseplate color per spec
@@ -24,10 +26,19 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   brushSize,
   selectedColorId,
   onPaint,
+  onPanBy,
+  onZoom,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ clientX: number; clientY: number; accDeltaX: number; accDeltaY: number }>({
+    clientX: 0,
+    clientY: 0,
+    accDeltaX: 0,
+    accDeltaY: 0,
+  });
 
   // Map coordinate key "x,y" to colorId for O(1) cell color lookup
   const cellsMap = useMemo(() => {
@@ -58,7 +69,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
   }, []);
 
   // Compute best-fit stud size and canvas pixel dimensions
-  const { studSize, canvasWidth, canvasHeight, offsetX, offsetY } = useMemo(() => {
+  const { studSize, canvasWidth, canvasHeight } = useMemo(() => {
     const cw = Math.max(10, containerSize.width);
     const ch = Math.max(10, containerSize.height);
 
@@ -74,8 +85,6 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
       studSize: sSize,
       canvasWidth: cWidth,
       canvasHeight: cHeight,
-      offsetX: Math.floor((cw - cWidth) / 2),
-      offsetY: Math.floor((ch - cHeight) / 2),
     };
   }, [containerSize, boundingBox]);
 
@@ -133,8 +142,20 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     }
   }, [canvasWidth, canvasHeight, boundingBox, cellsMap, colorsById, showGrid, studSize]);
 
-  // Click-to-paint handler
+  // Pointer interactions: Click-to-paint (Brush/Eraser) vs Drag-to-pan (Pan)
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (toolMode === 'Pan') {
+      setIsDragging(true);
+      dragStartRef.current = {
+        clientX: e.clientX,
+        clientY: e.clientY,
+        accDeltaX: 0,
+        accDeltaY: 0,
+      };
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -167,6 +188,57 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     onPaint(studX, studY, bw, bh, colorToApply);
   };
 
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDragging || toolMode !== 'Pan' || !onPanBy) return;
+
+    const totalDeltaX = e.clientX - dragStartRef.current.clientX;
+    const totalDeltaY = e.clientY - dragStartRef.current.clientY;
+
+    const targetStudsX = Math.round(totalDeltaX / studSize);
+    const targetStudsY = Math.round(totalDeltaY / studSize);
+
+    const stepDeltaX = targetStudsX - dragStartRef.current.accDeltaX;
+    const stepDeltaY = targetStudsY - dragStartRef.current.accDeltaY;
+
+    if (stepDeltaX !== 0 || stepDeltaY !== 0) {
+      onPanBy(-stepDeltaX, -stepDeltaY);
+      dragStartRef.current.accDeltaX = targetStudsX;
+      dragStartRef.current.accDeltaY = targetStudsY;
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (isDragging) {
+      setIsDragging(false);
+      try {
+        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+      } catch (_) {
+        // Ignored
+      }
+    }
+  };
+
+  // Wheel zoom handling across all tool modes
+  const handleWheel = (e: React.WheelEvent<HTMLElement>) => {
+    if (!onZoom) return;
+    e.preventDefault();
+
+    if (e.deltaY < 0) {
+      // Zoom in (~25% reduction -> factor 0.8)
+      onZoom(0.8);
+    } else if (e.deltaY > 0) {
+      // Zoom out (~25% enlargement -> factor 1.25)
+      onZoom(1.25);
+    }
+  };
+
+  const getCursorStyle = () => {
+    if (toolMode === 'Pan') {
+      return isDragging ? 'grabbing' : 'grab';
+    }
+    return toolMode === 'Eraser' ? 'cell' : 'crosshair';
+  };
+
   return (
     <main
       ref={containerRef}
@@ -179,8 +251,15 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
         width={canvasWidth}
         height={canvasHeight}
         onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onMouseDown={handlePointerDown as any}
+        onMouseMove={handlePointerMove as any}
+        onMouseUp={handlePointerUp as any}
+        onWheel={handleWheel}
         style={{
-          cursor: toolMode === 'Eraser' ? 'cell' : 'crosshair',
+          cursor: getCursorStyle(),
         }}
         className="shadow-2xl border border-zinc-800"
       />

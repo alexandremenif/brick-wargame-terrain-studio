@@ -23,6 +23,7 @@ Feature: Right Inspector Sidebar & Minimap
     And the canvas viewport framing should remain at (4, 6, 10, 8)
 
   Scenario: Framing the entire asset via Fit to Asset action
+    Given the bounding box is currently at X 4, Y 6, Width 10, Height 8
     When I click the "Fit to Asset" button in the inspector
     Then the inspector inputs should reflect X 0, Y 0, Width 32, Height 32
     And the canvas viewport should frame the full asset (0, 0, 32, 32)

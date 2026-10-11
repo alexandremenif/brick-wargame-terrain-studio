@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/api';
 import { Minimap } from './Minimap.js';
+import { Button, NumberInput } from './design_system/index.js';
 
 export interface RightInspectorSidebarProps {
   assetWidth: number;
@@ -10,6 +11,9 @@ export interface RightInspectorSidebarProps {
   boundingBox: BoundingBox;
   onBoundingBoxChange: (bbox: BoundingBox) => void;
   onFitToAsset: () => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  onCenterAt?: (x: number, y: number) => void;
 }
 
 export const RightInspectorSidebar: React.FC<RightInspectorSidebarProps> = ({
@@ -20,54 +24,32 @@ export const RightInspectorSidebar: React.FC<RightInspectorSidebarProps> = ({
   boundingBox,
   onBoundingBoxChange,
   onFitToAsset,
+  onZoomIn,
+  onZoomOut,
+  onCenterAt,
 }) => {
-  const [inputX, setInputX] = useState(String(boundingBox.x));
-  const [inputY, setInputY] = useState(String(boundingBox.y));
-  const [inputW, setInputW] = useState(String(boundingBox.width));
-  const [inputH, setInputH] = useState(String(boundingBox.height));
+  const isFullAsset =
+    boundingBox.x === 0 &&
+    boundingBox.y === 0 &&
+    boundingBox.width === assetWidth &&
+    boundingBox.height === assetHeight;
 
-  useEffect(() => {
-    setInputX(String(boundingBox.x));
-    setInputY(String(boundingBox.y));
-    setInputW(String(boundingBox.width));
-    setInputH(String(boundingBox.height));
-  }, [boundingBox]);
+  const isMinSize = boundingBox.width === 1 && boundingBox.height === 1;
 
-  // Validation logic: Revert if invalid per spec
-  const handleXBlur = () => {
-    const val = parseInt(inputX, 10);
-    if (isNaN(val) || val < 0 || val + boundingBox.width > assetWidth) {
-      setInputX(String(boundingBox.x)); // Revert
-    } else {
-      onBoundingBoxChange({ ...boundingBox, x: val });
-    }
+  const handleXCommit = (newX: number) => {
+    onBoundingBoxChange({ ...boundingBox, x: newX });
   };
 
-  const handleYBlur = () => {
-    const val = parseInt(inputY, 10);
-    if (isNaN(val) || val < 0 || val + boundingBox.height > assetHeight) {
-      setInputY(String(boundingBox.y)); // Revert
-    } else {
-      onBoundingBoxChange({ ...boundingBox, y: val });
-    }
+  const handleYCommit = (newY: number) => {
+    onBoundingBoxChange({ ...boundingBox, y: newY });
   };
 
-  const handleWBlur = () => {
-    const val = parseInt(inputW, 10);
-    if (isNaN(val) || val < 1 || boundingBox.x + val > assetWidth) {
-      setInputW(String(boundingBox.width)); // Revert
-    } else {
-      onBoundingBoxChange({ ...boundingBox, width: val });
-    }
+  const handleWCommit = (newW: number) => {
+    onBoundingBoxChange({ ...boundingBox, width: newW });
   };
 
-  const handleHBlur = () => {
-    const val = parseInt(inputH, 10);
-    if (isNaN(val) || val < 1 || boundingBox.y + val > assetHeight) {
-      setInputH(String(boundingBox.height)); // Revert
-    } else {
-      onBoundingBoxChange({ ...boundingBox, height: val });
-    }
+  const handleHCommit = (newH: number) => {
+    onBoundingBoxChange({ ...boundingBox, height: newH });
   };
 
   return (
@@ -84,6 +66,7 @@ export const RightInspectorSidebar: React.FC<RightInspectorSidebarProps> = ({
             cells={cells}
             colorsById={colorsById}
             boundingBox={boundingBox}
+            onCenterAt={onCenterAt}
           />
         </div>
       </div>
@@ -99,58 +82,82 @@ export const RightInspectorSidebar: React.FC<RightInspectorSidebarProps> = ({
         <div className="grid grid-cols-2 gap-3 text-xs">
           <div>
             <label className="text-zinc-400">X Origin</label>
-            <input
-              type="number"
+            <NumberInput
               data-testid="inspector-bbox-x"
-              value={inputX}
-              onChange={(e) => setInputX(e.target.value)}
-              onBlur={handleXBlur}
-              className="mt-1 w-full rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-zinc-200 outline-none focus:border-zinc-700"
+              value={boundingBox.x}
+              min={0}
+              max={assetWidth - boundingBox.width}
+              onCommit={handleXCommit}
+              className="mt-1 w-full"
             />
           </div>
           <div>
             <label className="text-zinc-400">Y Origin</label>
-            <input
-              type="number"
+            <NumberInput
               data-testid="inspector-bbox-y"
-              value={inputY}
-              onChange={(e) => setInputY(e.target.value)}
-              onBlur={handleYBlur}
-              className="mt-1 w-full rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-zinc-200 outline-none focus:border-zinc-700"
+              value={boundingBox.y}
+              min={0}
+              max={assetHeight - boundingBox.height}
+              onCommit={handleYCommit}
+              className="mt-1 w-full"
             />
           </div>
           <div>
             <label className="text-zinc-400">Width</label>
-            <input
-              type="number"
+            <NumberInput
               data-testid="inspector-bbox-w"
-              value={inputW}
-              onChange={(e) => setInputW(e.target.value)}
-              onBlur={handleWBlur}
-              className="mt-1 w-full rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-zinc-200 outline-none focus:border-zinc-700"
+              value={boundingBox.width}
+              min={1}
+              max={assetWidth - boundingBox.x}
+              onCommit={handleWCommit}
+              className="mt-1 w-full"
             />
           </div>
           <div>
             <label className="text-zinc-400">Height</label>
-            <input
-              type="number"
+            <NumberInput
               data-testid="inspector-bbox-h"
-              value={inputH}
-              onChange={(e) => setInputH(e.target.value)}
-              onBlur={handleHBlur}
-              className="mt-1 w-full rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-zinc-200 outline-none focus:border-zinc-700"
+              value={boundingBox.height}
+              min={1}
+              max={assetHeight - boundingBox.y}
+              onCommit={handleHCommit}
+              className="mt-1 w-full"
             />
           </div>
         </div>
 
-        <button
-          type="button"
+        {/* Zoom In & Zoom Out Buttons */}
+        <div className="grid grid-cols-2 gap-2 mt-1">
+          <Button
+            data-testid="inspector-zoom-in-btn"
+            variant="secondary"
+            size="sm"
+            disabled={isMinSize}
+            onClick={onZoomIn}
+          >
+            Zoom In (+)
+          </Button>
+          <Button
+            data-testid="inspector-zoom-out-btn"
+            variant="secondary"
+            size="sm"
+            disabled={isFullAsset}
+            onClick={onZoomOut}
+          >
+            Zoom Out (-)
+          </Button>
+        </div>
+
+        <Button
           data-testid="inspector-fit-to-asset-btn"
+          variant="secondary"
+          size="sm"
+          disabled={isFullAsset}
           onClick={onFitToAsset}
-          className="mt-1 w-full rounded border border-zinc-700 bg-zinc-800 py-1.5 text-xs font-medium text-zinc-200 hover:bg-zinc-700 hover:text-white transition-colors"
+          className="mt-1 w-full"
         >
           Fit to Asset
-        </button>
+        </Button>
       </div>
     </aside>
   );

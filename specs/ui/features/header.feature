@@ -17,7 +17,7 @@ Feature: Top Header Bar Interactions & Asset Lifecycle
 
   Scenario: Enforcing strictly positive dimension inputs
     When I attempt to enter a width of 0
-    Then the width input should revert to 1
+    Then the width input should revert to 32
 
   Scenario: Opening the delete asset confirmation modal
     When I click the "Delete" button in the header

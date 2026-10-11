@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { AssetSummary } from '@lego-wargame-terrain-studio/api';
+import { Button, NumberInput, Select, Badge } from './design_system/index.js';
 
 export interface TopHeaderBarProps {
   assetName: string;
@@ -28,42 +29,6 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
   onDimensionsChange,
   onToggleGrid,
 }) => {
-  const [localWidth, setLocalWidth] = useState(String(width));
-  const [localHeight, setLocalHeight] = useState(String(height));
-
-  // Sync if prop changes externally
-  React.useEffect(() => {
-    setLocalWidth(String(width));
-  }, [width]);
-
-  React.useEffect(() => {
-    setLocalHeight(String(height));
-  }, [height]);
-
-  const handleWidthBlur = () => {
-    const val = parseInt(localWidth, 10);
-    if (isNaN(val) || val < 1) {
-      setLocalWidth('1');
-      onDimensionsChange(1, height);
-    } else {
-      const clamped = Math.min(1000, val);
-      setLocalWidth(String(clamped));
-      onDimensionsChange(clamped, height);
-    }
-  };
-
-  const handleHeightBlur = () => {
-    const val = parseInt(localHeight, 10);
-    if (isNaN(val) || val < 1) {
-      setLocalHeight('1');
-      onDimensionsChange(width, 1);
-    } else {
-      const clamped = Math.min(1000, val);
-      setLocalHeight(String(clamped));
-      onDimensionsChange(width, clamped);
-    }
-  };
-
   return (
     <header className="flex h-12 w-full items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 text-zinc-100 select-none">
       {/* Left: Branding, Selector, Actions */}
@@ -78,40 +43,39 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
         <div className="h-4 w-px bg-zinc-800" />
 
         <div className="flex items-center gap-2">
-          <select
+          <Select
             data-testid="asset-selector-dropdown"
             value={currentAssetId}
             onChange={(e) => onSelectAsset(e.target.value)}
-            className="rounded border border-zinc-800 bg-zinc-950 px-2.5 py-1 text-xs text-zinc-200 outline-none hover:border-zinc-700 focus:border-zinc-600"
           >
             {availableAssets.map((asset) => (
               <option key={asset.id} value={asset.id}>
                 {asset.name}
               </option>
             ))}
-          </select>
+          </Select>
 
-          <span data-testid="header-asset-name" className="text-xs text-zinc-400 font-medium px-2 py-0.5 rounded bg-zinc-800/50">
+          <Badge variant="subtle" data-testid="header-asset-name">
             {assetName}
-          </span>
+          </Badge>
 
-          <button
-            type="button"
+          <Button
             data-testid="header-new-asset-btn"
+            variant="secondary"
+            size="xs"
             onClick={onNewAsset}
-            className="rounded border border-zinc-800 bg-zinc-800/80 px-2 py-1 text-xs font-medium text-zinc-300 hover:bg-zinc-700 hover:text-white transition-colors"
           >
             + New
-          </button>
+          </Button>
 
-          <button
-            type="button"
+          <Button
             data-testid="header-delete-asset-btn"
+            variant="destructive"
+            size="xs"
             onClick={onDeleteClick}
-            className="rounded border border-red-900/50 bg-red-950/20 px-2 py-1 text-xs font-medium text-red-400 hover:bg-red-950/40 hover:text-red-300 transition-colors"
           >
             🗑 Delete
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -120,43 +84,40 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
         <div className="flex items-center gap-2 text-xs text-zinc-400">
           <label className="flex items-center gap-1.5">
             <span>W:</span>
-            <input
-              type="number"
+            <NumberInput
               data-testid="header-width-input"
-              value={localWidth}
-              onChange={(e) => setLocalWidth(e.target.value)}
-              onBlur={handleWidthBlur}
-              className="w-14 rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-xs text-zinc-200 text-right outline-none focus:border-zinc-700"
+              value={width}
+              min={1}
+              max={1000}
+              onCommit={(newW) => onDimensionsChange(newW, height)}
+              className="w-14 text-right"
             />
           </label>
           <span>×</span>
           <label className="flex items-center gap-1.5">
             <span>H:</span>
-            <input
-              type="number"
+            <NumberInput
               data-testid="header-height-input"
-              value={localHeight}
-              onChange={(e) => setLocalHeight(e.target.value)}
-              onBlur={handleHeightBlur}
-              className="w-14 rounded border border-zinc-800 bg-zinc-950 px-2 py-1 text-xs text-zinc-200 text-right outline-none focus:border-zinc-700"
+              value={height}
+              min={1}
+              max={1000}
+              onCommit={(newH) => onDimensionsChange(width, newH)}
+              className="w-14 text-right"
             />
           </label>
         </div>
 
         <div className="h-4 w-px bg-zinc-800" />
 
-        <button
-          type="button"
+        <Button
           data-testid="header-grid-toggle-btn"
+          variant="secondary"
+          size="xs"
+          isActive={showGrid}
           onClick={onToggleGrid}
-          className={`rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
-            showGrid
-              ? 'border-zinc-700 bg-zinc-800 text-zinc-100'
-              : 'border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200'
-          }`}
         >
           Grid: {showGrid ? 'On' : 'Off'}
-        </button>
+        </Button>
       </div>
     </header>
   );

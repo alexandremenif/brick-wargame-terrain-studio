@@ -121,3 +121,120 @@ Then('the list should contain {string} with ID {int} and hex {string}', function
   assert.strictEqual(found.id, id);
   assert.strictEqual(found.hex, hex);
 });
+
+// ============================================================================
+// Pure Bounding Box Mathematics & Clamping Steps
+// ============================================================================
+
+import {
+  clampBoundingBox,
+  panBoundingBox,
+  centerBoundingBoxAt,
+  zoomBoundingBox,
+  recoverBoundingBox,
+} from '@lego-wargame-terrain-studio/api';
+
+interface BBoxState {
+  currentBbox?: { x: number; y: number; width: number; height: number };
+  assetW?: number;
+  assetH?: number;
+  recoveryResult?: any;
+}
+
+const bboxState: BBoxState = {};
+
+When(
+  'I clamp a bounding box \\({int}, {int}, {int}, {int}\\) against asset dimensions {int} by {int}',
+  function (x: number, y: number, w: number, h: number, maxW: number, maxH: number) {
+    bboxState.currentBbox = clampBoundingBox({ x, y, width: w, height: h }, maxW, maxH);
+  }
+);
+
+Then(
+  'the clamped bounding box should be \\({int}, {int}, {int}, {int}\\)',
+  function (x: number, y: number, w: number, h: number) {
+    assert.deepStrictEqual(bboxState.currentBbox, { x, y, width: w, height: h });
+  }
+);
+
+Given(
+  'a bounding box at \\({int}, {int}, {int}, {int}\\) on a {int} by {int} asset',
+  function (x: number, y: number, w: number, h: number, maxW: number, maxH: number) {
+    bboxState.currentBbox = { x, y, width: w, height: h };
+    bboxState.assetW = maxW;
+    bboxState.assetH = maxH;
+  }
+);
+
+When(
+  'I pan the bounding box by delta X {int} and delta Y {int}',
+  function (deltaX: number, deltaY: number) {
+    assert.ok(bboxState.currentBbox && bboxState.assetW && bboxState.assetH);
+    bboxState.currentBbox = panBoundingBox(
+      bboxState.currentBbox,
+      deltaX,
+      deltaY,
+      bboxState.assetW,
+      bboxState.assetH
+    );
+  }
+);
+
+Then(
+  'the resulting bounding box should be \\({int}, {int}, {int}, {int}\\)',
+  function (x: number, y: number, w: number, h: number) {
+    assert.deepStrictEqual(bboxState.currentBbox, { x, y, width: w, height: h });
+  }
+);
+
+When(
+  'I center an {int} by {int} bounding box at stud \\({int}, {int}\\) on a {int} by {int} asset',
+  function (w: number, h: number, targetX: number, targetY: number, maxW: number, maxH: number) {
+    bboxState.currentBbox = centerBoundingBoxAt(targetX, targetY, w, h, maxW, maxH);
+  }
+);
+
+When('I zoom the bounding box by scale factor {float}', function (factor: number) {
+  assert.ok(bboxState.currentBbox && bboxState.assetW && bboxState.assetH);
+  bboxState.currentBbox = zoomBoundingBox(
+    bboxState.currentBbox,
+    factor,
+    bboxState.assetW,
+    bboxState.assetH
+  );
+});
+
+Then('the resulting bounding box width should be {int}', function (expectedWidth: number) {
+  assert.ok(bboxState.currentBbox);
+  assert.strictEqual(bboxState.currentBbox.width, expectedWidth);
+});
+
+Then('the resulting bounding box height should be {int}', function (expectedHeight: number) {
+  assert.ok(bboxState.currentBbox);
+  assert.strictEqual(bboxState.currentBbox.height, expectedHeight);
+});
+
+When(
+  'I recover raw bounding box X {int}, Y {int}, Width {int}, Height {int} against asset dimensions {int} by {int}',
+  function (x: number, y: number, w: number, h: number, maxW: number, maxH: number) {
+    bboxState.recoveryResult = recoverBoundingBox({ x, y, width: w, height: h }, maxW, maxH);
+  }
+);
+
+Then(
+  'the recovered bounding box should be \\({int}, {int}, {int}, {int}\\)',
+  function (x: number, y: number, w: number, h: number) {
+    assert.deepStrictEqual(bboxState.recoveryResult, { x, y, width: w, height: h });
+  }
+);
+
+When(
+  'I attempt to recover corrupt raw bounding box {string} against asset dimensions {int} by {int}',
+  function (raw: string, maxW: number, maxH: number) {
+    bboxState.recoveryResult = recoverBoundingBox(raw, maxW, maxH);
+  }
+);
+
+Then('the recovery result should be null', function () {
+  assert.strictEqual(bboxState.recoveryResult, null);
+});

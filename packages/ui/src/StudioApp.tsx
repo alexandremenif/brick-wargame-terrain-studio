@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import type {
   Asset,
   AssetSummary,
@@ -12,12 +12,19 @@ import { LeftToolboxSidebar, type ToolMode, type BrushSize } from './components/
 import { CanvasViewport } from './components/CanvasViewport.js';
 import { RightInspectorSidebar } from './components/RightInspectorSidebar.js';
 import { DeleteAssetModal } from './components/DeleteAssetModal.js';
+import { BoundingBoxStore } from './store/BoundingBoxStore.js';
+import type { ViewportStorageService } from './storage/ViewportStorageService.js';
+import { LocalStorageViewportStorage } from './storage/adapters.js';
 
 export interface StudioAppProps {
   apiClient?: TerrainApiClient;
+  storage?: ViewportStorageService;
 }
 
-export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
+export const StudioApp: React.FC<StudioAppProps> = ({ apiClient, storage }) => {
+  // Viewport storage service reference
+  const storageService = useMemo(() => storage || new LocalStorageViewportStorage(), [storage]);
+
   // Client instance fallback
   const client = useMemo(() => {
     if (apiClient) return apiClient;
@@ -52,13 +59,15 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
   const [showGrid, setShowGrid] = useState<boolean>(true);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
 
-  // Active Bounding Box state
-  const [boundingBox, setBoundingBox] = useState<BoundingBox>({
+  // Bounding box state synchronized with BoundingBoxStore
+  const [boundingBox, setBoundingBoxState] = useState<BoundingBox>({
     x: 0,
     y: 0,
     width: 32,
     height: 32,
   });
+
+  const bboxStoreRef = useRef<BoundingBoxStore | null>(null);
 
   const colorsById = useMemo(() => {
     const map = new Map<number, BrickColor>();
@@ -85,12 +94,16 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
           setAvailableAssets(assetsRes.assets);
           const first = await client.getAsset({ assetId: assetsRes.assets[0].id });
           setCurrentAsset(first.asset);
-          setBoundingBox({
-            x: 0,
-            y: 0,
-            width: first.asset.width,
-            height: first.asset.height,
-          });
+
+          const store = new BoundingBoxStore(
+            first.asset.id,
+            first.asset.width,
+            first.asset.height,
+            storageService
+          );
+          bboxStoreRef.current = store;
+          setBoundingBoxState(store.getState());
+          store.subscribe((next) => setBoundingBoxState(next));
         } else {
           // Bootstrap default asset if none exist
           const created = await client.createAsset({
@@ -108,26 +121,34 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
               paintedCellsCount: 0,
             },
           ]);
-          setBoundingBox({ x: 0, y: 0, width: 32, height: 32 });
+
+          const store = new BoundingBoxStore(
+            created.asset.id,
+            created.asset.width,
+            created.asset.height,
+            storageService
+          );
+          bboxStoreRef.current = store;
+          setBoundingBoxState(store.getState());
+          store.subscribe((next) => setBoundingBoxState(next));
         }
       } catch (err) {
         console.error('Initialization error:', err);
       }
     }
     init();
-  }, [client]);
+  }, [client, storageService]);
 
   // Select asset handler
   const handleSelectAsset = async (assetId: string) => {
     try {
       const res = await client.getAsset({ assetId });
       setCurrentAsset(res.asset);
-      setBoundingBox({
-        x: 0,
-        y: 0,
-        width: res.asset.width,
-        height: res.asset.height,
-      });
+
+      if (bboxStoreRef.current) {
+        bboxStoreRef.current.setAsset(res.asset.id, res.asset.width, res.asset.height);
+        setBoundingBoxState(bboxStoreRef.current.getState());
+      }
     } catch (err) {
       console.error('Select asset error:', err);
     }
@@ -140,7 +161,12 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
     try {
       const res = await client.createAsset({ name, width: 32, height: 32 });
       setCurrentAsset(res.asset);
-      setBoundingBox({ x: 0, y: 0, width: 32, height: 32 });
+
+      if (bboxStoreRef.current) {
+        bboxStoreRef.current.setAsset(res.asset.id, res.asset.width, res.asset.height);
+        setBoundingBoxState(bboxStoreRef.current.getState());
+      }
+
       const assetsList = await client.listAssets({});
       setAvailableAssets(assetsList.assets);
     } catch (err) {
@@ -159,13 +185,9 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
       });
       setCurrentAsset(res.asset);
 
-      // Clamp bounding box if needed
-      setBoundingBox((prev) => ({
-        x: Math.min(prev.x, Math.max(0, width - 1)),
-        y: Math.min(prev.y, Math.max(0, height - 1)),
-        width: Math.min(prev.width, width),
-        height: Math.min(prev.height, height),
-      }));
+      if (bboxStoreRef.current) {
+        bboxStoreRef.current.syncAssetDimensions(width, height);
+      }
 
       const assetsList = await client.listAssets({});
       setAvailableAssets(assetsList.assets);
@@ -177,8 +199,11 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
   // Delete confirm
   const handleConfirmDelete = async () => {
     if (!currentAsset) return;
+    const deletedId = currentAsset.id;
     try {
-      await client.deleteAsset({ assetId: currentAsset.id });
+      await client.deleteAsset({ assetId: deletedId });
+      bboxStoreRef.current?.removeAsset(deletedId);
+      storageService.removeBoundingBox(deletedId);
       setIsDeleteModalOpen(false);
 
       const assetsList = await client.listAssets({});
@@ -186,9 +211,13 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
         setAvailableAssets(assetsList.assets);
         const next = await client.getAsset({ assetId: assetsList.assets[0].id });
         setCurrentAsset(next.asset);
-        setBoundingBox({ x: 0, y: 0, width: next.asset.width, height: next.asset.height });
+
+        if (bboxStoreRef.current) {
+          bboxStoreRef.current.setAsset(next.asset.id, next.asset.width, next.asset.height);
+          setBoundingBoxState(bboxStoreRef.current.getState());
+        }
       } else {
-        // Bootstrap new default asset
+        // Bootstrap new default asset with unique ID
         const created = await client.createAsset({
           name: 'Modular Outpost',
           width: 32,
@@ -204,22 +233,36 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
             paintedCellsCount: 0,
           },
         ]);
-        setBoundingBox({ x: 0, y: 0, width: 32, height: 32 });
+
+        if (bboxStoreRef.current) {
+          bboxStoreRef.current.setAsset(created.asset.id, created.asset.width, created.asset.height);
+          setBoundingBoxState(bboxStoreRef.current.getState());
+        }
       }
     } catch (err) {
       console.error('Delete error:', err);
     }
   };
 
-  // Fit to Asset action
+  // Bounding box action wrappers delegating to BoundingBoxStore
+  const handleBoundingBoxChange = (partial: Partial<BoundingBox>) => {
+    bboxStoreRef.current?.setBoundingBox(partial);
+  };
+
+  const handlePanBy = (deltaX: number, deltaY: number) => {
+    bboxStoreRef.current?.panBy(deltaX, deltaY);
+  };
+
+  const handleCenterAt = (targetX: number, targetY: number) => {
+    bboxStoreRef.current?.centerAt(targetX, targetY);
+  };
+
+  const handleZoom = (factor: number) => {
+    bboxStoreRef.current?.zoom(factor);
+  };
+
   const handleFitToAsset = () => {
-    if (!currentAsset) return;
-    setBoundingBox({
-      x: 0,
-      y: 0,
-      width: currentAsset.width,
-      height: currentAsset.height,
-    });
+    bboxStoreRef.current?.fitToAsset();
   };
 
   // Paint handler (Optimistic UI + API dispatch)
@@ -326,6 +369,8 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
           brushSize={brushSize}
           selectedColorId={selectedColorId}
           onPaint={handlePaint}
+          onPanBy={handlePanBy}
+          onZoom={handleZoom}
         />
 
         {/* Right Inspector & Minimap */}
@@ -335,8 +380,11 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient }) => {
           cells={currentAsset.cells}
           colorsById={colorsById}
           boundingBox={boundingBox}
-          onBoundingBoxChange={setBoundingBox}
+          onBoundingBoxChange={handleBoundingBoxChange}
           onFitToAsset={handleFitToAsset}
+          onZoomIn={() => handleZoom(0.8)}
+          onZoomOut={() => handleZoom(1.25)}
+          onCenterAt={handleCenterAt}
         />
       </div>
 
