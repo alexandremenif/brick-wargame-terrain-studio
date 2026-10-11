@@ -64,8 +64,10 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 
 ---
 
-## 3. Server Infrastructure BDD Scenarios
+## 4. Server BDD Acceptance Scenarios
 
-Acceptance criteria for server infrastructure are located in `features/`:
-* [`features/persistence.feature`](./features/persistence.feature): Verifies restart recovery and transaction durability.
+Acceptance criteria for the server components and adapters are located in `features/`:
+* [`features/color_service.feature`](./features/color_service.feature): Verifies CSV parsing, 41 official colors loading, in-memory caching, and color ID validation.
+* [`features/sqlite_asset_repository.feature`](./features/sqlite_asset_repository.feature): Verifies SQLite CRUD operations on the `Asset` aggregate, atomic transactions, foreign-key cascades, restart durability, and downsizing cell trimming.
+* [`features/asset_service.feature`](./features/asset_service.feature): Verifies application command orchestration, color validation, lenient paint clipping, and error mapping.
 * [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature): Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`) and request execution over HTTP.
