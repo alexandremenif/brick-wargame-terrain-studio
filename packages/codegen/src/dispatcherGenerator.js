@@ -3,30 +3,20 @@
  *
  * @param {object} service - Service definition from protoParser
  * @param {object} [options]
- * @param {string} [options.importFrom='./services.js'] - Module path to import DTOs from
+ * @param {string} [options.importFrom='@lego-wargame-terrain-studio/api'] - Module path to import DTOs and service interface from
  * @returns {string} TypeScript code for the dispatcher
  */
 export function generateDispatcherForService(service, options = {}) {
-  const importFrom = options.importFrom || './services.js';
+  const importFrom = options.importFrom || '@lego-wargame-terrain-studio/api';
 
-  // Construct interface name: e.g. TerrainEngineService -> ITerrainEngineHandler
-  const baseName = service.name.endsWith('Service')
-    ? service.name.slice(0, -7)
-    : service.name;
-  const handlerInterfaceName = `I${baseName}Handler`;
-
-  const serviceDefinitionName = `${service.name}Definition`;
+  const serviceInterfaceName = service.name;
   const requestTypes = [...new Set(service.methods.map(m => m.requestType))];
-  const importMembers = [serviceDefinitionName, ...requestTypes];
-
-  const handlerMethods = service.methods
-    .map(m => `  ${m.camelCaseName}(command: ${m.requestType}): Promise<unknown>;`)
-    .join('\n');
+  const importMembers = [serviceInterfaceName, ...requestTypes];
 
   const switchCases = service.methods
     .map(
       m => `      case '${m.camelCaseName}':
-        return { jsonrpc: '2.0', id, result: await handler.${m.camelCaseName}(${m.requestType}.fromJSON(params || {})) };`
+        return { jsonrpc: '2.0', id, result: await service.${m.camelCaseName}(params as ${m.requestType}) };`
     )
     .join('\n');
 
@@ -36,13 +26,9 @@ export function generateDispatcherForService(service, options = {}) {
  * DO NOT EDIT MANUALLY.
  */
 
-import {
+import type {
   ${importMembers.join(',\n  ')}
 } from '${importFrom}';
-
-export interface ${handlerInterfaceName} {
-${handlerMethods}
-}
 
 export interface JsonRpcRequest {
   jsonrpc: '2.0';
@@ -66,7 +52,7 @@ export interface JsonRpcResponse {
  * JSON-RPC Router ensuring exhaustive dispatching of service methods
  */
 export async function dispatchJsonRpc(
-  handler: ${handlerInterfaceName},
+  service: ${serviceInterfaceName},
   request: JsonRpcRequest
 ): Promise<JsonRpcResponse> {
   const { id, method, params } = request;

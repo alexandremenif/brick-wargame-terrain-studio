@@ -1,6 +1,6 @@
-import type { EngineDriver } from '../../../core-engine/test/support/driver.js';
-import { TerrainMap } from '../../../core-engine/src/domain/TerrainMap.js';
-import { getLegoColorIdByName } from '../../../core-engine/src/domain/colors.js';
+import type { EngineDriver } from './driver.js';
+import { TerrainMap } from '../../src/domain/TerrainMap.js';
+import { getLegoColorIdByName } from '../../src/domain/colors.js';
 
 interface McpToolCallRequest {
   name: string;

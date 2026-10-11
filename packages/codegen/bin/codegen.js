@@ -12,8 +12,11 @@ const rootDir = path.resolve(__dirname, '../../..');
 const options = {
   rootDir,
   specsDir: path.join(rootDir, 'specs'),
-  targetDomainDir: path.join(rootDir, 'packages', 'core-engine', 'src', 'generated', 'domain'),
-  targetMigrationsDir: path.join(rootDir, 'packages', 'core-engine', 'src', 'generated', 'migrations'),
+  targetApiDir: path.join(rootDir, 'packages', 'api', 'src', 'generated'),
+  targetClientDir: path.join(rootDir, 'packages', 'client', 'src', 'core', 'generated'),
+  targetServerDir: path.join(rootDir, 'packages', 'server', 'src', 'generated'),
+  targetServerPersistenceDir: path.join(rootDir, 'packages', 'server', 'src', 'persistence', 'generated'),
+  targetMigrationsDir: path.join(rootDir, 'packages', 'server', 'src', 'persistence', 'migrations'),
   metadataTable: 'project_metadata',
   schemaVersion: '1'
 };

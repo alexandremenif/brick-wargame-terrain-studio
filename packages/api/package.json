@@ -1,0 +1,16 @@
+{
+  "name": "@lego-wargame-terrain-studio/api",
+  "version": "1.0.0",
+  "description": "Pure shared TypeScript contracts, DTOs, and TerrainEngineService interface",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  }
+}

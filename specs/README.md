@@ -46,10 +46,10 @@ The goal of this project is to build a modular game mat design and terrain gener
 The detailed specifications are organized into numbered modular section directories, each containing an `index.md` entry point:
 
 1. [**01. Domain Model & Core Logic**](./01_domain/index.md)
-   * Core aggregates (`TerrainMap`, `CellMatrix`, `PresetInstance`, `ActionHistory`), spatial validation, color palette, and formal Protobuf contracts (`domain.proto`, `services.proto`).
+   * Core aggregates (`TerrainMap`, `CellMatrix`, `PresetInstance`, `ActionHistory`), spatial validation, color palette, and formal Protobuf contracts (`domain.proto`, `api.proto`, `persistence.proto`).
 
 2. [**02. System Architecture & Monorepo Layout**](./02_system_architecture/index.md)
-   * Monorepo topology (`core-engine`, `server`, `web-studio`), process boundaries, communication flows, and local SQLite data isolation.
+   * Monorepo topology (`api`, `server`, `client`), process boundaries, communication flows, and local SQLite data isolation.
 
 3. [**03. Persistence Layer**](./03_persistence/index.md)
    * Generic `PersistenceStore` port abstraction.
@@ -66,7 +66,7 @@ The detailed specifications are organized into numbered modular section director
 
 ## 3. Code Generation Pipeline
 
-Declarative contracts and schemas contained anywhere within `specs/` (`*.proto` and `*.dbml`) automatically compile into machine-generated types and migrations under `packages/core-engine/src/generated/` via:
+Declarative contracts and schemas contained anywhere within `specs/` (`*.proto` and `*.dbml`) automatically compile into machine-generated types and migrations under `packages/api/src/generated/` and `packages/server/src/` via:
 
 ```bash
 npm run codegen

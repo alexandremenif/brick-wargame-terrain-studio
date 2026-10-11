@@ -6,7 +6,7 @@ This document specifies the JSON-RPC 2.0 communication facade and the AI tools e
 
 ## 1. Protobuf-Enforced JSON-RPC Contract
 
-All JSON-RPC method signatures map directly to `TerrainEngineService` declared in [`specs/01_domain/services.proto`](../01_domain/services.proto).
+All JSON-RPC method signatures map directly to `TerrainEngineService` declared in [`specs/01_domain/api.proto`](../01_domain/api.proto).
 
 ### Completeness Constraint:
 The generated TypeScript interface requires every method to be implemented:

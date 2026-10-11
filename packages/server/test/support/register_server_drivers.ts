@@ -1,4 +1,4 @@
-import { StudioWorld } from '../../../core-engine/test/support/world.js';
+import { StudioWorld } from './world.js';
 import { JsonRpcDriver } from './jsonrpc_driver.js';
 import { McpDriver } from './mcp_driver.js';
 

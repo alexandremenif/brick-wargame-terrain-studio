@@ -22,19 +22,19 @@ describe('dispatcherGenerator', () => {
     ]
   };
 
-  test('generates typed handler interface with correct method signatures', () => {
+  test('generates typed dispatcher taking service interface', () => {
     const code = generateDispatcherForService(genericService, { importFrom: './orders.js' });
 
-    assert.ok(code.includes('export interface IOrderProcessingHandler {'));
-    assert.ok(code.includes('submitOrder(command: SubmitOrderCommand): Promise<unknown>;'));
-    assert.ok(code.includes('cancelOrder(command: CancelOrderCommand): Promise<unknown>;'));
+    assert.ok(code.includes("from './orders.js';"));
+    assert.ok(code.includes('service: OrderProcessingService,'));
+    assert.ok(code.includes('export async function dispatchJsonRpc('));
   });
 
-  test('imports service definition and command DTOs from specified module', () => {
-    const code = generateDispatcherForService(genericService, { importFrom: './custom_module.js' });
+  test('imports service interface and command DTOs from specified module', () => {
+    const code = generateDispatcherForService(genericService, { importFrom: '@lego-wargame-terrain-studio/api' });
 
-    assert.ok(code.includes("from './custom_module.js';"));
-    assert.ok(code.includes('OrderProcessingServiceDefinition'));
+    assert.ok(code.includes("from '@lego-wargame-terrain-studio/api';"));
+    assert.ok(code.includes('OrderProcessingService'));
     assert.ok(code.includes('SubmitOrderCommand'));
     assert.ok(code.includes('CancelOrderCommand'));
   });
@@ -42,11 +42,11 @@ describe('dispatcherGenerator', () => {
   test('generates dispatchJsonRpc with exhaustive switch cases and error codes', () => {
     const code = generateDispatcherForService(genericService);
 
-    // Verifies switch cases and fromJSON conversion
+    // Verifies switch cases and direct service invocation
     assert.ok(code.includes("case 'submitOrder':"));
-    assert.ok(code.includes('await handler.submitOrder(SubmitOrderCommand.fromJSON(params || {}))'));
+    assert.ok(code.includes('await service.submitOrder(params as SubmitOrderCommand)'));
     assert.ok(code.includes("case 'cancelOrder':"));
-    assert.ok(code.includes('await handler.cancelOrder(CancelOrderCommand.fromJSON(params || {}))'));
+    assert.ok(code.includes('await service.cancelOrder(params as CancelOrderCommand)'));
 
     // Verifies standard JSON-RPC 2.0 error handling
     assert.ok(code.includes('error: { code: -32601, message: `Unknown method: ${method}` }'));

@@ -82,5 +82,5 @@ The domain contains no SQL queries. To load or persist state, it communicates th
                                  [ SQLiteStore (Physical Adapter) ]
 ```
 
-The formal contract for this service is defined in [`services.proto`](./services.proto) (along with domain models in [`domain.proto`](./domain.proto)).
+The formal contract for this service is defined in [`persistence.proto`](./persistence.proto) (along with domain models in [`domain.proto`](./domain.proto) and public API in [`api.proto`](./api.proto)).
 The domain treats this interface as a black box ensuring atomic transactions and durability.

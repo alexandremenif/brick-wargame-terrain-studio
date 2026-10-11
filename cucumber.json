@@ -2,8 +2,8 @@
   "default": {
     "paths": ["specs/01_domain/features/**/*.feature"],
     "import": [
-      "packages/core-engine/test/steps/**/*.ts",
-      "packages/core-engine/test/support/**/*.ts"
+      "packages/server/test/steps/**/*.ts",
+      "packages/server/test/support/**/*.ts"
     ],
     "format": ["summary", "progress-bar"],
     "worldParameters": { "driver": "memory" }
@@ -11,8 +11,8 @@
   "domain": {
     "paths": ["specs/01_domain/features/**/*.feature"],
     "import": [
-      "packages/core-engine/test/steps/**/*.ts",
-      "packages/core-engine/test/support/**/*.ts"
+      "packages/server/test/steps/**/*.ts",
+      "packages/server/test/support/**/*.ts"
     ],
     "format": ["summary", "progress-bar"],
     "worldParameters": { "driver": "memory" }
@@ -20,7 +20,7 @@
   "jsonrpc": {
     "paths": ["specs/01_domain/features/**/*.feature"],
     "import": [
-      "packages/core-engine/test/steps/**/*.ts",
+      "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts",
       "packages/server/test/hooks/**/*.ts"
     ],
@@ -30,7 +30,7 @@
   "mcp": {
     "paths": ["specs/01_domain/features/**/*.feature"],
     "import": [
-      "packages/core-engine/test/steps/**/*.ts",
+      "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts",
       "packages/server/test/hooks/**/*.ts"
     ],
@@ -40,9 +40,9 @@
   "ui": {
     "paths": ["specs/05_ui_specification/features/**/*.feature"],
     "import": [
-      "packages/web-studio/test/steps/**/*.ts",
-      "packages/web-studio/test/support/**/*.ts",
-      "packages/web-studio/test/hooks/**/*.ts"
+      "packages/client/test/steps/**/*.ts",
+      "packages/client/test/support/**/*.ts",
+      "packages/client/test/hooks/**/*.ts"
     ],
     "format": ["summary", "progress-bar"],
     "tags": "@ui"

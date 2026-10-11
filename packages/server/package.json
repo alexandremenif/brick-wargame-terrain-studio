@@ -1,18 +1,24 @@
 {
   "name": "@lego-wargame-terrain-studio/server",
   "version": "1.0.0",
-  "description": "Unified server: MCP for AI agents (Antigravity/Claude) and HTTP/WebSocket for Web Studio",
+  "description": "Unified backend: domain engine, SQLite WAL persistence, MCP stdio server and WebSocket bridge",
+  "type": "module",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "node --test 'test/**/*.test.js'",
+    "test:bdd": "NODE_OPTIONS='--import tsx' cucumber-js -p domain"
   },
   "dependencies": {
-    "@lego-wargame-terrain-studio/core-engine": "*",
+    "@lego-wargame-terrain-studio/api": "*",
     "@modelcontextprotocol/sdk": "^1.6.1",
+    "better-sqlite3": "^11.8.1",
     "ws": "^8.18.1"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.13.10",
     "@types/ws": "^8.5.14",
     "typescript": "^5.8.2"

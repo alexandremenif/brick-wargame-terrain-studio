@@ -1,14 +1,15 @@
-import type { EngineDriver } from '../../../core-engine/test/support/driver.js';
-import { TerrainMap } from '../../../core-engine/src/domain/TerrainMap.js';
-import { getLegoColorIdByName } from '../../../core-engine/src/domain/colors.js';
-import { dispatchJsonRpc, type ITerrainEngineHandler } from '../../../core-engine/src/generated/domain/jsonRpcDispatcher.js';
+import type { EngineDriver } from './driver.js';
+import { TerrainMap } from '../../src/domain/TerrainMap.js';
+import { getLegoColorIdByName } from '../../src/domain/colors.js';
+import { dispatchJsonRpc } from '../../src/generated/dispatcher.js';
+import type { TerrainEngineService } from '@lego-wargame-terrain-studio/api';
 
 export class JsonRpcDriver implements EngineDriver {
   private map: TerrainMap | null = null;
-  private handler!: ITerrainEngineHandler;
+  private service!: TerrainEngineService;
 
   async start(): Promise<void> {
-    this.handler = {
+    this.service = {
       paintArea: async (command) => {
         if (!this.map) throw new Error('No active map');
         this.map.paintArea(
@@ -20,14 +21,14 @@ export class JsonRpcDriver implements EngineDriver {
           },
           command.colorId ?? 1
         );
-        return { success: true };
+        return { affectedCellsCount: (command.bbox?.width ?? 0) * (command.bbox?.height ?? 0), sequenceId: 1 };
       },
-      placePreset: async () => ({ success: true }),
-      movePreset: async () => ({ success: true }),
-      deletePreset: async () => ({ success: true }),
-      undo: async () => ({ success: true }),
-      redo: async () => ({ success: true }),
-      renderBBoxImage: async () => ({ imageBase64: '' })
+      placePreset: async () => ({ instanceId: 'inst-1', sequenceId: 1 }),
+      movePreset: async () => ({ success: true, sequenceId: 1 }),
+      deletePreset: async () => ({ success: true, sequenceId: 1 }),
+      undo: async () => ({ undoneActionType: 'paintArea', remainingUndo: false }),
+      redo: async () => ({ redoneActionType: 'paintArea', remainingRedo: false }),
+      renderBBoxImage: async () => ({ mimeType: 'image/png', width: 100, height: 100, base64Data: '' })
     };
   }
 
@@ -58,11 +59,12 @@ export class JsonRpcDriver implements EngineDriver {
 
   async paintBoundingBox(x: number, y: number, w: number, h: number, colorName: string): Promise<void> {
     const colorId = getLegoColorIdByName(colorName);
-    const response = await dispatchJsonRpc(this.handler, {
+    const response = await dispatchJsonRpc(this.service, {
       jsonrpc: '2.0',
       id: 1,
       method: 'paintArea',
       params: {
+        tilemapId: 'main',
         bbox: { x, y, width: w, height: h },
         colorId
       }

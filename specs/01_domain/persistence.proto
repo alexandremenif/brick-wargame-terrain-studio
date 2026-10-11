@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package lego.wargame.terrain.studio;
+
+import "domain.proto";
+
+// ============================================================================
+// Internal Domain Persistence Port: PersistenceStore
+// ============================================================================
+
+message GetMetadataRequest {
+  string key = 1;
+}
+
+message GetMetadataResponse {
+  optional string value = 1;
+}
+
+message SetMetadataRequest {
+  string key = 1;
+  string value = 2;
+}
+
+message SetMetadataResponse {
+  bool success = 1;
+}
+
+message QueryCellsRequest {
+  string tilemap_id = 1;
+  BoundingBox bbox = 2;
+}
+
+message QueryCellsResponse {
+  repeated CellData cells = 1;
+}
+
+message QueryInstancesRequest {
+  string tilemap_id = 1;
+  BoundingBox bbox = 2;
+}
+
+message QueryInstancesResponse {
+  repeated PresetInstance instances = 1;
+}
+
+message AppendLogRequest {
+  ActionLogEntry entry = 1;
+}
+
+message AppendLogResponse {
+  int64 sequence_id = 1;
+}
+
+service PersistenceStore {
+  rpc GetMetadata (GetMetadataRequest) returns (GetMetadataResponse);
+  rpc SetMetadata (SetMetadataRequest) returns (SetMetadataResponse);
+  rpc QueryCellsInBBox (QueryCellsRequest) returns (QueryCellsResponse);
+  rpc QueryInstancesInBBox (QueryInstancesRequest) returns (QueryInstancesResponse);
+  rpc AppendActionLog (AppendLogRequest) returns (AppendLogResponse);
+}
