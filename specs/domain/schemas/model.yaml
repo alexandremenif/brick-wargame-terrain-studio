@@ -23,12 +23,9 @@ definitions:
     type: object
     description: 2D rectangular region measured in studs
     properties:
-      x:
-        type: integer
-        description: Top-left X coordinate in studs
-      y:
-        type: integer
-        description: Top-left Y coordinate in studs
+      origin:
+        $ref: "#/definitions/Vector"
+        description: Top-left origin coordinate in studs
       width:
         type: integer
         minimum: 1
@@ -38,8 +35,7 @@ definitions:
         minimum: 1
         description: Height in studs
     required:
-      - x
-      - y
+      - origin
       - width
       - height
     additionalProperties: false
@@ -70,18 +66,14 @@ definitions:
     type: object
     description: Individual stud coordinate with applied LEGO color ID
     properties:
-      x:
-        type: integer
-        description: Stud X coordinate (0 <= x < width)
-      y:
-        type: integer
-        description: Stud Y coordinate (0 <= y < height)
+      position:
+        $ref: "#/definitions/Vector"
+        description: Stud position in grid coordinates
       colorId:
         type: integer
         description: Applied LEGO color ID
     required:
-      - x
-      - y
+      - position
       - colorId
     additionalProperties: false
 
