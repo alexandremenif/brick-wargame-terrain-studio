@@ -1,0 +1,20 @@
+{
+  "name": "@lego-wargame-terrain-studio/dbml-generator",
+  "version": "1.0.0",
+  "description": "DBML to SQLite DDL migration generator",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "dbml-generator": "bin/dbml-generator.js"
+  },
+  "scripts": {
+    "build": "exit 0",
+    "test": "node --test 'test/**/*.test.js'"
+  },
+  "dependencies": {
+    "@dbml/core": "^3.12.0"
+  },
+  "devDependencies": {
+    "better-sqlite3": "^11.8.1"
+  }
+}

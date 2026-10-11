@@ -1,8 +1,7 @@
 import type { EngineDriver } from './driver.js';
 import { TerrainMap } from '../../src/domain/TerrainMap.js';
 import { getLegoColorIdByName } from '../../src/domain/colors.js';
-import { dispatchJsonRpc } from '../../src/generated/dispatcher.js';
-import type { TerrainEngineService } from '@lego-wargame-terrain-studio/api';
+import { dispatchJsonRpc, type TerrainEngineService } from '../../src/router.js';
 
 export class JsonRpcDriver implements EngineDriver {
   private map: TerrainMap | null = null;
@@ -10,6 +9,10 @@ export class JsonRpcDriver implements EngineDriver {
 
   async start(): Promise<void> {
     this.service = {
+      createMap: async (command) => {
+        this.map = new TerrainMap({ width: command.width, height: command.height });
+        return { mapId: command.mapId || 'main', width: this.map.width, height: this.map.height };
+      },
       paintArea: async (command) => {
         if (!this.map) throw new Error('No active map');
         this.map.paintArea(
@@ -21,14 +24,18 @@ export class JsonRpcDriver implements EngineDriver {
           },
           command.colorId ?? 1
         );
-        return { affectedCellsCount: (command.bbox?.width ?? 0) * (command.bbox?.height ?? 0), sequenceId: 1 };
+        return { affectedCellsCount: (command.bbox?.width ?? 0) * (command.bbox?.height ?? 0) };
       },
-      placePreset: async () => ({ instanceId: 'inst-1', sequenceId: 1 }),
-      movePreset: async () => ({ success: true, sequenceId: 1 }),
-      deletePreset: async () => ({ success: true, sequenceId: 1 }),
-      undo: async () => ({ undoneActionType: 'paintArea', remainingUndo: false }),
-      redo: async () => ({ redoneActionType: 'paintArea', remainingRedo: false }),
-      renderBBoxImage: async () => ({ mimeType: 'image/png', width: 100, height: 100, base64Data: '' })
+      paintCell: async (command) => {
+        if (!this.map) throw new Error('No active map');
+        this.map.paintCell(command.x, command.y, command.colorId);
+        return { success: true };
+      },
+      undo: async () => {
+        if (!this.map) throw new Error('No active map');
+        const undone = this.map.undo();
+        return { undone, remainingUndoCount: this.map.getUndoHistoryCount() };
+      }
     };
   }
 
@@ -37,7 +44,23 @@ export class JsonRpcDriver implements EngineDriver {
   }
 
   async createMap(width: number, height: number): Promise<void> {
-    this.map = new TerrainMap({ width, height });
+    if (!this.service) {
+      await this.start();
+    }
+    const response = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'createMap',
+      params: [{
+        mapId: 'main',
+        width,
+        height
+      }]
+    });
+
+    if (response.error) {
+      throw new Error(`JSON-RPC Error: ${response.error.message}`);
+    }
   }
 
   private ensureMap(): TerrainMap {
@@ -63,11 +86,11 @@ export class JsonRpcDriver implements EngineDriver {
       jsonrpc: '2.0',
       id: 1,
       method: 'paintArea',
-      params: {
-        tilemapId: 'main',
+      params: [{
+        mapId: 'main',
         bbox: { x, y, width: w, height: h },
         colorId
-      }
+      }]
     });
 
     if (response.error) {
@@ -76,8 +99,21 @@ export class JsonRpcDriver implements EngineDriver {
   }
 
   async paintCell(x: number, y: number, colorId: number): Promise<void> {
-    const map = this.ensureMap();
-    map.paintCell(x, y, colorId);
+    const response = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'paintCell',
+      params: [{
+        mapId: 'main',
+        x,
+        y,
+        colorId
+      }]
+    });
+
+    if (response.error) {
+      throw new Error(`JSON-RPC Error: ${response.error.message}`);
+    }
   }
 
   async verifyBBoxColor(x: number, y: number, w: number, h: number, colorName: string): Promise<boolean> {
@@ -96,5 +132,20 @@ export class JsonRpcDriver implements EngineDriver {
   async getUndoHistoryCount(): Promise<number> {
     const map = this.ensureMap();
     return map.getUndoHistoryCount();
+  }
+
+  async undo(): Promise<void> {
+    const response = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'undo',
+      params: [{
+        mapId: 'main'
+      }]
+    });
+
+    if (response.error) {
+      throw new Error(`JSON-RPC Error: ${response.error.message}`);
+    }
   }
 }

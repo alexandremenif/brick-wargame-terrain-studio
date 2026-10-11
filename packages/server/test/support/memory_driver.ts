@@ -62,4 +62,9 @@ export class InMemoryDriver implements EngineDriver {
     const map = this.ensureMap();
     return map.getUndoHistoryCount();
   }
+
+  async undo(): Promise<void> {
+    const map = this.ensureMap();
+    map.undo();
+  }
 }

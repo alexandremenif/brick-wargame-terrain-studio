@@ -1,0 +1,136 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: DomainCommands
+description: Pure protocol-agnostic domain command and response schemas
+definitions:
+  CreateMapCommand:
+    title: CreateMapCommand
+    type: object
+    description: Command to initialize a new terrain map asset of arbitrary dimensions
+    properties:
+      mapId:
+        type: string
+        description: Unique map identifier (generated if omitted)
+      width:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        description: Width in studs
+      height:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        description: Height in studs
+    required:
+      - width
+      - height
+    additionalProperties: false
+
+  CreateMapResponse:
+    title: CreateMapResponse
+    type: object
+    description: Result of creating a map asset
+    properties:
+      mapId:
+        type: string
+      width:
+        type: integer
+      height:
+        type: integer
+    required:
+      - mapId
+      - width
+      - height
+    additionalProperties: false
+
+  PaintAreaCommand:
+    title: PaintAreaCommand
+    type: object
+    description: Command to paint a rectangular bounding box with a LEGO color
+    properties:
+      mapId:
+        type: string
+        description: Target map identifier
+      bbox:
+        $ref: "model.yaml#/definitions/BoundingBox"
+      colorId:
+        type: integer
+        description: LEGO color ID to apply
+    required:
+      - mapId
+      - bbox
+      - colorId
+    additionalProperties: false
+
+  PaintAreaResponse:
+    title: PaintAreaResponse
+    type: object
+    description: Result of painting a bounding box area
+    properties:
+      affectedCellsCount:
+        type: integer
+        minimum: 0
+    required:
+      - affectedCellsCount
+    additionalProperties: false
+
+  PaintCellCommand:
+    title: PaintCellCommand
+    type: object
+    description: Command to paint a single stud cell
+    properties:
+      mapId:
+        type: string
+        description: Target map identifier
+      x:
+        type: integer
+        description: Stud X coordinate
+      y:
+        type: integer
+        description: Stud Y coordinate
+      colorId:
+        type: integer
+        description: LEGO color ID to apply
+    required:
+      - mapId
+      - x
+      - y
+      - colorId
+    additionalProperties: false
+
+  PaintCellResponse:
+    title: PaintCellResponse
+    type: object
+    description: Result of painting a single cell
+    properties:
+      success:
+        type: boolean
+    required:
+      - success
+    additionalProperties: false
+
+  UndoCommand:
+    title: UndoCommand
+    type: object
+    description: Command to revert the most recent operation on a map
+    properties:
+      mapId:
+        type: string
+        description: Target map identifier
+    required:
+      - mapId
+    additionalProperties: false
+
+  UndoResponse:
+    title: UndoResponse
+    type: object
+    description: Result of undo operation
+    properties:
+      undone:
+        type: boolean
+      remainingUndoCount:
+        type: integer
+        minimum: 0
+    required:
+      - undone
+      - remainingUndoCount
+    additionalProperties: false

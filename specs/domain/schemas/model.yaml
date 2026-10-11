@@ -1,0 +1,96 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+title: DomainModel
+description: Pure protocol-agnostic domain entities for LEGO Wargame Terrain Studio
+definitions:
+  BoundingBox:
+    title: BoundingBox
+    type: object
+    description: 2D rectangular region measured in studs
+    properties:
+      x:
+        type: integer
+        description: Top-left X coordinate in studs
+      y:
+        type: integer
+        description: Top-left Y coordinate in studs
+      width:
+        type: integer
+        minimum: 1
+        description: Width in studs
+      height:
+        type: integer
+        minimum: 1
+        description: Height in studs
+    required:
+      - x
+      - y
+      - width
+      - height
+    additionalProperties: false
+
+  LegoColor:
+    title: LegoColor
+    type: object
+    description: Official LEGO / BrickLink color definition
+    properties:
+      id:
+        type: integer
+        description: Color numeric ID
+      name:
+        type: string
+        description: Standard color name (e.g. Bright Green)
+      hex:
+        type: string
+        pattern: "^#[0-9A-Fa-f]{6}$"
+        description: Hexadecimal color string #RRGGBB
+    required:
+      - id
+      - name
+      - hex
+    additionalProperties: false
+
+  CellData:
+    title: CellData
+    type: object
+    description: Individual stud coordinate with optional applied color
+    properties:
+      x:
+        type: integer
+        description: Stud X coordinate (0 <= x < width)
+      y:
+        type: integer
+        description: Stud Y coordinate (0 <= y < height)
+      colorId:
+        type: integer
+        description: Applied LEGO color ID (null / omitted if unpainted)
+    required:
+      - x
+      - y
+    additionalProperties: false
+
+  TerrainMapSummary:
+    title: TerrainMapSummary
+    type: object
+    description: Summary metadata of a terrain map or asset
+    properties:
+      id:
+        type: string
+        description: Unique asset identifier
+      width:
+        type: integer
+        minimum: 1
+        description: Grid width in studs
+      height:
+        type: integer
+        minimum: 1
+        description: Grid height in studs
+      paintedCellsCount:
+        type: integer
+        minimum: 0
+        description: Total count of painted cells
+    required:
+      - id
+      - width
+      - height
+      - paintedCellsCount
+    additionalProperties: false

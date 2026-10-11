@@ -8,7 +8,9 @@ build/
 *.tsbuildinfo
 
 # Generated code from specifications (specs/ -> codegen)
-packages/core-engine/src/generated/
+specs/server/openrpc.json
+**/src/generated/
+packages/*/src/generated/
 
 # Frontend bundler cache
 .vite/

@@ -17,16 +17,17 @@ This skill teaches the mandatory 3-step cycle every agent must follow when imple
 Before writing any application code:
 
 1. **Verify `specs/`**:
-   * Inspect the relevant files in `specs/` to verify if the requested feature is already completely and unambiguously described.
+   * Inspect the relevant files in `specs/` (`domain/`, `server/`, `ui/`, `architecture/`) to verify if the requested feature is already completely and unambiguously described.
 2. **If the spec is missing, incomplete, or contradictory**:
    * **STOP**: Do NOT modify the spec and do NOT write implementation code.
    * Draft a clear proposal for the user outlining the suggested modifications or additions to `specs/`.
    * Wait for the user's explicit approval.
 3. **Update the Approved Spec**:
    * Once approved by the user, update the declarative files in `specs/`:
-     * Contract definitions (e.g. `domain.proto`, `services.proto` in the domain specification).
-     * Relational schemas (e.g. `schema.dbml` in the persistence specification).
-     * **BDD Scenarios (Gherkin)**: Add canonical feature files in `specs/01_domain/features/*.feature` (for domain invariants) or `specs/05_ui_specification/features/*.feature` (for UI workflows).
+     * Domain schema definitions (`schemas/model.yaml`, `schemas/commands.yaml` in `specs/domain/`).
+     * Wire API specifications (`openrpc.yaml` in `specs/server/`).
+     * Relational schemas (`schema.dbml` in `specs/server/`).
+     * **BDD Scenarios (Gherkin)**: Add canonical feature files in `specs/domain/features/*.feature` (for domain invariants), `specs/server/features/*.feature` (for protocol/persistence), or `specs/ui/features/*.feature` (for UI workflows).
      * Corresponding Markdown documentation referencing these features.
 
 ---
@@ -40,10 +41,10 @@ Before writing any application code:
      ```
    * *Golden Rule*: Contract and DTO code in `src/generated/*` is generated strictly by this command, never by you manually.
 2. **Write Failing Tests & Steps (RED)**:
-   * Write or update domain step definitions in `packages/core-engine/test/steps/domain_steps.ts` delegating to `this.driver` (`EngineDriver`).
+   * Write or update domain step definitions in `packages/server/test/steps/domain_steps.ts` delegating to `this.driver` (`EngineDriver`).
    * **Multi-Adapter Completeness**: Ensure the operation is represented across all 3 transport drivers:
-     * `InMemoryDriver` in `packages/core-engine/test/support/memory_driver.ts` (direct aggregate).
-     * `JsonRpcDriver` in `packages/server/test/support/jsonrpc_driver.ts` (JSON-RPC 2.0 facade).
+     * `InMemoryDriver` in `packages/server/test/support/memory_driver.ts` (direct aggregate).
+     * `JsonRpcDriver` in `packages/server/test/support/jsonrpc_driver.ts` (JSON-RPC 2.0 facade with OpenRPC dispatch).
      * `McpDriver` in `packages/server/test/support/mcp_driver.ts` (MCP AI tool invocation).
    * Verify that tests fail as expected (RED) by running:
      ```bash

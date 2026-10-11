@@ -92,6 +92,15 @@ export class McpDriver implements EngineDriver {
         }
       }
 
+      case 'undo': {
+        try {
+          map.undo();
+          return { isError: false, content: [{ type: 'text', text: 'Undo operation completed' }] };
+        } catch (err) {
+          return { isError: true, content: [{ type: 'text', text: (err as Error).message }] };
+        }
+      }
+
       default:
         return {
           isError: true,
@@ -148,5 +157,16 @@ export class McpDriver implements EngineDriver {
   async getUndoHistoryCount(): Promise<number> {
     const map = this.ensureMap();
     return map.getUndoHistoryCount();
+  }
+
+  async undo(): Promise<void> {
+    const response = await this.executeMcpTool({
+      name: 'undo',
+      arguments: {}
+    });
+
+    if (response.isError) {
+      throw new Error(`MCP Tool Error: ${response.content[0]?.text ?? 'Unknown error'}`);
+    }
   }
 }

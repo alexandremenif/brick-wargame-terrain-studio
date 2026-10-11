@@ -16,21 +16,24 @@ This skill provides reference guides and procedures for authoring and maintainin
 
 * **Root Document**:
   `specs/README.md` is the root navigation entry point, project context, and table of contents.
-* **Systematic Directory Organization**:
-  Every section under `specs/` (e.g. `01_domain/`, `02_system_architecture/`, etc.) is a dedicated directory with an `index.md` file.
+* **Systematic Layer Organization**:
+  The specification is strictly organized into 4 unnumbered layers matching system boundaries:
+  * `specs/domain/`: Pure domain models, commands, rules, and invariants.
+  * `specs/server/`: OpenRPC wire API, DBML storage schema, and MCP AI tooling.
+  * `specs/ui/`: Interactive Canvas Studio, visual components, and UI interactions.
+  * `specs/architecture/`: System topology, package breakdown, and data flows.
 * **Modular Specifications**:
-  No single Markdown specification should become a monolithic document. Subsystems and components are documented in dedicated sibling Markdown files within the section folder (e.g. `sql_store.md`, `memory_store.md` in `specs/03_persistence/`, or component files in `specs/05_ui_specification/`).
+  No single Markdown specification should become a monolithic document. Subsystems and components are documented in dedicated sibling Markdown files within the layer folder (e.g. `canvas_viewport.md`, `left_toolbox_sidebar.md` in `specs/ui/`).
 * **Executable BDD Scenarios (`features/`)**:
-  Acceptance criteria are expressed as executable Gherkin feature files within a dedicated `features/` directory in the relevant section (e.g. `specs/01_domain/features/` for domain behavior, or `specs/05_ui_specification/features/` for UI flows). Markdown specifications link to and contextualize these scenarios.
+  Acceptance criteria are expressed as executable Gherkin feature files within a dedicated `features/` directory in the relevant layer (e.g. `specs/domain/features/` for domain invariants, `specs/server/features/` for protocol/persistence, or `specs/ui/features/` for UI flows). Markdown specifications link to and contextualize these scenarios.
 
 ---
 
-## 2. Reference Guides by Specification Section
+## 2. Reference Guides by Specification Layer
 
-To understand how to edit each section of the specification, consult the corresponding reference guide in the `references/` subdirectory:
+To understand how to edit each layer of the specification, consult the corresponding reference guide in the `references/` subdirectory:
 
-* **Domain Models & Contracts**: See [`references/01_domain.md`](./references/01_domain.md)
-* **System Architecture & Layout**: See [`references/02_system_architecture.md`](./references/02_system_architecture.md)
-* **Persistence & Storage**: See [`references/03_persistence.md`](./references/03_persistence.md)
-* **JSON-RPC API & MCP Integration**: See [`references/04_json_rpc_and_mcp.md`](./references/04_json_rpc_and_mcp.md)
-* **User Interface & Components**: See [`references/05_ui_specification.md`](./references/05_ui_specification.md)
+* **Domain Layer (JSON Schema & Invariants)**: See [`references/domain.md`](./references/domain.md)
+* **Server Layer (OpenRPC, DBML & MCP)**: See [`references/server.md`](./references/server.md)
+* **UI Layer (Canvas Studio & Components)**: See [`references/ui.md`](./references/ui.md)
+* **Architecture Layer (Topology & Data Flows)**: See [`references/architecture.md`](./references/architecture.md)

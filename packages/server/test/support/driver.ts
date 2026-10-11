@@ -8,4 +8,5 @@ export interface EngineDriver {
   paintCell(x: number, y: number, colorId: number): Promise<void>;
   verifyBBoxColor(x: number, y: number, w: number, h: number, colorName: string): Promise<boolean>;
   getUndoHistoryCount(): Promise<number>;
+  undo(): Promise<void>;
 }

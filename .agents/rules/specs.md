@@ -10,17 +10,19 @@ description: "Strict rules for modifying specification files (Spec-Driven Develo
    * You are STRICTLY FORBIDDEN from creating, editing, or deleting any file in `specs/` without first presenting a detailed proposal to the user and obtaining their explicit approval.
    * If an ambiguity or contradiction arises during development, stop immediately and ask the user for clarification.
 
-2. **Systematic Directory Organization**:
+2. **Systematic Layered Directory Organization**:
    * `specs/README.md` is the root entry point, project context, and table of contents for the entire specification suite.
-   * Every numbered section under `specs/` (e.g. `01_domain/`, `02_system_architecture/`, etc.) MUST systematically be a dedicated directory with an `index.md` entry point, even if currently holding a single document.
-   * Subsystems and components within a section are authored as dedicated sibling Markdown files (e.g. `specs/03_persistence/sql_store.md`, `specs/03_persistence/memory_store.md`).
+   * Every major layer under `specs/` (`domain/`, `server/`, `ui/`, `architecture/`) MUST systematically be a dedicated directory with an `index.md` entry point.
+   * Subsystems and components within a layer are authored as dedicated sibling Markdown files (e.g. `canvas_viewport.md`, `left_toolbox_sidebar.md` in `specs/ui/`).
 
 3. **No Executable Code in `specs/` & Declarative Contract Colocation**:
    * Specifications must contain NO executable code (.ts, .js, .tsx, .py).
    * Only formal declarative formats are permitted:
      * Markdown (`.md`) for documentation and acceptance test criteria.
-     * Contract definition files (`.proto`, etc.) co-located within their relevant section (e.g. `specs/01_domain/`).
-     * Relational schema definitions (`.dbml`, etc.) co-located within the persistence specification (e.g. `specs/03_persistence/`).
+     * Pure domain schemas in JSON Schema / YAML (`schemas/*.yaml` in `specs/domain/`).
+     * Wire API specifications in OpenRPC 1.2+ (`openrpc.yaml` in `specs/server/`).
+     * Relational schema definitions in DBML (`schema.dbml` in `specs/server/`).
+     * Executable BDD scenarios (`.feature`) co-located in `features/` within each layer.
 
 4. **Mandatory Codegen Execution**:
    * After any approved change to declarative contract or schema files in `specs/`, you MUST immediately execute:

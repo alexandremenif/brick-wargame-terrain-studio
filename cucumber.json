@@ -1,6 +1,6 @@
 {
   "default": {
-    "paths": ["specs/01_domain/features/**/*.feature"],
+    "paths": ["specs/domain/features/**/*.feature"],
     "import": [
       "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts"
@@ -9,7 +9,7 @@
     "worldParameters": { "driver": "memory" }
   },
   "domain": {
-    "paths": ["specs/01_domain/features/**/*.feature"],
+    "paths": ["specs/domain/features/**/*.feature"],
     "import": [
       "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts"
@@ -18,7 +18,10 @@
     "worldParameters": { "driver": "memory" }
   },
   "jsonrpc": {
-    "paths": ["specs/01_domain/features/**/*.feature"],
+    "paths": [
+      "specs/domain/features/**/*.feature",
+      "specs/server/features/jsonrpc_protocol.feature"
+    ],
     "import": [
       "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts",
@@ -27,8 +30,16 @@
     "format": ["summary", "progress-bar"],
     "worldParameters": { "driver": "jsonrpc" }
   },
+  "persistence": {
+    "paths": ["specs/server/features/persistence.feature"],
+    "import": [
+      "packages/server/test/steps/**/*.ts",
+      "packages/server/test/support/**/*.ts"
+    ],
+    "format": ["summary", "progress-bar"]
+  },
   "mcp": {
-    "paths": ["specs/01_domain/features/**/*.feature"],
+    "paths": ["specs/domain/features/**/*.feature"],
     "import": [
       "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts",
@@ -38,11 +49,11 @@
     "worldParameters": { "driver": "mcp" }
   },
   "ui": {
-    "paths": ["specs/05_ui_specification/features/**/*.feature"],
+    "paths": ["specs/ui/features/**/*.feature"],
     "import": [
-      "packages/client/test/steps/**/*.ts",
-      "packages/client/test/support/**/*.ts",
-      "packages/client/test/hooks/**/*.ts"
+      "packages/ui/test/steps/**/*.ts",
+      "packages/ui/test/support/**/*.ts",
+      "packages/ui/test/hooks/**/*.ts"
     ],
     "format": ["summary", "progress-bar"],
     "tags": "@ui"

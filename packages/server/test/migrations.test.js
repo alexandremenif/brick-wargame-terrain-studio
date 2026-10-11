@@ -7,7 +7,7 @@ import Database from 'better-sqlite3';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const migrationsDir = path.resolve(__dirname, '../src/persistence/migrations');
-const dbmlPath = path.resolve(__dirname, '../../../specs/03_persistence/schema.dbml');
+const dbmlPath = path.resolve(__dirname, '../../../specs/server/schema.dbml');
 
 /**
  * Programmatically extracts table names declared in a DBML file.
@@ -46,7 +46,7 @@ describe('SQLite Migrations Sequential Execution', () => {
     assert.ok(migrationFiles.length > 0, 'At least one migration file must exist in src/persistence/migrations/');
 
     // Programmatically extract expected tables and indices from schema.dbml
-    assert.ok(fs.existsSync(dbmlPath), 'schema.dbml must exist in specs/03_persistence/');
+    assert.ok(fs.existsSync(dbmlPath), 'schema.dbml must exist in specs/server/');
     const dbmlTables = extractTablesFromDbml(dbmlPath);
     const dbmlIndices = extractIndicesFromDbml(dbmlPath);
 

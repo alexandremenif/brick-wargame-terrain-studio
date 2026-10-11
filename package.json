@@ -8,13 +8,16 @@
     "packages/*"
   ],
   "scripts": {
-    "codegen": "node packages/codegen/bin/codegen.js",
+    "codegen:jsonrpc": "node packages/jsonrpc-generator/bin/jsonrpc-generator.js --service-name TerrainEngineService --client-name TerrainApiClient",
+    "codegen:dbml": "node packages/dbml-generator/bin/dbml-generator.js",
+    "codegen": "npm run codegen:jsonrpc && npm run codegen:dbml",
     "build": "npm run codegen && npm run build --workspaces",
     "test:bdd": "NODE_OPTIONS='--import tsx' cucumber-js -p domain",
     "test:bdd:domain": "NODE_OPTIONS='--import tsx' cucumber-js -p domain",
     "test:bdd:jsonrpc": "NODE_OPTIONS='--import tsx' cucumber-js -p jsonrpc",
     "test:bdd:mcp": "NODE_OPTIONS='--import tsx' cucumber-js -p mcp",
-    "test:bdd:headless": "npm run test:bdd:domain && npm run test:bdd:jsonrpc && npm run test:bdd:mcp",
+    "test:bdd:persistence": "NODE_OPTIONS='--import tsx' cucumber-js -p persistence",
+    "test:bdd:headless": "npm run test:bdd:domain && npm run test:bdd:jsonrpc && npm run test:bdd:persistence && npm run test:bdd:mcp",
     "test:bdd:ui": "NODE_OPTIONS='--import tsx' cucumber-js -p ui",
     "test:bdd:all": "npm run test:bdd:headless && npm run test:bdd:ui",
     "test": "npm run --if-present test --workspaces && npm run test:bdd:domain"
@@ -24,11 +27,17 @@
     "@cucumber/pretty-formatter": "^4.1.0",
     "@dbml/cli": "^3.12.0",
     "@dbml/core": "^3.12.0",
+    "@open-rpc/client-js": "^2.1.0",
+    "@open-rpc/schema-utils-js": "^2.1.2",
+    "@open-rpc/server-js": "^1.10.1",
     "@playwright/test": "^1.64.0",
-    "grpc-tools": "^1.13.1",
-    "protobufjs": "^8.8.0",
-    "ts-proto": "^2.13.0",
+    "ajv": "^8.20.0",
+    "json-schema-to-typescript": "^16.0.0",
     "tsx": "^4.23.15",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "yaml": "^2.9.1"
+  },
+  "dependencies": {
+    "@open-rpc/meta-schema": "^1.14.9"
   }
 }

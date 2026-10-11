@@ -1,7 +1,9 @@
+import fs from 'node:fs';
 import { setWorldConstructor, World, Before, After } from '@cucumber/cucumber';
 import type { IWorldOptions } from '@cucumber/cucumber';
 import type { EngineDriver } from './driver.js';
 import { InMemoryDriver } from './memory_driver.js';
+import type { JsonRpcResponse, TerrainEngineService } from '@lego-wargame-terrain-studio/api';
 
 export type DriverFactory = () => EngineDriver;
 
@@ -16,6 +18,16 @@ export class StudioWorld extends World {
 
   public driver: EngineDriver;
   public lastError: Error | null = null;
+
+  // Protocol & Wire scenario context
+  public jsonRpcService: TerrainEngineService | null = null;
+  public lastJsonRpcResponse: any = null;
+  public lastRequestId: string | number | null = null;
+
+  // Persistence scenario context
+  public tempDbPath: string | null = null;
+  public db: any = null;
+  public persistedId: string | null = null;
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -38,9 +50,33 @@ setWorldConstructor(StudioWorld);
 
 Before(async function (this: StudioWorld) {
   this.lastError = null;
+  this.lastJsonRpcResponse = null;
+  this.lastRequestId = null;
+  this.jsonRpcService = null;
+  this.tempDbPath = null;
+  this.db = null;
+  this.persistedId = null;
   await this.driver.start();
 });
 
 After(async function (this: StudioWorld) {
+  if (this.db) {
+    try {
+      this.db.close();
+    } catch (_) {
+      // Ignored if already closed
+    }
+    this.db = null;
+  }
+
+  if (this.tempDbPath && fs.existsSync(this.tempDbPath)) {
+    try {
+      fs.unlinkSync(this.tempDbPath);
+    } catch (_) {
+      // Ignored if already deleted
+    }
+    this.tempDbPath = null;
+  }
+
   await this.driver.stop();
 });

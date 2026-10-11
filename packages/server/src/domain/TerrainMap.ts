@@ -42,24 +42,65 @@ export class TerrainMap {
 
   public paintCell(x: number, y: number, colorId: number): void {
     this.assertWithinBounds(x, y);
-    this.cells.set(this.cellKey(x, y), colorId);
+    const key = this.cellKey(x, y);
+    const prevColor = this.cells.get(key);
+    this.cells.set(key, colorId);
+    this.undoHistory.push({
+      type: 'PAINT_CELL',
+      payload: { key, prevColor, colorId }
+    });
   }
 
   public paintArea(bbox: BoundingBoxInput, colorId: number): void {
+    if (bbox.width <= 0 || bbox.height <= 0) {
+      throw new Error(`Bounding box dimensions must be strictly positive (${bbox.width}x${bbox.height})`);
+    }
+
     const endX = bbox.x + bbox.width;
     const endY = bbox.y + bbox.height;
 
+    // Atomicity check: ensure whole area is valid before mutating any cell
+    this.assertWithinBounds(bbox.x, bbox.y);
+    this.assertWithinBounds(endX - 1, endY - 1);
+
+    const previousCells: Array<{ key: string; prevColor?: number }> = [];
+
     for (let x = bbox.x; x < endX; x++) {
       for (let y = bbox.y; y < endY; y++) {
-        this.assertWithinBounds(x, y);
-        this.cells.set(this.cellKey(x, y), colorId);
+        const key = this.cellKey(x, y);
+        previousCells.push({ key, prevColor: this.cells.get(key) });
+        this.cells.set(key, colorId);
       }
     }
 
     this.undoHistory.push({
       type: 'PAINT_AREA',
-      payload: { bbox, colorId }
+      payload: { bbox, colorId, previousCells }
     });
+  }
+
+  public undo(): boolean {
+    const lastAction = this.undoHistory.pop();
+    if (!lastAction) return false;
+
+    if (lastAction.type === 'PAINT_AREA') {
+      const { previousCells } = lastAction.payload as { previousCells: Array<{ key: string; prevColor?: number }> };
+      for (const cell of previousCells) {
+        if (cell.prevColor !== undefined) {
+          this.cells.set(cell.key, cell.prevColor);
+        } else {
+          this.cells.delete(cell.key);
+        }
+      }
+    } else if (lastAction.type === 'PAINT_CELL') {
+      const { key, prevColor } = lastAction.payload as { key: string; prevColor?: number };
+      if (prevColor !== undefined) {
+        this.cells.set(key, prevColor);
+      } else {
+        this.cells.delete(key);
+      }
+    }
+    return true;
   }
 
   public getPaintedCellCount(): number {

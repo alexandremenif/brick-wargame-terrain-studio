@@ -1,0 +1,76 @@
+openrpc: "1.2.6"
+info:
+  title: "LEGO Wargame Terrain Studio Wire API"
+  version: "1.0.0"
+  description: "JSON-RPC 2.0 wire protocol specification for LEGO Wargame Terrain Studio"
+servers:
+  - name: "Local WebSocket Server"
+    url: "ws://localhost:4000"
+methods:
+  - name: "createMap"
+    description: "Create a new terrain map asset with specified dimensions"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/CreateMapCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/CreateMapResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+
+  - name: "paintArea"
+    description: "Paint a rectangular bounding box with an official LEGO color"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/PaintAreaCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/PaintAreaResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+
+  - name: "paintCell"
+    description: "Paint an individual stud cell"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/PaintCellCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/PaintCellResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+
+  - name: "undo"
+    description: "Undo the most recent command on the specified map"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/UndoCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/UndoResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"

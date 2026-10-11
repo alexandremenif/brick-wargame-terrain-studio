@@ -1,0 +1,19 @@
+{
+  "name": "@lego-wargame-terrain-studio/jsonrpc-generator",
+  "version": "1.0.0",
+  "description": "Generic protocol-agnostic OpenRPC to TypeScript contracts, client, and router generator",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "jsonrpc-generator": "bin/jsonrpc-generator.js"
+  },
+  "scripts": {
+    "build": "exit 0",
+    "test": "node --test 'test/**/*.test.js'"
+  },
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.9.0",
+    "json-schema-to-typescript": "^16.0.0",
+    "yaml": "^2.7.0"
+  }
+}

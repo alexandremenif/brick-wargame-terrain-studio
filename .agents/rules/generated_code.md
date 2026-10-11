@@ -11,7 +11,7 @@ description: "Strict prohibition against manual editing of automatically generat
    * It is STRICTLY FORBIDDEN for agents or developers to edit these files manually.
 
 2. **Automated Pipeline**:
-   * Any change to types, service contracts, or database schemas must be made in the source specifications under `specs/` (e.g., Protobuf contracts, DBML schemas) and compiled via:
+   * Any change to types, service contracts, or database schemas must be made in the source specifications under `specs/` (e.g., JSON Schema, OpenRPC contracts, DBML schemas) and compiled via:
      ```bash
      npm run codegen
      ```

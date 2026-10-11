@@ -1,5 +1,5 @@
 -- ============================================================================
--- Code automatically generated from specs/03_persistence/schema.dbml
+-- Code automatically generated from schema.dbml
 -- DO NOT EDIT MANUALLY.
 -- ============================================================================
 

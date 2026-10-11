@@ -6,6 +6,10 @@ Given('a new TerrainMap with default dining table dimensions', async function (t
   await this.driver.createMap(118, 225);
 });
 
+Given('a new TerrainMap with dimensions {int} by {int} studs', async function (this: StudioWorld, width: number, height: number) {
+  await this.driver.createMap(width, height);
+});
+
 Then('the map width should be {int} studs', async function (this: StudioWorld, expectedWidth: number) {
   const dimensions = await this.driver.getMapDimensions();
   assert.strictEqual(dimensions.width, expectedWidth);
@@ -49,6 +53,10 @@ Then('the undo history should have {int} entry', async function (this: StudioWor
 Then('the undo history should have {int} entries', async function (this: StudioWorld, expectedCount: number) {
   const count = await this.driver.getUndoHistoryCount();
   assert.strictEqual(count, expectedCount);
+});
+
+When('I undo the last operation', async function (this: StudioWorld) {
+  await this.driver.undo();
 });
 
 When('I attempt to paint a cell at coordinate \\({int}, {int}\\)', async function (this: StudioWorld, x: number, y: number) {
