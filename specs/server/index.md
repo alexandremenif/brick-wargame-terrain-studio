@@ -35,11 +35,25 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 
 ---
 
-## 2. Server Color Management
+## 2. Server Domain Services & Repositories
+
+* **[`color_service.md`](./color_service.md)** (`ColorService`):
+  * Responsible for loading and parsing the authoritative brick colors list from the static file ([`specs/domain/colors.csv`](../domain/colors.csv)) into memory at server startup.
+  * Provides in-memory queries (`listColors`, `getColorById`, `isValidColorId`) for JSON-RPC handlers, MCP tools, and domain validation.
+  * Keeps SQLite database completely free of static color tables.
+
+* **[`asset_repository.md`](./asset_repository.md)** (`AssetRepository`):
+  * Manages the persistence lifecycle and CRUD operations for the `Asset` aggregate root and its child `CellData` records in SQLite.
+  * Handles transactional state mutations (`create`, `findById`, `listAll`, `update`, `delete`, `saveCells`).
+  * Enforces cascade deletion of cells and automatic trimming of cells when an asset is downsized.
+
+---
+
+## 3. Server Color Management
 
 * **Static In-Memory Catalog**:
   * Brick colors are static reference data defined authoritatively in [`specs/domain/colors.csv`](../domain/colors.csv).
-  * **Not Stored in Database**: The server loads the colors list into memory from the static file (compiled at build time). There is no `brick_colors` table or seed migration in SQLite.
+  * **Not Stored in Database**: Loaded into memory by `ColorService` at startup. There is no `brick_colors` table or seed migration in SQLite.
   * In SQLite, the `cells` table stores only the numeric `color_id INTEGER NOT NULL`.
   * The server exposes the static catalog via the `list_colors` endpoint (JSON-RPC and MCP tool), ensuring both the UI and AI agents query the exact same color definitions dynamically.
 
