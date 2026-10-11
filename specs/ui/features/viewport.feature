@@ -28,3 +28,22 @@ Feature: Interactive Canvas Viewport
     When I click the "Eraser" tool button
     And I click on the stud at coordinate (10, 10) in the viewport
     Then the stud at coordinate (10, 10) should be unpainted
+
+  Scenario: Dragging in the canvas viewport using Pan mode moves the bounding box
+    Given I click the "Pan" tool button
+    And the bounding box is currently at X 10, Y 10, Width 8, Height 8
+    When I drag the mouse across the canvas viewport by an offset corresponding to 3 studs horizontally and 2 studs vertically
+    Then the inspector inputs should reflect X 7, Y 8, Width 8, Height 8
+    And the canvas viewport should frame the subregion (7, 8, 8, 8)
+
+  Scenario: Zooming in via mouse wheel reduces bounding box centered on current center
+    Given the bounding box is currently at X 4, Y 4, Width 16, Height 16
+    When I scroll the mouse wheel up over the canvas viewport
+    Then the bounding box width and height should decrease by approximately 25 percent
+    And the center of the bounding box should remain approximately at (12, 12)
+
+  Scenario: Zooming out via mouse wheel enlarges bounding box centered on current center
+    Given the bounding box is currently at X 8, Y 8, Width 8, Height 8
+    When I scroll the mouse wheel down over the canvas viewport
+    Then the bounding box width and height should increase by approximately 25 percent
+    And the center of the bounding box should remain approximately at (12, 12)

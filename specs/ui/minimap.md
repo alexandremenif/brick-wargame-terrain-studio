@@ -15,6 +15,13 @@ The `<Minimap>` is embedded inside the `<RightInspectorSidebar>`. It provides a 
     $$\text{indicatorX} = \frac{x}{W} \times \text{minimapWidth}, \quad \text{indicatorY} = \frac{y}{H} \times \text{minimapHeight}$$
     $$\text{indicatorW} = \frac{width}{W} \times \text{minimapWidth}, \quad \text{indicatorH} = \frac{height}{H} \times \text{minimapHeight}$$
   * When the bounding box equals the full asset ($(0, 0, W, H)$, e.g. after clicking "Fit to Asset"), the indicator covers the entire minimap thumbnail.
+* **Interactive Click-to-Center Navigation**:
+  * Clicking anywhere on the minimap thumbnail repositions the active bounding box such that its center moves to the clicked asset coordinate $(C_{\text{target}}, R_{\text{target}})$.
+  * The current bounding box dimensions ($width, height$) are preserved.
+  * Coordinates are automatically clamped to ensure the bounding box remains fully inside the asset boundaries:
+    $$x = \mathrm{clamp}\left(C_{\text{target}} - \left\lfloor\frac{width}{2}\right\rfloor, 0, W - width\right)$$
+    $$y = \mathrm{clamp}\left(R_{\text{target}} - \left\lfloor\frac{height}{2}\right\rfloor, 0, H - height\right)$$
+  * The main `<CanvasViewport>` and `<RightInspectorSidebar>` numeric inputs update immediately to reflect the new position.
 * **Automatic Scaling**:
   * The entire $W \times H$ asset is scaled to fit within the fixed minimap thumbnail viewport ($208 \times 128$ px) preserving aspect ratio.
 * **Real-Time Synchronization**:
@@ -37,3 +44,4 @@ The `<Minimap>` is embedded inside the `<RightInspectorSidebar>`. It provides a 
 * `TEST-UI-MINIMAP-02`: When the active bounding box changes, the bounding box indicator on the minimap updates its position and dimensions proportionally.
 * `TEST-UI-MINIMAP-03`: When "Fit to Asset" is clicked, the bounding box indicator expands to cover the entire minimap.
 * `TEST-UI-MINIMAP-04`: Painting cells on the canvas immediately reflects those color changes in the minimap thumbnail.
+* `TEST-UI-MINIMAP-05`: Clicking a point on the minimap centers the bounding box on that coordinate, preserving dimensions and clamping within asset boundaries.

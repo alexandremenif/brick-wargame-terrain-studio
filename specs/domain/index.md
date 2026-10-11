@@ -20,6 +20,7 @@ Domain entities, command contracts, and static catalogs are formally specified u
 * [`colors.csv`](./colors.csv): Canonical tabular list of all 41 official brick colors (`id`, `name`, `hex`).
 * [`schemas/model.yaml`](./schemas/model.yaml): Domain entities (`BoundingBox`, `BrickColor`, `CellData`, `Asset`).
 * [`schemas/commands.yaml`](./schemas/commands.yaml): Domain commands (`CreateAssetCommand`, `UpdateAssetCommand`, `GetAssetCommand`, `DeleteAssetCommand`, `PaintAreaCommand`, `ListAssetsCommand`, `ListColorsCommand`).
+* [`bounding_box_math.md`](./bounding_box_math.md): Pure domain math operations and clamping invariants (`clampBoundingBox`, `panBoundingBox`, `centerBoundingBoxAt`, `zoomBoundingBox`, `recoverBoundingBox`).
 
 ---
 
@@ -29,3 +30,4 @@ Domain entities, command contracts, and static catalogs are formally specified u
 * **Executable BDD Scenarios**:
   * [`features/asset.feature`](./features/asset.feature): Validates asset creation, dimension updates, bounding box setting, and lenient brush painting clipping.
   * [`features/colors.feature`](./features/colors.feature): Validates listing official brick colors and verifying palette completeness and attributes.
+  * [`features/bounding_box_math.feature`](./features/bounding_box_math.feature): Validates pure domain math, boundary clamping, pan deltas, center repositioning, wheel zooming, and self-healing recovery.

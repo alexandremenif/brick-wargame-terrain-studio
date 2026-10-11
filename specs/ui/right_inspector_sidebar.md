@@ -19,8 +19,10 @@ The `<RightInspectorSidebar>` hosts the `<Minimap>` thumbnail overview and provi
 * **Input Validation & Rejection**:
   * If the user enters an invalid value (e.g. $x + width > W$ or a non-positive dimension), the input is **rejected and immediately reverts to the previous valid value**.
   * The main `<CanvasViewport>` and `<Minimap>` only update when valid values are entered.
-* **Preset Framing Action**:
-  * `[Fit to Asset]`: Sets the bounding box to frame the full asset ($x=0, y=0, w=W, h=H$).
+* **Framing & Zoom Actions**:
+  * `[Fit to Asset]`: Sets the bounding box to frame the full asset ($x=0, y=0, w=W, h=H$). **Disabled** when the bounding box already frames the full asset ($x=0, y=0, width=W, height=H$).
+  * `[Zoom In (+)]`: Reduces bounding box dimensions by ~25% (factor $\approx 0.8\times$), keeping the box center fixed and clamped within bounds. **Disabled** when bounding box dimensions reach $1 \times 1$ ($width=1, height=1$).
+  * `[Zoom Out (-)]`: Enlarges bounding box dimensions by ~25% (factor $\approx 1.25\times$), keeping the box center fixed and clamped within bounds. **Disabled** when bounding box dimensions equal the full asset ($width=W, height=H$).
 
 ---
 
@@ -39,3 +41,7 @@ The `<RightInspectorSidebar>` hosts the `<Minimap>` thumbnail overview and provi
 * `TEST-UI-INSPECTOR-01`: Editing X, Y, Width, or Height values to valid numbers updates the active bounding box parameters, shifts the framed area in the canvas viewport, and moves the minimap indicator.
 * `TEST-UI-INSPECTOR-02`: Entering an invalid bounding box value rejects the input and reverts to the previous valid value.
 * `TEST-UI-INSPECTOR-03`: Clicking "Fit to Asset" sets bounding box dimensions to match the full asset ($0, 0, W, H$).
+* `TEST-UI-INSPECTOR-04`: Clicking "Zoom In" scales down bounding box dimensions by ~25% down to $1 \times 1$, centered at the current view center.
+* `TEST-UI-INSPECTOR-05`: Clicking "Zoom Out" scales up bounding box dimensions by ~25% up to full asset dimensions, centered at the current view center.
+* `TEST-UI-INSPECTOR-06`: "Zoom In" is disabled when bounding box is $1\times 1$.
+* `TEST-UI-INSPECTOR-07`: "Zoom Out" and "Fit to Asset" are disabled when bounding box equals the full asset $(0, 0, W, H)$.

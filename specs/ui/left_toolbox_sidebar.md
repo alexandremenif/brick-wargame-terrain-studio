@@ -5,8 +5,9 @@ The `<LeftToolboxSidebar>` manages the active drawing modes (Brush vs Eraser), b
 
 ## 2. Child Components & Controls
 * **Tool Mode Selector**:
-  * `[🖌 Brush]`: In brush mode, painting sets cells to the currently selected brick color ID.
-  * `[🧹 Eraser]`: In eraser mode, painting clears cells (sets `colorId` to `null`).
+  * `[🖌 Brush]`: In brush mode, clicking paints cells with the currently selected brick color ID.
+  * `[🧹 Eraser]`: In eraser mode, clicking clears cells (sets `colorId` to `null`).
+  * `[✋ Pan]`: In pan mode, clicking and dragging on the canvas viewport moves the active bounding box across the asset. In this mode, painting is disabled and the color palette is disabled.
 * **Brush Size Presets**:
   * Quick-access preset grid spanning sizes from fine detail to broad macro terrain painting:
     * `[1x1]`: Fine single-stud editing.
@@ -31,3 +32,4 @@ The `<LeftToolboxSidebar>` manages the active drawing modes (Brush vs Eraser), b
 * `TEST-UI-TOOLBOX-01`: Clicking the "Eraser" tool switches drawing mode to clear cells.
 * `TEST-UI-TOOLBOX-02`: Selecting any brush size ($1\times 1$, $2\times 2$, $4\times 4$, $8\times 8$, $16\times 16$, $32\times 32$) updates the active brush footprint.
 * `TEST-UI-TOOLBOX-03`: Clicking a 1x1 color swatch selects it as active brush color and highlights its visual ring.
+* `TEST-UI-TOOLBOX-04`: Clicking the "Pan" tool switches mode to viewport dragging / navigation, disabling color swatch selection.

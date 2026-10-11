@@ -9,9 +9,11 @@ Feature: Left Toolbox & Palette Interactions
     And the active brush size should be "1x1"
     And an official brick color should be selected by default
 
-  Scenario: Switching between Brush and Eraser tools
+  Scenario: Switching between Brush, Eraser, and Pan tools
     When I click the "Eraser" tool button
     Then the active tool mode should be "Eraser"
+    When I click the "Pan" tool button
+    Then the active tool mode should be "Pan"
     When I click the "Brush" tool button
     Then the active tool mode should be "Brush"
 
