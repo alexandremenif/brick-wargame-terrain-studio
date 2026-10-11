@@ -8,6 +8,9 @@ The `<TopHeaderBar>` sits at the top of the Studio viewport. It provides clean g
 * **Asset Selector Dropdown**:
   * Dropdown populated via `listAssets` displaying active asset name (e.g. "Modular Outpost").
   * Selecting an asset switches the active studio session.
+* **Bootstrapping & Empty State Prompt**:
+  * If the database contains no assets when the application loads, the studio immediately prompts the user with a modal dialog to create their first asset.
+  * When the active asset is deleted: if other assets exist, the studio switches to the next available asset; if no assets remain, the studio presents the create asset prompt.
 * **New Asset Button**:
   * Action button `[+ New]` opening creation dialog/prompt.
 * **Delete Asset Button**:
@@ -17,6 +20,7 @@ The `<TopHeaderBar>` sits at the top of the Studio viewport. It provides clean g
   * Numeric input for `Width` ($W \ge 1, \le 1000$).
   * Numeric input for `Height` ($H \ge 1, \le 1000$).
   * Changing dimensions triggers `updateAsset(assetId, width, height)`.
+  * **Crop Warning on Downsizing**: When shrinking an asset dimension (e.g. from $32 \times 32$ to $16 \times 16$), cells outside the new dimensions will be permanently removed. The UI prompts with a confirmation warning before applying the reduction if painted cells will be cropped.
 * **Grid Mode Toggle**:
   * Toggle button `[Grid: On / Off]` switching continuous stud surface versus overlaid reference grid lines on the canvas viewport.
 
