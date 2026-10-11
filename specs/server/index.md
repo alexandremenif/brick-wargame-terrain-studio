@@ -43,9 +43,9 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
   * Keeps SQLite database completely free of static color tables.
 
 * **[`asset_repository.md`](./asset_repository.md)** (`AssetRepository`):
-  * Manages the persistence lifecycle and CRUD operations for the `Asset` aggregate root and its child `CellData` records in SQLite.
-  * Handles transactional state mutations (`create`, `findById`, `listAll`, `update`, `delete`, `saveCells`).
-  * Enforces cascade deletion of cells and automatic trimming of cells when an asset is downsized.
+  * Manages the persistence lifecycle and CRUD operations for the `Asset` aggregate root in SQLite.
+  * Adheres strictly to Domain-Driven Design (DDD): external callers interact exclusively with the `Asset` aggregate (`create`, `findById`, `listAll`, `update`, `delete`), never directly mutating raw cells in isolation.
+  * Handles transactional state mutations, cascading deletes, and cell synchronization within SQLite transactions.
 
 ---
 
