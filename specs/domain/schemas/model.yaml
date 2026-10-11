@@ -21,23 +21,17 @@ definitions:
   BoundingBox:
     title: BoundingBox
     type: object
-    description: 2D rectangular region measured in studs
+    description: 2D rectangular region measured in studs, defined by min and max corner vectors (inclusive min, exclusive max)
     properties:
-      origin:
+      min:
         $ref: "#/definitions/Vector"
-        description: Top-left origin coordinate in studs
-      width:
-        type: integer
-        minimum: 1
-        description: Width in studs
-      height:
-        type: integer
-        minimum: 1
-        description: Height in studs
+        description: Top-left minimum corner (inclusive)
+      max:
+        $ref: "#/definitions/Vector"
+        description: Bottom-right maximum corner (exclusive)
     required:
-      - origin
-      - width
-      - height
+      - min
+      - max
     additionalProperties: false
 
   LegoColor:
