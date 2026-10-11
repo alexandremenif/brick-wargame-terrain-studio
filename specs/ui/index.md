@@ -8,7 +8,7 @@ This directory defines the visual ergonomics, functional component hierarchy, an
 
 ![Brick Studio UI Mockup](./mockup.svg)
 
-The UI is structured into 7 cohesive components matching the layout:
+The UI is structured into 6 cohesive components matching the layout:
 
 ```text
 <StudioApp> (index.md)
@@ -18,7 +18,6 @@ The UI is structured into 7 cohesive components matching the layout:
 │   ├── <CanvasViewport>         -> canvas_viewport.md (Interactive Immediate-Mode HTML5 2D Canvas & BBox Overlay)
 │   └── <RightInspectorSidebar>  -> right_inspector_sidebar.md (Minimap & Bounding Box Controls)
 │       └── <Minimap>            -> minimap.md (Scaled Overview Thumbnail & Region Viewport Indicator)
-├── <BottomStatusBar>            -> bottom_status_bar.md (Cursor Position, Painted Cells Total, Live Sync)
 └── <DeleteAssetModal>           -> delete_asset_modal.md (Accessible Destructive Confirmation Dialog)
 ```
 
@@ -31,7 +30,6 @@ The UI is structured into 7 cohesive components matching the layout:
 * **[`canvas_viewport.md`](./canvas_viewport.md)**: High-performance interactive HTML5 2D canvas with **continuous stud surfaces by default** (no round nubs, optional reference grid toggle), 60+ FPS immediate-mode painting, and bounding box visual overlay.
 * **[`right_inspector_sidebar.md`](./right_inspector_sidebar.md)**: Hosts the minimap overview thumbnail, bounding box numerical inputs ($x, y, w, h$), quick framing actions ("Fit to Asset", "Clear"), and area fill ("Fill BBox").
 * **[`minimap.md`](./minimap.md)**: Proportional thumbnail overview of the entire terrain with live cell preview and scaled bounding box indicator.
-* **[`bottom_status_bar.md`](./bottom_status_bar.md)**: Live stud cursor coordinates under pointer, painted stud metrics, and real-time backend connection status.
 * **[`delete_asset_modal.md`](./delete_asset_modal.md)**: Semantic accessible modal dialog requiring explicit confirmation before permanent asset deletion.
 
 ---

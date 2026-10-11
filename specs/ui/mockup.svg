@@ -58,8 +58,8 @@
   <text x="882" y="28" class="text-body">Grid: On</text>
 
   <!-- ================= LEFT TOOLBOX SIDEBAR ================= -->
-  <rect x="0" y="48" width="260" height="644" class="bg-panel" />
-  <line x1="260" y1="48" x2="260" y2="692" class="border-line" />
+  <rect x="0" y="48" width="260" height="672" class="bg-panel" />
+  <line x1="260" y1="48" x2="260" y2="720" class="border-line" />
 
   <!-- Drawing Mode Tools -->
   <text x="16" y="74" class="text-xs" style="text-transform:uppercase;letter-spacing:0.05em;">Drawing Mode</text>
@@ -163,7 +163,7 @@
   <text x="175" y="452" class="text-xs">#4B9F4A</text>
 
   <!-- ================= CENTRAL SVG VIEWPORT ================= -->
-  <rect x="260" y="48" width="760" height="644" class="bg-canvas" />
+  <rect x="260" y="48" width="760" height="672" class="bg-canvas" />
 
   <!-- 32x32 Brick Squares Mat with Shadow (512x512 total) -->
   <g id="viewport-canvas" transform="translate(384, 114)" filter="url(#shadow)">
@@ -1198,8 +1198,8 @@
   </g>
 
   <!-- ================= RIGHT INSPECTOR SIDEBAR ================= -->
-  <rect x="1020" y="48" width="260" height="644" class="bg-panel" />
-  <line x1="1020" y1="48" x2="1020" y2="692" class="border-line" />
+  <rect x="1020" y="48" width="260" height="672" class="bg-panel" />
+  <line x1="1020" y1="48" x2="1020" y2="720" class="border-line" />
 
   <!-- Minimap Panel -->
   <text x="1036" y="74" class="text-xs" style="text-transform:uppercase;letter-spacing:0.05em;">Minimap Overview</text>
@@ -1246,13 +1246,4 @@
 
   <rect x="1036" y="496" width="224" height="30" class="btn" />
   <text x="1118" y="515" class="text-body">Clear Bounding Box</text>
-
-  <!-- ================= BOTTOM STATUS BAR ================= -->
-  <rect x="0" y="692" width="1280" height="28" class="bg-panel" />
-  <line x1="0" y1="692" x2="1280" y2="692" class="border-line" />
-
-  <text x="16" y="710" class="text-body">Pointer Stud: <tspan class="text-bold" fill="#ffffff">[14, 18]</tspan></text>
-  <text x="240" y="710" class="text-body">Painted Area: <tspan class="text-bold" fill="#ffffff">384 / 1024 studs</tspan> (37.5%)</text>
-  <circle cx="1180" cy="706" r="4" fill="#22c55e" />
-  <text x="1192" y="710" class="text-body">Server: <tspan class="text-bold" fill="#22c55e">Online (Live Sync)</tspan></text>
 </svg>

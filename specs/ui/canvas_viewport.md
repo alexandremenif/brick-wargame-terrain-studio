@@ -30,7 +30,6 @@ The `<CanvasViewport>` is the central high-performance interactive display of th
 
 * **Cursor Tracking & Brush Footprint Preview**:
   * Hovering displays a translucent preview outline matching the active brush size ($1\times 1$ up to $32\times 32$) centered under the pointer.
-  * Reports live stud coordinates under the cursor to `<BottomStatusBar>`.
 
 ---
 
