@@ -1,6 +1,6 @@
 # Domain Rules & Invariants
 
-This document formalizes the fundamental rules and invariants governing the domain layer of LEGO Wargame Terrain Studio.
+This document formalizes the fundamental rules and invariants governing the domain layer of Brick Wargame Terrain Studio.
 
 ---
 
@@ -22,12 +22,12 @@ This document formalizes the fundamental rules and invariants governing the doma
 
 ---
 
-## 2. Official LEGO Color Definitions & Invariants
+## 2. Official Brick Color Definitions & Invariants
 
-* **Canonical Colors List**: Defined in [`specs/domain/colors.csv`](./colors.csv) containing the 41 supported official LEGO colors.
+* **Canonical Colors List**: Defined in [`specs/domain/colors.csv`](./colors.csv) containing the 41 supported official brick colors.
 * **Triple Definition**: Each color is strictly defined by:
   * `id`: Numeric code ($1 \dots 41$).
-  * `name`: **Official LEGO name** (e.g. `Medium Stone Grey`, `Dark Stone Grey`, `Earth Green`, `Bright Red`). Unofficial or community names (e.g. "Light Bluish Gray") are strictly excluded.
+  * `name`: **Official brick color name** (e.g. `Medium Stone Grey`, `Dark Stone Grey`, `Earth Green`, `Bright Red`). Unofficial or community names (e.g. "Light Bluish Gray") are strictly excluded.
   * `hex`: Hexadecimal RGB string (`#RRGGBB`).
 * **Cell Storage**: Cells in an asset store only the numeric `colorId`.
 * **Unpainted State**: Unpainted cells have no applied color ID (`null` / transparent base).

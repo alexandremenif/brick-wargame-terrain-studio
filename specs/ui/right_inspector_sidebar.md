@@ -24,7 +24,7 @@ The `<RightInspectorSidebar>` hosts the asset `<Minimap>` thumbnail overview and
 * Bounding box controls and action buttons arranged below with clean numeric steppers and high-contrast labels.
 
 ## 4. Acceptance Criteria & Test IDs
-* `TEST-UI-INSPECTOR-01`: Editing X, Y, Width, or Height values updates the active bounding box state and highlights the region on the SVG viewport and minimap.
+* `TEST-UI-INSPECTOR-01`: Editing X, Y, Width, or Height values updates the active bounding box state and highlights the region on the canvas viewport and minimap.
 * `TEST-UI-INSPECTOR-02`: Clicking "Fit to Asset" sets bounding box dimensions to match the asset width and height ($0, 0, W, H$).
 * `TEST-UI-INSPECTOR-03`: Clicking "Fill Bounding Box" fills the framed area with the active color in a single operation.
 * `TEST-UI-INSPECTOR-04`: Clicking "Clear Bounding Box" removes the active selection from both the viewport and minimap.

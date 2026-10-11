@@ -1,11 +1,11 @@
 // ============================================================================
-// LEGO Wargame Terrain Studio - DBML Schema (Database Markup Language)
+// Brick Wargame Terrain Studio - DBML Schema (Database Markup Language)
 // Initial Schema Iteration (v1) for Single Asset Studio & Parity MVP
 // ============================================================================
 
-Project lego_wargame_terrain_studio {
+Project brick_wargame_terrain_studio {
   database_type: 'SQLite'
-  Note: 'First iteration persistence schema for LEGO Wargame Terrain Studio'
+  Note: 'First iteration persistence schema for Brick Wargame Terrain Studio'
 }
 
 Table schema_migrations {
@@ -29,7 +29,7 @@ Table cells {
   asset_id varchar(36) [not null]
   x integer [not null, note: 'X coordinate in studs (0 <= x < width)']
   y integer [not null, note: 'Y coordinate in studs (0 <= y < height)']
-  color_id integer [not null, note: 'Official LEGO color ID from static catalog']
+  color_id integer [not null, note: 'Official brick color ID from static catalog']
   Note: 'Customized studs matrix'
 
   indexes {

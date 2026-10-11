@@ -29,6 +29,6 @@ sequenceDiagram
     Store-->>Domain: Transaction committed
     Domain-->>Router: Command response (affectedCellsCount)
     Router-->>Adapter: JSON-RPC 2.0 Success Result
-    Adapter-->>User: Updated state rendered on SVG viewport
+    Adapter-->>User: Updated state rendered on Canvas viewport
   end
 ```

@@ -1,8 +1,8 @@
 openrpc: "1.2.6"
 info:
-  title: "LEGO Wargame Terrain Studio Wire API"
+  title: "Brick Wargame Terrain Studio Wire API"
   version: "1.0.0"
-  description: "JSON-RPC 2.0 wire protocol specification for LEGO Wargame Terrain Studio"
+  description: "JSON-RPC 2.0 wire protocol specification for Brick Wargame Terrain Studio"
 servers:
   - name: "Local HTTP Server"
     url: "http://localhost:4000"
@@ -76,7 +76,7 @@ methods:
         message: "Internal engine error"
 
   - name: "paintArea"
-    description: "Paint or erase a rectangular bounding box or 1x1 stud cell with an official LEGO color (or null to clear)"
+    description: "Paint or erase a rectangular bounding box or 1x1 stud cell with an official brick color (or null to clear)"
     params:
       - name: "command"
         required: true
@@ -110,7 +110,7 @@ methods:
         message: "Internal engine error"
 
   - name: "listColors"
-    description: "List all official LEGO colors"
+    description: "List all official brick colors"
     params:
       - name: "command"
         required: true
@@ -120,23 +120,6 @@ methods:
       name: "result"
       schema:
         $ref: "../domain/schemas/commands.yaml#/definitions/ListColorsResponse"
-    errors:
-      - code: -32602
-        message: "Invalid params"
-      - code: -32000
-        message: "Internal engine error"
-
-  - name: "getAssetImage"
-    description: "Get a rendered SVG image of the asset or optional bounding box"
-    params:
-      - name: "command"
-        required: true
-        schema:
-          $ref: "../domain/schemas/commands.yaml#/definitions/GetAssetImageCommand"
-    result:
-      name: "result"
-      schema:
-        $ref: "../domain/schemas/commands.yaml#/definitions/GetAssetImageResponse"
     errors:
       - code: -32602
         message: "Invalid params"

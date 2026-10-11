@@ -1,6 +1,6 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 title: DomainModel
-description: Pure protocol-agnostic domain entities for LEGO Wargame Terrain Studio
+description: Pure protocol-agnostic domain entities for Brick Wargame Terrain Studio
 definitions:
   BoundingBox:
     title: BoundingBox
@@ -28,17 +28,17 @@ definitions:
       - height
     additionalProperties: false
 
-  LegoColor:
-    title: LegoColor
+  BrickColor:
+    title: BrickColor
     type: object
-    description: Official LEGO color definition
+    description: Official brick color definition
     properties:
       id:
         type: integer
         description: Color numeric ID
       name:
         type: string
-        description: Official LEGO color name (e.g. Bright Green)
+        description: Official brick color name (e.g. Bright Green)
       hex:
         type: string
         pattern: "^#[0-9A-Fa-f]{6}$"
@@ -52,7 +52,7 @@ definitions:
   CellData:
     title: CellData
     type: object
-    description: Individual stud coordinate with applied LEGO color ID
+    description: Individual stud coordinate with applied brick color ID
     properties:
       x:
         type: integer
@@ -62,7 +62,7 @@ definitions:
         description: Stud Y coordinate
       colorId:
         type: integer
-        description: Applied LEGO color ID
+        description: Applied brick color ID
     required:
       - x
       - y

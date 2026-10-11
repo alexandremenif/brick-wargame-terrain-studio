@@ -2,7 +2,7 @@
 name: sdd-feature-development
 description: >-
   Official Spec-Driven Development (SDD) methodology for developing, testing, and implementing features
-  in LEGO Wargame Terrain Studio. Must be activated whenever the user asks to implement, modify,
+  in Brick Wargame Terrain Studio. Must be activated whenever the user asks to implement, modify,
   or extend any feature, UI component, or API.
 ---
 

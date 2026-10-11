@@ -135,7 +135,7 @@ definitions:
         $ref: "model.yaml#/definitions/BoundingBox"
       colorId:
         type: ["integer", "null"]
-        description: Official LEGO color ID to apply, or null to erase/clear cells
+        description: Official brick color ID to apply, or null to erase/clear cells
     required:
       - assetId
       - bbox
@@ -177,55 +177,19 @@ definitions:
   ListColorsCommand:
     title: ListColorsCommand
     type: object
-    description: Command to list all available official LEGO colors
+    description: Command to list all available official brick colors
     properties: {}
     additionalProperties: false
 
   ListColorsResponse:
     title: ListColorsResponse
     type: object
-    description: Catalog of official LEGO colors
+    description: Catalog of official brick colors
     properties:
       colors:
         type: array
         items:
-          $ref: "model.yaml#/definitions/LegoColor"
+          $ref: "model.yaml#/definitions/BrickColor"
     required:
       - colors
-    additionalProperties: false
-
-  GetAssetImageCommand:
-    title: GetAssetImageCommand
-    type: object
-    description: Command to query a rendered SVG image representation of the asset or bounding box
-    properties:
-      assetId:
-        type: string
-        description: Target asset identifier
-      bbox:
-        $ref: "model.yaml#/definitions/BoundingBox"
-    required:
-      - assetId
-    additionalProperties: false
-
-  GetAssetImageResponse:
-    title: GetAssetImageResponse
-    type: object
-    description: Rendered SVG image representation
-    properties:
-      image:
-        type: string
-        description: SVG string representation of the asset rendering
-      format:
-        type: string
-        enum: ["svg"]
-      width:
-        type: integer
-      height:
-        type: integer
-    required:
-      - image
-      - format
-      - width
-      - height
     additionalProperties: false

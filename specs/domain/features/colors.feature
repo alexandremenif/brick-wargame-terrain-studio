@@ -1,7 +1,7 @@
-Feature: Official LEGO Colors Catalog
+Feature: Official Brick Colors Catalog
 
-  Scenario: Listing all official LEGO colors
-    When I list the official LEGO colors
+  Scenario: Listing all official brick colors
+    When I list the official brick colors
     Then exactly 41 colors should be returned
     And each color must have an ID, an official name, and a valid hex code
     And the list should contain "Bright Green" with ID 15 and hex "#4B9F4A"

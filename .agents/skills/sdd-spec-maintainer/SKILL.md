@@ -2,7 +2,7 @@
 name: sdd-spec-maintainer
 description: >-
   Guide and reference for authoring, editing, modularizing, and maintaining specification files
-  in specs/ for LEGO Wargame Terrain Studio. Must be activated whenever the agent needs to analyze,
+  in specs/ for Brick Wargame Terrain Studio. Must be activated whenever the agent needs to analyze,
   extend, or update project specifications.
 ---
 

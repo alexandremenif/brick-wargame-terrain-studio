@@ -26,7 +26,7 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 
 2. **AI Tooling Adapter**:
    * Defined in [`mcp.md`](./mcp.md).
-   * Implements the Model Context Protocol (MCP) over Streamable HTTP allowing external AI agents to manipulate assets and inspect SVG images with parity.
+   * Implements the Model Context Protocol (MCP) over Streamable HTTP allowing external AI agents to manipulate assets and inspect structured cell state with parity.
 
 3. **Relational Storage Adapter (SQLite)**:
    * Defined in [`schema.dbml`](./schema.dbml).
@@ -37,8 +37,8 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 ## 2. Server Color Management
 
 * **Static In-Memory Catalog**:
-  * LEGO colors are static reference data defined authoritatively in [`specs/domain/colors.csv`](../domain/colors.csv).
-  * **Not Stored in Database**: The server loads the colors list into memory from the static file (compiled at build time). There is no `lego_colors` table or seed migration in SQLite.
+  * Brick colors are static reference data defined authoritatively in [`specs/domain/colors.csv`](../domain/colors.csv).
+  * **Not Stored in Database**: The server loads the colors list into memory from the static file (compiled at build time). There is no `brick_colors` table or seed migration in SQLite.
   * In SQLite, the `cells` table stores only the numeric `color_id INTEGER NOT NULL`.
   * The server exposes the static catalog via the `list_colors` endpoint (JSON-RPC and MCP tool), ensuring both the UI and AI agents query the exact same color definitions dynamically.
 
