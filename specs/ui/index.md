@@ -8,15 +8,16 @@ This directory defines the visual ergonomics, functional component hierarchy, an
 
 ![Brick Studio UI Mockup](./mockup.svg)
 
-The UI is structured into 5 cohesive components matching the layout:
+The UI is structured into 6 cohesive components matching the layout:
 
 ```text
 <StudioApp> (index.md)
 ├── <TopHeaderBar>               -> top_header_bar.md (Branding, Asset Selector, Dimensions WxH, Grid Toggle)
 ├── <div className="flex flex-1">
-│   ├── <LeftToolboxSidebar>     -> left_toolbox_sidebar.md (Brush/Eraser, Brush Size, 41 Flat Color Tiles)
+│   ├── <LeftToolboxSidebar>     -> left_toolbox_sidebar.md (Brush/Eraser, Brush Sizes 1x1 up to 32x32, 41 Color Tiles)
 │   ├── <SvgViewport>            -> svg_viewport.md (Interactive SVG Continuous 2D Grid & BBox Overlay)
-│   └── <RightInspectorSidebar>  -> right_inspector_sidebar.md (Bounding Box Controls & Framing Actions)
+│   └── <RightInspectorSidebar>  -> right_inspector_sidebar.md (Minimap & Bounding Box Controls)
+│       └── <Minimap>            -> minimap.md (Scaled Overview Thumbnail & Region Viewport Indicator)
 └── <BottomStatusBar>            -> bottom_status_bar.md (Cursor Position, Painted Cells Total, Live Sync)
 ```
 
@@ -25,9 +26,10 @@ The UI is structured into 5 cohesive components matching the layout:
 ## 2. Component Specification Index
 
 * **[`top_header_bar.md`](./top_header_bar.md)**: Clean identity ("Brick Wargame Terrain Studio"), asset switching dropdown, new asset action, width/height dimensions inputs, and optional grid toggle.
-* **[`left_toolbox_sidebar.md`](./left_toolbox_sidebar.md)**: Tool mode selector (Brush vs Eraser), brush size presets ($1\times 1, 2\times 2, 4\times 4$), and 41 official brick color swatches displayed as 1x1 flat squares.
+* **[`left_toolbox_sidebar.md`](./left_toolbox_sidebar.md)**: Tool mode selector (Brush vs Eraser), brush size presets ($1\times 1, 2\times 2, 4\times 4, 8\times 8, 16\times 16, 32\times 32$), and 41 official brick color swatches displayed as 1x1 flat squares.
 * **[`svg_viewport.md`](./svg_viewport.md)**: High-performance interactive 2D flat SVG grid with **continuous stud surfaces by default** (no round nubs, optional reference grid toggle), click/drag painting, and bounding box visual overlay.
-* **[`right_inspector_sidebar.md`](./right_inspector_sidebar.md)**: Bounding box numerical inputs ($x, y, w, h$), quick framing actions ("Fit to Asset", "Clear"), and area fill ("Fill BBox").
+* **[`right_inspector_sidebar.md`](./right_inspector_sidebar.md)**: Hosts the minimap overview thumbnail, bounding box numerical inputs ($x, y, w, h$), quick framing actions ("Fit to Asset", "Clear"), and area fill ("Fill BBox").
+* **[`minimap.md`](./minimap.md)**: Proportional thumbnail overview of the entire terrain with live cell preview and scaled bounding box indicator.
 * **[`bottom_status_bar.md`](./bottom_status_bar.md)**: Live stud cursor coordinates under pointer, painted stud metrics, and real-time backend connection status.
 
 ---
