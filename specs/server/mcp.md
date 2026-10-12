@@ -17,6 +17,7 @@ Each MCP tool is mapped directly from our domain command definitions to guarante
 | `paint_area` | `PaintAreaCommand` | Paints or erases a rectangular area (or $1 \times 1$ cell) with an official brick `color_id` (or `null` to clear cells). Overflow is clipped. |
 | `list_assets` | `ListAssetsCommand` | Lists all available assets in the studio. |
 | `list_colors` | `ListColorsCommand` | Lists the official brick colors catalog (`id`, `name`, `hex`). |
+| `export_image` | `ExportImageCommand` | Exports an asset or framed sub-region as a PNG image with adaptive resolution and checkerboard transparency. Returns native MCP `ImageContent` (`image/png`). |
 
 ---
 
@@ -26,3 +27,5 @@ The MCP server supports **Streamable HTTP** transport (in addition to optional s
 * All mutations (`create_asset`, `update_asset`, `delete_asset`, `paint_area`) persist immediately to SQLite and trigger real-time updates in the UI.
 * Bounding boxes are transient selections supplied as arguments to `paint_area`, not stored on the persistent asset.
 * AI agents inspect the layout and verify patterns directly through the structured coordinate cell array returned by `get_asset`.
+* Multimodal AI agents call `export_image` to inspect the visual rendering. The tool automatically applies the adaptive `'llm'` profile ($\text{maxDimension} \le 800\text{px}$) and renders unpainted studs with a neutral checkerboard transparency pattern, returning native MCP `ImageContent` (`{ type: 'image', data: base64, mimeType: 'image/png' }`) so models visually distinguish empty space from white-painted bricks.
+

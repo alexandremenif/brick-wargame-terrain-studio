@@ -23,15 +23,21 @@ The `<TopHeaderBar>` sits at the top of the Studio viewport. It provides clean g
   * **Crop Warning on Downsizing**: When shrinking an asset dimension (e.g. from $32 \times 32$ to $16 \times 16$), cells outside the new dimensions will be permanently removed. The UI prompts with a confirmation warning before applying the reduction if painted cells will be cropped.
 * **Grid Mode Toggle**:
   * Toggle button `[Grid: On / Off]` switching continuous stud surface versus overlaid reference grid lines on the canvas viewport.
+* **Export for Printing Button**:
+  * Action button `[🖨️ Export for Printing]` located in the right section next to Grid Mode toggle.
+  * Clicking triggers `exportImage({ assetId, profile: 'print' })` over JSON-RPC.
+  * On response, creates a PNG Blob and initiates a direct browser file download named `${asset.name}_print.png`.
 
 ## 3. Visual Ergonomics & Layout
 * Height: 48px fixed banner (`h-12`).
 * Background: `bg-zinc-900 border-b border-zinc-800`.
 * Left section: Branding, Asset selector dropdown, `[+ New]` button, and `[Delete]` button.
-* Right section: Dimension inputs ($W \times H$) and Grid Mode toggle.
+* Right section: Dimension inputs ($W \times H$), Grid Mode toggle, and `[🖨️ Export for Printing]` button.
 
 ## 4. Acceptance Criteria & Test IDs
 * `TEST-UI-HEADER-01`: Displays the currently selected asset name.
 * `TEST-UI-HEADER-02`: Changing width or height input values dispatches dimension updates and resizes the displayed asset grid.
 * `TEST-UI-HEADER-03`: Width and height inputs enforce minimum values ($W \ge 1, H \ge 1$).
 * `TEST-UI-HEADER-04`: Clicking the `[Delete]` button opens the `<DeleteAssetModal>` confirmation dialog.
+* `TEST-UI-HEADER-05`: Clicking `[🖨️ Export for Printing]` dispatches an image export request with profile 'print' and downloads `${asset.name}_print.png`.
+

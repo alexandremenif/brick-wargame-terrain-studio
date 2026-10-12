@@ -18,14 +18,15 @@ Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustain
   * The framed bounding box area is automatically scaled to **best fit the available viewport dimensions** ($W_{\text{viewport}} \times H_{\text{viewport}}$) with zero scrolling, preserving the 1:1 stud aspect ratio:
     $$S_{\text{stud}} = \min\left(\frac{W_{\text{viewport}}}{width}, \frac{H_{\text{viewport}}}{height}\right)$$
   * The framed area remains centered in the viewport.
-* **Flat 2D Continuous Studs**:
+* **Flat 2D Continuous Studs via Domain Rendering Engine**:
+  * Visual rasterization is processed by the pure domain function `renderAssetGrid` in `@lego-wargame-terrain-studio/domain`, guaranteeing 100% pixel-for-pixel parity with server image exports.
   * Stud cells are rendered as continuous flat colored squares.
   * No 3D bevels, drop shadows, or circular stud nub graphics are drawn.
-* **Baseplate Background**:
-  * Unpainted cells display the authentic dark green baseplate color `#184632`.
+* **Neutral Checkerboard Transparency Background**:
+  * Unpainted cells display a subtle $2 \times 2$ neutral checkerboard pattern (`#27272a` and `#18181b`) per stud, clearly distinguishing unpainted empty space from official White bricks (`#FFFFFF`).
 * **Optional 1px Alignment Grid**:
-  * Toggled via the "Show Grid" checkbox in `<TopHeaderBar>`.
-  * When enabled, renders 1px semi-transparent grid lines (`rgba(255, 255, 255, 0.08)`) between studs.
+  * Toggled via the "Show Grid" button in `<TopHeaderBar>`.
+  * When enabled and stud size exceeds $3\text{px}$, renders 1px semi-transparent grid lines (`rgba(0, 0, 0, 0.15)`) between studs.
   * When disabled, cells appear as continuous flush brick surfaces.
 
 ---
@@ -37,7 +38,7 @@ Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustain
   * Clicking on a visible stud at column $C$ and row $R$ paints an area matching the currently active brush size ($1\times 1, 2\times 2, 4\times 4, 8\times 8, 16\times 16, 32\times 32$), with the clicked stud at the top-left origin $(C, R)$.
   * Active tool behavior:
     * **Brush Tool**: Paints cells with the active official brick color ID.
-    * **Eraser Tool**: Clears cells to `colorId: null` (reverting to the baseplate `#184632`).
+    * **Eraser Tool**: Clears cells to `colorId: null` (reverting to the neutral checkerboard transparency pattern).
   * On click, the client immediately updates the local canvas buffer and dispatches the `paintArea` JSON-RPC HTTP request to the backend.
 * **Drag-to-Pan (Pan Mode)**:
   * When the active tool mode is `Pan` (`[✋ Pan]`), clicking and dragging (`pointerdown` followed by `pointermove`) on the canvas viewport pans the active view.

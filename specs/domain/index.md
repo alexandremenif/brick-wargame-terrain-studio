@@ -19,8 +19,9 @@ The domain layer encapsulates the core logic, entities, invariants, and commands
 Domain entities, command contracts, and static catalogs are formally specified under `specs/domain/`:
 * [`colors.csv`](./colors.csv): Canonical tabular list of all 41 official brick colors (`id`, `name`, `hex`).
 * [`schemas/model.yaml`](./schemas/model.yaml): Domain entities (`BoundingBox`, `BrickColor`, `CellData`, `Asset`).
-* [`schemas/commands.yaml`](./schemas/commands.yaml): Domain commands (`CreateAssetCommand`, `UpdateAssetCommand`, `GetAssetCommand`, `DeleteAssetCommand`, `PaintAreaCommand`, `ListAssetsCommand`, `ListColorsCommand`).
+* [`schemas/commands.yaml`](./schemas/commands.yaml): Domain commands (`CreateAssetCommand`, `UpdateAssetCommand`, `GetAssetCommand`, `DeleteAssetCommand`, `PaintAreaCommand`, `ListAssetsCommand`, `ListColorsCommand`, `ExportImageCommand`).
 * [`bounding_box_math.md`](./bounding_box_math.md): Pure domain math operations and clamping invariants (`clampBoundingBox`, `panBoundingBox`, `centerBoundingBoxAt`, `zoomBoundingBox`, `recoverBoundingBox`).
+* [`rendering.md`](./rendering.md): Pure domain 2D canvas grid rendering rules and transparency representation.
 
 ---
 
@@ -31,3 +32,5 @@ Domain entities, command contracts, and static catalogs are formally specified u
   * [`features/asset.feature`](./features/asset.feature): Validates asset creation, dimension updates, bounding box setting, and lenient brush painting clipping.
   * [`features/colors.feature`](./features/colors.feature): Validates listing official brick colors and verifying palette completeness and attributes.
   * [`features/bounding_box_math.feature`](./features/bounding_box_math.feature): Validates pure domain math, boundary clamping, pan deltas, center repositioning, wheel zooming, and self-healing recovery.
+  * [`features/rendering.feature`](./features/rendering.feature): Validates canvas grid rendering, checkerboard transparency, and grid lines.
+

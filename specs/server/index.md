@@ -52,6 +52,10 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
   * Mediates between inbound adapters (OpenRPC router, MCP adapter) and persistence (`AssetRepository`).
   * Enforces cross-cutting business rules (validates colors via `ColorService`), handles lenient painting logic on the aggregate, and coordinates persistence.
 
+* **[`image_export_service.md`](./image_export_service.md)** (`ImageExportService`):
+  * Application service orchestrating asset image exports for multimodal LLM vision and printing.
+  * Enforces boundary validation, calculates adaptive scale (`computeAdaptivePixelsPerStud`), delegates rasterization to domain `renderAssetGrid`, and produces base64 PNG data.
+
 * **[`asset_repository.md`](./asset_repository.md)** (`AssetRepository`):
   * Manages the persistence lifecycle and CRUD operations for the `Asset` aggregate root in SQLite.
   * Adheres strictly to Domain-Driven Design (DDD): external callers interact exclusively with the `Asset` aggregate (`create`, `findById`, `listAll`, `update`, `delete`), never directly mutating raw cells in isolation.
@@ -72,8 +76,9 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 ## 4. Server Testing & Acceptance Criteria
 
 * **Wire Protocol BDD Scenarios**:
-  * Located in [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature) and [`features/health_check.feature`](./features/health_check.feature).
-  * Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`), HTTP transport behavior, readiness probe health responses, and end-to-end request handling over HTTP.
+  * Located in [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature), [`features/health_check.feature`](./features/health_check.feature), and [`features/export_image.feature`](./features/export_image.feature).
+  * Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`), HTTP transport behavior, readiness probe health responses, and end-to-end asset image export across protocols.
+
 
 * **Component Unit & Integration Testing Strategy**:
   * Low-level component contracts are verified via targeted unit and integration test suites during implementation, mapped directly to their Test IDs:

@@ -125,3 +125,21 @@ methods:
         message: "Invalid params"
       - code: -32000
         message: "Internal engine error"
+
+  - name: "exportImage"
+    description: "Export a terrain asset or framed sub-region as a rendered PNG image"
+    params:
+      - name: "command"
+        required: true
+        schema:
+          $ref: "../domain/schemas/commands.yaml#/definitions/ExportImageCommand"
+    result:
+      name: "result"
+      schema:
+        $ref: "../domain/schemas/commands.yaml#/definitions/ExportImageResponse"
+    errors:
+      - code: -32602
+        message: "Invalid params"
+      - code: -32000
+        message: "Internal engine error"
+

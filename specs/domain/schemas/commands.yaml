@@ -193,3 +193,38 @@ definitions:
     required:
       - colors
     additionalProperties: false
+
+  ExportImageCommand:
+    title: ExportImageCommand
+    type: object
+    description: Command to export a terrain asset as a rendered PNG image
+    properties:
+      assetId:
+        type: string
+        description: Target asset identifier
+      bbox:
+        $ref: "model.yaml#/definitions/BoundingBox"
+        description: Optional framed bounding box to export; defaults to full asset
+      profile:
+        type: string
+        enum:
+          - llm
+          - print
+        default: llm
+        description: Rendering quality profile ('llm' with adaptive scale and checkerboard, or 'print' at 64px/stud with white background)
+    required:
+      - assetId
+    additionalProperties: false
+
+  ExportImageResponse:
+    title: ExportImageResponse
+    type: object
+    description: Rendered PNG image data
+    properties:
+      data:
+        type: string
+        description: Base64-encoded PNG image binary data
+    required:
+      - data
+    additionalProperties: false
+

@@ -1,6 +1,9 @@
 {
   "default": {
-    "paths": ["specs/domain/features/**/*.feature"],
+    "paths": [
+      "specs/domain/features/**/*.feature",
+      "specs/server/features/**/*.feature"
+    ],
     "import": [
       "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts"
@@ -9,7 +12,10 @@
     "worldParameters": { "driver": "memory" }
   },
   "domain": {
-    "paths": ["specs/domain/features/**/*.feature"],
+    "paths": [
+      "specs/domain/features/**/*.feature",
+      "specs/server/features/**/*.feature"
+    ],
     "import": [
       "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts"
@@ -39,7 +45,10 @@
     "format": ["summary", "progress-bar"]
   },
   "mcp": {
-    "paths": ["specs/domain/features/**/*.feature"],
+    "paths": [
+      "specs/domain/features/**/*.feature",
+      "specs/server/features/**/*.feature"
+    ],
     "import": [
       "packages/server/test/steps/**/*.ts",
       "packages/server/test/support/**/*.ts",

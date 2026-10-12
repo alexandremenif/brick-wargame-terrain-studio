@@ -9,6 +9,8 @@ import type {
   CreateAssetResponse,
   DeleteAssetCommand,
   DeleteAssetResponse,
+  ExportImageCommand,
+  ExportImageResponse,
   GetAssetCommand,
   GetAssetResponse,
   ListAssetsCommand,
@@ -56,4 +58,9 @@ export interface TerrainEngineService {
    * List all official brick colors
    */
   listColors(command: ListColorsCommand): Promise<ListColorsResponse>;
+
+  /**
+   * Export a terrain asset or framed sub-region as a rendered PNG image
+   */
+  exportImage(command: ExportImageCommand): Promise<ExportImageResponse>;
 }

@@ -35,3 +35,9 @@ Feature: Top Header Bar Interactions & Asset Lifecycle
     When I click the "Delete Asset" button in the modal
     Then the modal should be closed
     And the asset "Modular Outpost" should be deleted
+
+  Scenario: Triggering print image export from header button
+    When I click the "Export for Printing" button in the header
+    Then an image export should be requested with profile "print"
+    And a file download for "Modular Outpost_print.png" should be initiated
+
