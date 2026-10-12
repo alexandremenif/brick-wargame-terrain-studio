@@ -30,6 +30,15 @@ export class StudioWorld extends World {
   public db: any = null;
   public persistedId: string | null = null;
 
+  // HTTP scenario context
+  public httpServer: any = null;
+  public lastHttpResponse: {
+    statusCode: number;
+    headers: Record<string, string | string[] | undefined>;
+    body: string;
+    json?: any;
+  } | null = null;
+
   constructor(options: IWorldOptions) {
     super(options);
     const driverType = (this.parameters?.driver as string) || 'memory';
@@ -57,6 +66,8 @@ Before(async function (this: StudioWorld) {
   this.tempDbPath = null;
   this.db = null;
   this.persistedId = null;
+  this.httpServer = null;
+  this.lastHttpResponse = null;
   await this.driver.start();
 });
 
@@ -77,6 +88,13 @@ After(async function (this: StudioWorld) {
       // Ignored if already deleted
     }
     this.tempDbPath = null;
+  }
+
+  if (this.httpServer) {
+    await new Promise<void>((resolve) => {
+      this.httpServer.close(() => resolve());
+    });
+    this.httpServer = null;
   }
 
   await this.driver.stop();

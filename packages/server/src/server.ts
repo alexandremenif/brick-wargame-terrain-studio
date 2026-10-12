@@ -43,14 +43,14 @@ async function startServer() {
   const rpcServer = createHttpRpcServer(assetService);
 
   const server = http.createServer((req, res) => {
-    if (req.url === '/rpc' || req.url === '/rpc/') {
-      // Forward to RPC server request listener
+    let reqPath = req.url?.split('?')[0] || '/';
+    if (reqPath === '/rpc' || reqPath === '/health') {
+      // Forward to RPC & Health server request listener
       rpcServer.emit('request', req, res);
       return;
     }
 
     // Serve static UI assets
-    let reqPath = req.url?.split('?')[0] || '/';
     if (reqPath === '/') reqPath = '/index.html';
     const filePath = path.join(distUiDir, reqPath);
     if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {

@@ -40,6 +40,9 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient, storage }) => {
             params: [params],
           }),
         });
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText || 'Request failed'}`);
+        }
         const json = await res.json();
         if (json.error) {
           throw new Error(json.error.message || 'RPC Error');

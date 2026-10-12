@@ -12,6 +12,8 @@
     "codegen:dbml": "node packages/dbml-generator/bin/dbml-generator.js",
     "codegen": "npm run codegen:jsonrpc && npm run codegen:dbml",
     "build": "npm run codegen && npm run build --workspaces",
+    "dev:server": "npm --workspace=@lego-wargame-terrain-studio/server run dev",
+    "dev:ui": "npm --workspace=@lego-wargame-terrain-studio/ui run dev",
     "test:bdd": "NODE_OPTIONS='--import tsx' cucumber-js -p domain",
     "test:bdd:domain": "NODE_OPTIONS='--import tsx' cucumber-js -p domain",
     "test:bdd:jsonrpc": "NODE_OPTIONS='--import tsx' cucumber-js -p jsonrpc",

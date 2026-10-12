@@ -20,7 +20,7 @@
   "jsonrpc": {
     "paths": [
       "specs/domain/features/**/*.feature",
-      "specs/server/features/jsonrpc_protocol.feature"
+      "specs/server/features/**/*.feature"
     ],
     "import": [
       "packages/server/test/steps/**/*.ts",

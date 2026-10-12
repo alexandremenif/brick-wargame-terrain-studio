@@ -1,0 +1,39 @@
+version: "0.5"
+
+processes:
+  server:
+    command: "npm run dev:server"
+    working_dir: "."
+    readiness_probe:
+      http_get:
+        host: "127.0.0.1"
+        port: 3000
+        path: "/health"
+      initial_delay_seconds: 1
+      period_seconds: 2
+      timeout_seconds: 2
+      success_threshold: 1
+      failure_threshold: 5
+    availability:
+      restart: "on_failure"
+      backoff_seconds: 2
+
+  frontend:
+    command: "npm run dev:ui"
+    working_dir: "."
+    depends_on:
+      server:
+        condition: "process_healthy"
+    readiness_probe:
+      http_get:
+        host: "localhost"
+        port: 5173
+        path: "/"
+      initial_delay_seconds: 1
+      period_seconds: 2
+      timeout_seconds: 2
+      success_threshold: 1
+      failure_threshold: 5
+    availability:
+      restart: "on_failure"
+      backoff_seconds: 2
