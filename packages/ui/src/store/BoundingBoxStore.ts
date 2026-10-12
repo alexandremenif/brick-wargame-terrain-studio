@@ -1,10 +1,10 @@
-import type { BoundingBox } from '@lego-wargame-terrain-studio/api';
+import type { BoundingBox } from '@lego-wargame-terrain-studio/domain';
 import {
   clampBoundingBox,
   panBoundingBox,
   centerBoundingBoxAt,
   zoomBoundingBox,
-} from '@lego-wargame-terrain-studio/api';
+} from '@lego-wargame-terrain-studio/domain';
 import type { ViewportStorageService } from '../storage/ViewportStorageService.js';
 import { LocalStorageViewportStorage } from '../storage/adapters.js';
 

@@ -6,7 +6,7 @@ import { DefaultColorService } from '../../src/domain/ColorService.js';
 import { SqliteAssetRepository } from '../../src/persistence/SqliteAssetRepository.js';
 import { AssetService } from '../../src/domain/AssetService.js';
 import { dispatchJsonRpc } from '../../src/generated/router.js';
-import type { BrickColor } from '@lego-wargame-terrain-studio/api';
+import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
 
 export class JsonRpcDriver implements EngineDriver {
   private db!: Database.Database;

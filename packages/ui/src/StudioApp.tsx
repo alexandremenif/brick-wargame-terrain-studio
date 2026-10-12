@@ -5,7 +5,7 @@ import type {
   BoundingBox,
   BrickColor,
   CellData,
-} from '@lego-wargame-terrain-studio/api';
+} from '@lego-wargame-terrain-studio/domain';
 import { TerrainApiClient } from './generated/client.js';
 import { TopHeaderBar } from './components/TopHeaderBar.js';
 import { LeftToolboxSidebar, type ToolMode, type BrushSize } from './components/LeftToolboxSidebar.js';

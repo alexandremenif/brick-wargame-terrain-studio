@@ -7,12 +7,12 @@
  * @param {Record<string, object>} parsedSpec.definitions
  * @param {Array<object>} parsedSpec.methods
  * @param {object} [options={}]
- * @param {string} [options.apiPackageName='@lego-wargame-terrain-studio/api']
+ * @param {string} [options.apiPackageName='@lego-wargame-terrain-studio/domain']
  * @returns {string} TypeScript client source code
  */
 export function generateClientClass(parsedSpec, options = {}) {
   const { serviceName, clientName, definitions, methods } = parsedSpec;
-  const { apiPackageName = '@lego-wargame-terrain-studio/api' } = options;
+  const { apiPackageName = '@lego-wargame-terrain-studio/domain' } = options;
 
   const exportedTypeNames = Object.keys(definitions).sort();
   const typeImports = [serviceName, ...exportedTypeNames]

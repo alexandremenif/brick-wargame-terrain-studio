@@ -12,7 +12,7 @@ const defaultSchemaPaths = [
   path.join(rootDir, 'specs/domain/schemas/model.yaml'),
   path.join(rootDir, 'specs/domain/schemas/commands.yaml'),
 ];
-const defaultTargetApiDir = path.join(rootDir, 'packages/api/src/generated');
+const defaultTargetApiDir = path.join(rootDir, 'packages/domain/src/generated');
 const defaultTargetUiDir = path.join(rootDir, 'packages/ui/src/generated');
 const defaultTargetServerDir = path.join(rootDir, 'packages/server/src/generated');
 

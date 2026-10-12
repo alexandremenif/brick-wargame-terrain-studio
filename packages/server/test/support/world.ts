@@ -3,7 +3,7 @@ import { setWorldConstructor, World, Before, After } from '@cucumber/cucumber';
 import type { IWorldOptions } from '@cucumber/cucumber';
 import type { EngineDriver } from './driver.js';
 import { InMemoryDriver } from './memory_driver.js';
-import type { JsonRpcResponse, TerrainEngineService } from '@lego-wargame-terrain-studio/api';
+import type { JsonRpcResponse, TerrainEngineService } from '@lego-wargame-terrain-studio/domain';
 
 export type DriverFactory = () => EngineDriver;
 

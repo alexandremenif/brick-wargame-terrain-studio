@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/api';
+import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
 import type { BrushSize, ToolMode } from './LeftToolboxSidebar.js';
 
 export interface CanvasViewportProps {

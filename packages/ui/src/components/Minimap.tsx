@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/api';
+import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
 import { Badge } from './design_system/index.js';
 
 export interface MinimapProps {

@@ -16,8 +16,8 @@ flowchart TD
     WebApp["UI (Vite + React 19 + Canvas Viewport)"]
   end
 
-  subgraph SharedContracts["Pure Shared Contracts (Zero Node.js / Zero Native Deps)"]
-    Api["packages/api (TypeScript Interfaces, DTOs, TerrainEngineService Contract)"]
+  subgraph SharedContracts["Pure Shared Domain (Zero Node.js / Zero Native Deps)"]
+    Domain["packages/domain (TypeScript Entities, DTOs, TerrainEngineService Contract, Math & 2D Canvas Engine)"]
   end
 
   subgraph HostSystem["Server System (Node.js)"]
@@ -27,8 +27,8 @@ flowchart TD
 
   Agent ---|"Streamable HTTP (JSON-RPC MCP)"| Server
   WebApp ---|"HTTP POST /rpc (JSON-RPC 2.0)"| Server
-  WebApp -.->|"Consumes Type Contracts"| Api
-  Server -.->|"Implements OpenRPC Methods"| Api
+  WebApp -.->|"Consumes Domain Models & Renderer"| Domain
+  Server -.->|"Implements OpenRPC Methods"| Domain
 
   Server ---|"Internal Engine Calls"| SQLite
 ```
@@ -37,7 +37,7 @@ flowchart TD
 
 ## 2. Monorepo Package Breakdown
 
-* **`packages/api`**: Pure shared contract package containing domain DTOs and the `TerrainEngineService` interface compiled from JSON Schema.
+* **`packages/domain`**: Pure shared domain package containing domain entities, DTOs, the `TerrainEngineService` interface compiled from JSON Schema, pure bounding box math, and the shared 2D canvas rendering engine.
 * **`packages/server`**: Server hosting domain logic, SQLite WAL persistence, OpenRPC JSON-RPC 2.0 router with schema validation, and streamable HTTP MCP tools (ready for remote or local hosting).
 * **`packages/ui`**: React 19 SPA frontend with high-performance HTML5 2D Canvas viewport, Minimap, Bounding Box controls, and official brick color pickers.
 * **`packages/codegen`**: Build-time tooling compiling declarative schemas in `specs/` into typed TypeScript contracts and SQL migrations.

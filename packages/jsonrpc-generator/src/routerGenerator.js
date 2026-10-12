@@ -7,12 +7,12 @@
  * @param {Array<object>} parsedSpec.methods
  * @param {object} parsedSpec.openRpcDoc
  * @param {object} [options={}]
- * @param {string} [options.apiPackageName='@lego-wargame-terrain-studio/api']
+ * @param {string} [options.apiPackageName='@lego-wargame-terrain-studio/domain']
  * @returns {string} TypeScript server router source code
  */
 export function generateServerRouter(parsedSpec, options = {}) {
   const { serviceName, definitions, methods, openRpcDoc } = parsedSpec;
-  const { apiPackageName = '@lego-wargame-terrain-studio/api' } = options;
+  const { apiPackageName = '@lego-wargame-terrain-studio/domain' } = options;
 
   const exportedTypeNames = Object.keys(definitions).sort();
   const typeImports = [serviceName, ...exportedTypeNames]

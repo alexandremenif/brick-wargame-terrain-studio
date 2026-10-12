@@ -1,7 +1,7 @@
 {
-  "name": "@lego-wargame-terrain-studio/api",
+  "name": "@lego-wargame-terrain-studio/domain",
   "version": "1.0.0",
-  "description": "Pure shared TypeScript contracts, DTOs, and TerrainEngineService interface",
+  "description": "Pure shared domain entities, contracts, math, and 2D canvas rendering",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

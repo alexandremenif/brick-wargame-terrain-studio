@@ -1,5 +1,5 @@
-import type { BoundingBox } from '@lego-wargame-terrain-studio/api';
-import { recoverBoundingBox } from '@lego-wargame-terrain-studio/api';
+import type { BoundingBox } from '@lego-wargame-terrain-studio/domain';
+import { recoverBoundingBox } from '@lego-wargame-terrain-studio/domain';
 import type { ViewportStorageService } from './ViewportStorageService.js';
 
 export class LocalStorageViewportStorage implements ViewportStorageService {

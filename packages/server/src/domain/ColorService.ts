@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { BrickColor } from '@lego-wargame-terrain-studio/api';
+import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
 
 export interface ColorService {
   loadColors(filePath?: string): Promise<void>;

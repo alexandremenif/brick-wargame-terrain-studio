@@ -1,4 +1,4 @@
-import type { Asset as AssetDto, CellData, BoundingBox } from '@lego-wargame-terrain-studio/api';
+import type { Asset as AssetDto, CellData, BoundingBox } from '@lego-wargame-terrain-studio/domain';
 
 export interface AssetProps {
   id: string;

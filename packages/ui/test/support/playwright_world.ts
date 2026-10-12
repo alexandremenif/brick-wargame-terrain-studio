@@ -1,6 +1,6 @@
 import { setWorldConstructor, World } from '@cucumber/cucumber';
 import type { IWorldOptions } from '@cucumber/cucumber';
-import type { Asset, BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/api';
+import type { Asset, BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';

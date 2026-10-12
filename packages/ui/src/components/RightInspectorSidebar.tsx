@@ -1,5 +1,5 @@
 import React from 'react';
-import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/api';
+import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
 import { Minimap } from './Minimap.js';
 import { Button, NumberInput } from './design_system/index.js';
 

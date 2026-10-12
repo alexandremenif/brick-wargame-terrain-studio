@@ -1,4 +1,4 @@
-import type { BoundingBox } from '@lego-wargame-terrain-studio/api';
+import type { BoundingBox } from '@lego-wargame-terrain-studio/domain';
 
 /**
  * Storage adapter interface for viewport bounding box persistence.

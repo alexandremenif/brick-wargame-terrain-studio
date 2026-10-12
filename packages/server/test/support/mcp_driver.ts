@@ -6,7 +6,7 @@ import { DefaultColorService } from '../../src/domain/ColorService.js';
 import { SqliteAssetRepository } from '../../src/persistence/SqliteAssetRepository.js';
 import { AssetService } from '../../src/domain/AssetService.js';
 import { createMcpServer } from '../../src/adapters/mcp.js';
-import type { BrickColor } from '@lego-wargame-terrain-studio/api';
+import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
 
 export class McpDriver implements EngineDriver {
   private db!: Database.Database;

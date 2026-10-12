@@ -17,7 +17,7 @@ import type {
   ListAssetsResponse,
   ListColorsCommand,
   ListColorsResponse
-} from '@lego-wargame-terrain-studio/api';
+} from '@lego-wargame-terrain-studio/domain';
 
 export class AssetService {
   constructor(

@@ -1,7 +1,7 @@
 import http from 'node:http';
 import { dispatchJsonRpc } from '../generated/router.js';
 import type { JsonRpcRequest } from '../generated/router.js';
-import type { TerrainEngineService } from '@lego-wargame-terrain-studio/api';
+import type { TerrainEngineService } from '@lego-wargame-terrain-studio/domain';
 
 export function createHttpRpcServer(service: TerrainEngineService): http.Server {
   return http.createServer(async (req, res) => {

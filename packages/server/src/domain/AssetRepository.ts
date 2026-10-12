@@ -1,5 +1,5 @@
 import type { Asset } from './Asset.js';
-import type { AssetSummary } from '@lego-wargame-terrain-studio/api';
+import type { AssetSummary } from '@lego-wargame-terrain-studio/domain';
 
 export interface AssetRepository {
   create(asset: Asset): Promise<void>;

@@ -132,7 +132,7 @@ import {
   centerBoundingBoxAt,
   zoomBoundingBox,
   recoverBoundingBox,
-} from '@lego-wargame-terrain-studio/api';
+} from '@lego-wargame-terrain-studio/domain';
 
 interface BBoxState {
   currentBbox?: { x: number; y: number; width: number; height: number };

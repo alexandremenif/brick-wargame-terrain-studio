@@ -1,4 +1,4 @@
-import type { AssetSummary, BrickColor } from '@lego-wargame-terrain-studio/api';
+import type { AssetSummary, BrickColor } from '@lego-wargame-terrain-studio/domain';
 
 export interface EngineDriver {
   start(): Promise<void>;

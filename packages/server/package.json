@@ -14,7 +14,7 @@
     "test:bdd": "NODE_OPTIONS='--import tsx' cucumber-js -p domain"
   },
   "dependencies": {
-    "@lego-wargame-terrain-studio/api": "*",
+    "@lego-wargame-terrain-studio/domain": "*",
     "@modelcontextprotocol/sdk": "^1.6.1",
     "@open-rpc/schema-utils-js": "^2.2.1",
     "@open-rpc/server-js": "^1.10.1",

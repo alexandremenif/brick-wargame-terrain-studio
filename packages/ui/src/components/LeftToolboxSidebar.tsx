@@ -1,5 +1,5 @@
 import React from 'react';
-import type { BrickColor } from '@lego-wargame-terrain-studio/api';
+import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
 import { Button, Tooltip } from './design_system/index.js';
 
 export type ToolMode = 'Brush' | 'Eraser' | 'Pan';

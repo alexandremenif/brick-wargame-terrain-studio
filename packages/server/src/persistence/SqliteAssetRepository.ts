@@ -1,7 +1,7 @@
 import type Database from 'better-sqlite3';
 import { Asset } from '../domain/Asset.js';
 import type { AssetRepository } from '../domain/AssetRepository.js';
-import type { AssetSummary, CellData } from '@lego-wargame-terrain-studio/api';
+import type { AssetSummary, CellData } from '@lego-wargame-terrain-studio/domain';
 
 export class SqliteAssetRepository implements AssetRepository {
   private db: Database.Database;

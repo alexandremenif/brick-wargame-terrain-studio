@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AssetSummary } from '@lego-wargame-terrain-studio/api';
+import type { AssetSummary } from '@lego-wargame-terrain-studio/domain';
 import { Button, NumberInput, Select, Badge } from './design_system/index.js';
 
 export interface TopHeaderBarProps {

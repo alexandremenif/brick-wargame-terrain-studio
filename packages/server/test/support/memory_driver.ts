@@ -1,7 +1,7 @@
 import type { EngineDriver } from './driver.js';
 import { Asset } from '../../src/domain/Asset.js';
 import { DefaultColorService } from '../../src/domain/ColorService.js';
-import type { BrickColor } from '@lego-wargame-terrain-studio/api';
+import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
 
 export class InMemoryDriver implements EngineDriver {
   private asset: Asset | null = null;

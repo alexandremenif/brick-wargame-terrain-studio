@@ -23,7 +23,7 @@ export {
  * @param {string} [options.targetServerDir] - Output directory for Server router
  * @param {string} [options.serviceName] - Optional custom name for service interface
  * @param {string} [options.clientName] - Optional custom name for client class
- * @param {string} [options.apiPackageName='@lego-wargame-terrain-studio/api']
+ * @param {string} [options.apiPackageName='@lego-wargame-terrain-studio/domain']
  * @param {object} [options.logger=console]
  */
 export async function generateJsonRpc(options) {
@@ -35,7 +35,7 @@ export async function generateJsonRpc(options) {
     targetServerDir,
     serviceName,
     clientName,
-    apiPackageName = '@lego-wargame-terrain-studio/api',
+    apiPackageName = '@lego-wargame-terrain-studio/domain',
     logger = console,
   } = options;
 
