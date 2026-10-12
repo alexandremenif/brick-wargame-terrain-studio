@@ -63,7 +63,7 @@ async function startServer() {
     }
   });
 
-  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+  const PORT = parseInt(process.env.SERVER_PORT || process.env.PORT || '3000', 10);
   server.listen(PORT, () => {
     console.log(`Brick Studio Web & RPC Server running at http://localhost:${PORT}`);
   });

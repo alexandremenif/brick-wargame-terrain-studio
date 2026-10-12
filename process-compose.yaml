@@ -1,13 +1,22 @@
 version: "0.5"
 
+environment:
+  - "PORT=${SERVER_PORT:-3000}"
+  - "SERVER_PORT=${SERVER_PORT:-3000}"
+  - "UI_PORT=${UI_PORT:-5173}"
+  - "VITE_PORT=${UI_PORT:-5173}"
+
 processes:
   server:
     command: "npm run dev:server"
     working_dir: "."
+    environment:
+      - "PORT=${SERVER_PORT:-3000}"
+      - "SERVER_PORT=${SERVER_PORT:-3000}"
     readiness_probe:
       http_get:
         host: "127.0.0.1"
-        port: 3000
+        port: ${SERVER_PORT:-3000}
         path: "/health"
       initial_delay_seconds: 1
       period_seconds: 2
@@ -24,10 +33,14 @@ processes:
     depends_on:
       server:
         condition: "process_healthy"
+    environment:
+      - "UI_PORT=${UI_PORT:-5173}"
+      - "VITE_PORT=${UI_PORT:-5173}"
+      - "SERVER_PORT=${SERVER_PORT:-3000}"
     readiness_probe:
       http_get:
         host: "localhost"
-        port: 5173
+        port: ${UI_PORT:-5173}
         path: "/"
       initial_delay_seconds: 1
       period_seconds: 2
