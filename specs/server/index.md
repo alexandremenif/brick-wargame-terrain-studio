@@ -33,6 +33,11 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
    * Defined in [`schema.dbml`](./schema.dbml).
    * Generates SQLite DDL migrations (`assets` and `cells` tables) with foreign key enforcement and Write-Ahead Logging (WAL) concurrency.
 
+4. **HTTP Operational & Health Check Adapter**:
+   * Defined in [`health_check.md`](./health_check.md).
+   * Exposes `GET /health` and `HEAD /health` providing readiness probes for process orchestrators (`process-compose.yaml`).
+   * Guarantees fast, non-cached JSON diagnostic responses (`200 OK`, `{"status": "ok"}`).
+
 ---
 
 ## 2. Server Domain Services & Repositories
@@ -67,8 +72,8 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 ## 4. Server Testing & Acceptance Criteria
 
 * **Wire Protocol BDD Scenarios**:
-  * Located in [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature).
-  * Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`), HTTP transport behavior, and end-to-end request handling over HTTP POST (`/rpc`).
+  * Located in [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature) and [`features/health_check.feature`](./features/health_check.feature).
+  * Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`), HTTP transport behavior, readiness probe health responses, and end-to-end request handling over HTTP.
 
 * **Component Unit & Integration Testing Strategy**:
   * Low-level component contracts are verified via targeted unit and integration test suites during implementation, mapped directly to their Test IDs:
