@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/api';
 import { Badge } from './design_system/index.js';
 
@@ -21,7 +21,44 @@ export const Minimap: React.FC<MinimapProps> = ({
   boundingBox,
   onCenterAt,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+
+  // Dynamically observe container content dimensions to eliminate hardcoded sizes
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    setContainerSize({
+      width: Math.max(1, container.clientWidth - 16),
+      height: Math.max(1, container.clientHeight - 16),
+    });
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setContainerSize({
+          width: Math.max(1, entry.contentRect.width),
+          height: Math.max(1, entry.contentRect.height),
+        });
+      }
+    });
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
+  // Compute best-fit dimensions preserving the terrain asset's stud aspect ratio
+  const { minimapWidth, minimapHeight } = useMemo(() => {
+    const availW = containerSize.width > 0 ? containerSize.width : 208;
+    const availH = containerSize.height > 0 ? containerSize.height : 128;
+    const scale = Math.min(availW / assetWidth, availH / assetHeight);
+    return {
+      minimapWidth: Math.max(1, Math.round(assetWidth * scale)),
+      minimapHeight: Math.max(1, Math.round(assetHeight * scale)),
+    };
+  }, [containerSize.width, containerSize.height, assetWidth, assetHeight]);
 
   // Render thumbnail canvas
   useEffect(() => {
@@ -47,7 +84,7 @@ export const Minimap: React.FC<MinimapProps> = ({
       ctx.fillStyle = color?.hex ?? '#FFFFFF';
       ctx.fillRect(cell.x * studW, cell.y * studH, Math.max(1, studW), Math.max(1, studH));
     }
-  }, [assetWidth, assetHeight, cells, colorsById]);
+  }, [assetWidth, assetHeight, cells, colorsById, minimapWidth, minimapHeight]);
 
   // Click-to-center navigation handler on canvas directly
   const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -77,20 +114,22 @@ export const Minimap: React.FC<MinimapProps> = ({
   return (
     <div className="flex flex-col gap-2">
       <div
+        ref={containerRef}
         data-testid="minimap-container"
         className="relative h-[148px] w-full rounded border border-zinc-800 bg-zinc-950 p-2 overflow-hidden flex items-center justify-center cursor-pointer"
       >
         <div
           data-testid="minimap-content"
-          className="relative h-full w-full flex items-center justify-center"
+          style={{ width: `${minimapWidth}px`, height: `${minimapHeight}px` }}
+          className="relative flex items-center justify-center shrink-0"
         >
           <canvas
             ref={canvasRef}
             data-testid="minimap-canvas"
-            width={208}
-            height={132}
+            width={minimapWidth}
+            height={minimapHeight}
             onClick={handleCanvasClick}
-            className="h-full w-full rounded-sm cursor-crosshair pointer-events-auto"
+            className="h-full w-full rounded-sm cursor-crosshair pointer-events-auto shadow-sm"
           />
 
           {/* Bounding box position indicator */}

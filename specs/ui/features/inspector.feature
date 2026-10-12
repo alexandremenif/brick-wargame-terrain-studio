@@ -60,3 +60,13 @@ Feature: Right Inspector Sidebar & Minimap
     Given the bounding box is currently at X 0, Y 0, Width 32, Height 32
     Then the "Zoom Out" button in the inspector should be disabled
     And the "Fit to Asset" button in the inspector should be disabled
+
+  Scenario: Minimap preserves aspect ratio and centers thumbnail for square asset
+    Then the minimap thumbnail canvas should preserve the aspect ratio for a 32 by 32 asset
+    And the minimap thumbnail should be centered within its container
+
+  Scenario: Minimap preserves aspect ratio and centers thumbnail for non-square asset
+    When I change the width input to 48
+    And I change the height input to 24
+    Then the minimap thumbnail canvas should preserve the aspect ratio for a 48 by 24 asset
+    And the minimap thumbnail should be centered within its container

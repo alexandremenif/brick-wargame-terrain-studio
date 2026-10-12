@@ -22,8 +22,12 @@ The `<Minimap>` is embedded inside the `<RightInspectorSidebar>`. It provides a 
     $$x = \mathrm{clamp}\left(C_{\text{target}} - \left\lfloor\frac{width}{2}\right\rfloor, 0, W - width\right)$$
     $$y = \mathrm{clamp}\left(R_{\text{target}} - \left\lfloor\frac{height}{2}\right\rfloor, 0, H - height\right)$$
   * The main `<CanvasViewport>` and `<RightInspectorSidebar>` numeric inputs update immediately to reflect the new position.
-* **Automatic Scaling**:
-  * The entire $W \times H$ asset is scaled to fit within the fixed minimap thumbnail viewport ($208 \times 128$ px) preserving aspect ratio.
+* **Dynamic Responsive Scaling (Preserving Aspect Ratio)**:
+  * The entire $W \times H$ asset is scaled to best fit the available dimensions of the container ($W_{\text{avail}} \times H_{\text{avail}}$) while strictly preserving the stud aspect ratio ($W/H$).
+  * Zero hardcoded thumbnail dimensions: the container's inner content box is observed dynamically (via `ResizeObserver`), computing:
+    $$\text{scale} = \min\left(\frac{W_{\text{avail}}}{W}, \frac{H_{\text{avail}}}{H}\right)$$
+    $$\text{minimapWidth} = \max(1, \mathrm{round}(W \times \text{scale})), \quad \text{minimapHeight} = \max(1, \mathrm{round}(H \times \text{scale}))$$
+  * The thumbnail is centered horizontally and vertically within the container card with no stretching or distortion.
 * **Real-Time Synchronization**:
   * Whenever cells are painted or erased on the canvas, the minimap thumbnail updates in real time.
   * Whenever bounding box parameters change, the bounding box indicator updates immediately.
@@ -33,7 +37,7 @@ The `<Minimap>` is embedded inside the `<RightInspectorSidebar>`. It provides a 
 ## 3. Visual Ergonomics & Layout
 
 * Contained within the upper section of `<RightInspectorSidebar>`.
-* Thumbnail container dimensions: $224 \times 148$ px with dark card styling (`rounded border border-zinc-800 bg-zinc-950`).
+* Thumbnail container dimensions: Card styling (`rounded border border-zinc-800 bg-zinc-950 p-2`) with flex alignment centering the thumbnail (`items-center justify-center`).
 * Footer label displaying full asset dimensions and current bounding box metrics: e.g. `Asset: 32×32 | BBox: 15×13 at [9, 5]`.
 
 ---
@@ -45,3 +49,4 @@ The `<Minimap>` is embedded inside the `<RightInspectorSidebar>`. It provides a 
 * `TEST-UI-MINIMAP-03`: When "Fit to Asset" is clicked, the bounding box indicator expands to cover the entire minimap.
 * `TEST-UI-MINIMAP-04`: Painting cells on the canvas immediately reflects those color changes in the minimap thumbnail.
 * `TEST-UI-MINIMAP-05`: Clicking a point on the minimap centers the bounding box on that coordinate, preserving dimensions and clamping within asset boundaries.
+* `TEST-UI-MINIMAP-06`: Minimap canvas strictly preserves the asset stud aspect ratio ($W/H$) and centers the thumbnail within the container without distortion.

@@ -773,3 +773,51 @@ Then('the storage entry for {string} should be removed', async function (this: P
   const stored = await page.evaluate((k) => window.localStorage.getItem(k), key);
   assert.strictEqual(stored, null);
 });
+
+Then(
+  'the minimap thumbnail canvas should preserve the aspect ratio for a {int} by {int} asset',
+  async function (this: PlaywrightWorld, width: number, height: number) {
+    const page = this.getPage();
+    const containerBox = await page.locator('[data-testid="minimap-container"]').boundingBox();
+    const canvasBox = await page.locator('canvas[data-testid="minimap-canvas"]').boundingBox();
+    assert.ok(containerBox, 'Minimap container must be present');
+    assert.ok(canvasBox, 'Minimap canvas must be present');
+
+    assert.ok(
+      canvasBox.width <= containerBox.width + 1 && canvasBox.height <= containerBox.height + 1,
+      `Minimap canvas (${canvasBox.width}x${canvasBox.height}) must not overflow container (${containerBox.width}x${containerBox.height})`
+    );
+
+    const expectedRatio = width / height;
+    const actualRatio = canvasBox.width / canvasBox.height;
+    assert.ok(
+      Math.abs(actualRatio - expectedRatio) < 0.05,
+      `Expected aspect ratio ~${expectedRatio}, got ${actualRatio} (width=${canvasBox.width}, height=${canvasBox.height})`
+    );
+  }
+);
+
+Then(
+  'the minimap thumbnail should be centered within its container',
+  async function (this: PlaywrightWorld) {
+    const page = this.getPage();
+    const containerBox = await page.locator('[data-testid="minimap-container"]').boundingBox();
+    const canvasBox = await page.locator('canvas[data-testid="minimap-canvas"]').boundingBox();
+    assert.ok(containerBox, 'Minimap container must be present');
+    assert.ok(canvasBox, 'Minimap canvas must be present');
+
+    const containerCenterX = containerBox.x + containerBox.width / 2;
+    const containerCenterY = containerBox.y + containerBox.height / 2;
+    const canvasCenterX = canvasBox.x + canvasBox.width / 2;
+    const canvasCenterY = canvasBox.y + canvasBox.height / 2;
+
+    assert.ok(
+      Math.abs(canvasCenterX - containerCenterX) <= 2,
+      `Expected horizontal center ${containerCenterX}, got ${canvasCenterX}`
+    );
+    assert.ok(
+      Math.abs(canvasCenterY - containerCenterY) <= 2,
+      `Expected vertical center ${containerCenterY}, got ${canvasCenterY}`
+    );
+  }
+);
