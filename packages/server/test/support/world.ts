@@ -24,6 +24,10 @@ export class StudioWorld extends World {
   public lastJsonRpcResponse: any = null;
   public lastRequestId: string | number | null = null;
   public colorsList: any[] | null = null;
+  public lastExportResult: { data: string } | null = null;
+  public lastExportImageWidth: number = 0;
+  public lastExportImageHeight: number = 0;
+  public lastExportCanvasData: Uint8ClampedArray | null = null;
 
   // Persistence scenario context
   public tempDbPath: string | null = null;
@@ -68,6 +72,10 @@ Before(async function (this: StudioWorld) {
   this.persistedId = null;
   this.httpServer = null;
   this.lastHttpResponse = null;
+  this.lastExportResult = null;
+  this.lastExportImageWidth = 0;
+  this.lastExportImageHeight = 0;
+  this.lastExportCanvasData = null;
   await this.driver.start();
 });
 

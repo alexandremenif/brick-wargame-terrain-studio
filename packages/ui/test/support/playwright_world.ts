@@ -77,6 +77,8 @@ export class PlaywrightWorld extends World {
 
   public colors: BrickColor[] = [];
   public deletedAssetId: string | null = null;
+  public lastExportRequest: any = null;
+  public initiatedDownloads: Array<{ filename: string; url?: string }> = [];
 
   constructor(options: IWorldOptions) {
     super(options);
@@ -122,6 +124,30 @@ export class PlaywrightWorld extends World {
       cells: [],
     };
     this.deletedAssetId = null;
+    this.lastExportRequest = null;
+    this.initiatedDownloads = [];
+
+    // Track browser downloads
+    this.page.on('download', (download) => {
+      this.initiatedDownloads.push({
+        filename: download.suggestedFilename(),
+        url: download.url(),
+      });
+    });
+
+    // Also observe programmatic anchor downloads
+    await this.page.addInitScript(() => {
+      const origClick = HTMLAnchorElement.prototype.click;
+      HTMLAnchorElement.prototype.click = function () {
+        if (this.download) {
+          (window as any).__lastDownload = {
+            filename: this.download,
+            href: this.href,
+          };
+        }
+        return origClick.apply(this, arguments as any);
+      };
+    });
 
     // Route RPC requests through local test world state
     await this.page.route('**/rpc', async (route) => {
@@ -288,6 +314,22 @@ export class PlaywrightWorld extends World {
             jsonrpc: '2.0',
             id,
             result: { success: true },
+          }),
+        });
+      }
+
+      if (method === 'exportImage') {
+        const p = params[0];
+        this.lastExportRequest = p;
+        // 1x1 transparent PNG base64 for dummy response
+        const dummyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+        return route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            id,
+            result: { data: dummyPngBase64 },
           }),
         });
       }

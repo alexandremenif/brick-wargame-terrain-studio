@@ -2,10 +2,10 @@ Feature: Pure Domain 2D Canvas Asset Grid Rendering
 
   Scenario: Render asset with painted cells and checkerboard transparency
     Given an asset "Checkerboard Test" with dimensions 2 by 2
-    And official brick color 28 is "Dark Green" with hex "#184632"
+    And official brick color 17 is "Earth Green" with hex "#184632"
     And the asset has painted cells:
       | x | y | colorId |
-      | 0 | 0 | 28      |
+      | 0 | 0 | 17      |
     When I render the asset with 8 pixels per stud and background mode "checkerboard"
     Then the canvas pixel dimensions should be 16 by 16
     And the stud at stud coordinate (0, 0) should be solid color "#184632"
@@ -19,40 +19,40 @@ Feature: Pure Domain 2D Canvas Asset Grid Rendering
 
   Scenario: Render asset in white background mode for printing
     Given an asset "Print Background Test" with dimensions 2 by 2
-    And official brick color 21 is "Bright Red" with hex "#C4281B"
+    And official brick color 5 is "Bright Red" with hex "#C91A09"
     And the asset has painted cells:
       | x | y | colorId |
-      | 0 | 0 | 21      |
+      | 0 | 0 | 5       |
     When I render the asset with 8 pixels per stud and background mode "white"
     Then the canvas pixel dimensions should be 16 by 16
-    And the stud at stud coordinate (0, 0) should be solid color "#C4281B"
+    And the stud at stud coordinate (0, 0) should be solid color "#C91A09"
     And the stud at stud coordinate (1, 1) should be solid color "#FFFFFF"
 
   Scenario: Render completely saturated asset with all studs painted
     Given an asset "Saturated Mat" with dimensions 2 by 2
-    And official brick color 28 is "Dark Green" with hex "#184632"
+    And official brick color 17 is "Earth Green" with hex "#184632"
     And the asset has painted cells:
       | x | y | colorId |
-      | 0 | 0 | 28      |
-      | 1 | 0 | 28      |
-      | 0 | 1 | 28      |
-      | 1 | 1 | 28      |
+      | 0 | 0 | 17      |
+      | 1 | 0 | 17      |
+      | 0 | 1 | 17      |
+      | 1 | 1 | 17      |
     When I render the asset with 8 pixels per stud and background mode "checkerboard"
     Then the canvas pixel dimensions should be 16 by 16
     And all studs should be solid color "#184632"
 
   Scenario: Render framed bounding box sub-region ignoring surrounding asset cells
     Given an asset "BBox Crop Test" with dimensions 10 by 10
-    And official brick color 24 is "Bright Yellow" with hex "#F5CD2F"
-    And official brick color 28 is "Dark Green" with hex "#184632"
+    And official brick color 12 is "Bright Yellow" with hex "#F2CD37"
+    And official brick color 17 is "Earth Green" with hex "#184632"
     And the asset has painted cells:
       | x | y | colorId |
-      | 5 | 5 | 24      |
-      | 0 | 0 | 28      |
-      | 8 | 8 | 28      |
+      | 5 | 5 | 12      |
+      | 0 | 0 | 17      |
+      | 8 | 8 | 17      |
     When I render the bounding box (4, 4, 2, 2) with 8 pixels per stud and background mode "white"
     Then the canvas pixel dimensions should be 16 by 16
-    And the stud at local position (1, 1) should be solid color "#F5CD2F"
+    And the stud at local position (1, 1) should be solid color "#F2CD37"
     And the stud at local position (0, 0) should be solid color "#FFFFFF"
 
   Scenario: Strict boundary threshold for grid line suppression (3px vs 4px)

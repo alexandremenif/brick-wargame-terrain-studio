@@ -18,10 +18,10 @@ describe('schemaParser (Generic)', () => {
     assert.ok(parsed.methods.length >= 4);
 
     const methodNames = parsed.methods.map((m) => m.name);
-    assert.ok(methodNames.includes('createMap'));
+    assert.ok(methodNames.includes('createAsset'));
     assert.ok(methodNames.includes('paintArea'));
-    assert.ok(methodNames.includes('paintCell'));
-    assert.ok(methodNames.includes('undo'));
+    assert.ok(methodNames.includes('listAssets'));
+    assert.ok(methodNames.includes('exportImage'));
   });
 
   it('honors explicitly provided custom service and client names', async () => {
@@ -45,7 +45,7 @@ describe('schemaParser (Generic)', () => {
     const parsed = await parseOpenRpcSpec({ specPath, schemaPaths });
 
     assert.ok(parsed.definitions.BoundingBox, 'Expected BoundingBox in definitions');
-    assert.ok(parsed.definitions.CreateMapCommand, 'Expected CreateMapCommand in definitions');
-    assert.ok(parsed.definitions.LegoColor, 'Expected LegoColor in definitions');
+    assert.ok(parsed.definitions.CreateAssetCommand, 'Expected CreateAssetCommand in definitions');
+    assert.ok(parsed.definitions.BrickColor, 'Expected BrickColor in definitions');
   });
 });

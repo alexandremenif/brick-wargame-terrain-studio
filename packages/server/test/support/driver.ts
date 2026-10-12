@@ -14,4 +14,5 @@ export interface EngineDriver {
   deleteAsset(): Promise<void>;
   assetExists(): Promise<boolean>;
   listColors(): Promise<BrickColor[]>;
+  exportImage(options?: { bbox?: { x: number; y: number; width: number; height: number }; profile?: string; assetId?: string }): Promise<{ data: string }>;
 }

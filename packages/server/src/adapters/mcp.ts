@@ -102,6 +102,33 @@ export function createMcpServer(assetService: AssetService, colorService: ColorS
             type: 'object',
             properties: {}
           }
+        },
+        {
+          name: 'export_image',
+          description: 'Exports an asset or framed sub-region as a PNG image with adaptive resolution and checkerboard transparency. Returns native MCP ImageContent (image/png).',
+          inputSchema: {
+            type: 'object',
+            properties: {
+              asset_id: { type: 'string', description: 'Target asset identifier' },
+              bbox: {
+                type: 'object',
+                description: 'Optional framed bounding box to export',
+                properties: {
+                  x: { type: 'integer' },
+                  y: { type: 'integer' },
+                  width: { type: 'integer', minimum: 1 },
+                  height: { type: 'integer', minimum: 1 }
+                },
+                required: ['x', 'y', 'width', 'height']
+              },
+              profile: {
+                type: 'string',
+                enum: ['llm', 'print'],
+                description: 'Rendering profile (llm or print)'
+              }
+            },
+            required: ['asset_id']
+          }
         }
       ]
     };
@@ -181,6 +208,27 @@ export function createMcpServer(assetService: AssetService, colorService: ColorS
           const result = await assetService.listColors({});
           return {
             content: [{ type: 'text', text: JSON.stringify(result.colors) }]
+          };
+        }
+        case 'export_image': {
+          const params = args as {
+            asset_id: string;
+            bbox?: { x: number; y: number; width: number; height: number };
+            profile?: 'llm' | 'print';
+          };
+          const result = await assetService.exportImage({
+            assetId: params.asset_id,
+            bbox: params.bbox,
+            profile: params.profile ?? 'llm',
+          });
+          return {
+            content: [
+              {
+                type: 'image',
+                data: result.data,
+                mimeType: 'image/png'
+              }
+            ]
           };
         }
         default:

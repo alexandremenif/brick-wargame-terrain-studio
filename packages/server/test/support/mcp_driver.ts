@@ -136,4 +136,43 @@ export class McpDriver implements EngineDriver {
   async listColors(): Promise<BrickColor[]> {
     return await this.callMcpTool('list_colors', {});
   }
+
+  async exportImage(options?: { bbox?: { x: number; y: number; width: number; height: number }; profile?: string; assetId?: string }): Promise<{ data: string }> {
+    const id = options?.assetId ?? this.ensureAssetId();
+    const args: any = {
+      asset_id: id
+    };
+    if (options?.bbox) args.bbox = options.bbox;
+    if (options?.profile) args.profile = options.profile;
+
+    const handler = (this.mcpServer as any)._requestHandlers.get('tools/call');
+    if (!handler) {
+      throw new Error('MCP server does not have a tools/call handler registered');
+    }
+    const res = await handler({
+      method: 'tools/call',
+      params: { name: 'export_image', arguments: args }
+    });
+
+    if (res.isError) {
+      const err: any = new Error(res.content?.[0]?.text || 'MCP tool error');
+      err.code = -32602;
+      throw err;
+    }
+
+    // Support native MCP ImageContent: { type: 'image', data: base64, mimeType: 'image/png' }
+    const imageContent = res.content?.find((c: any) => c.type === 'image');
+    if (imageContent) {
+      return { data: imageContent.data };
+    }
+
+    // Fallback if returned as text JSON
+    const textContent = res.content?.find((c: any) => c.type === 'text');
+    if (textContent) {
+      const parsed = JSON.parse(textContent.text);
+      if (parsed.data) return { data: parsed.data };
+    }
+
+    throw new Error('No image content found in export_image MCP response');
+  }
 }

@@ -84,6 +84,8 @@ When('I click the {string} button in the header', async function (this: Playwrig
     await page.click('[data-testid="header-delete-asset-btn"]');
   } else if (buttonText === '+ New') {
     await page.click('[data-testid="header-new-asset-btn"]');
+  } else if (buttonText === 'Export for Printing') {
+    await page.click('[data-testid="header-export-print-btn"]');
   }
 });
 
@@ -139,6 +141,32 @@ Then('the asset {string} should still exist and remain active', async function (
 
 Then('the asset {string} should be deleted', async function (this: PlaywrightWorld, _expectedName: string) {
   assert.ok(this.deletedAssetId);
+});
+
+Then('an image export should be requested with profile {string}', async function (this: PlaywrightWorld, expectedProfile: string) {
+  const page = this.getPage();
+  const startTime = Date.now();
+  while (!this.lastExportRequest && Date.now() - startTime < 2000) {
+    await page.waitForTimeout(50);
+  }
+  assert.ok(this.lastExportRequest, 'Expected exportImage request to have been dispatched within 2000ms');
+  assert.strictEqual(this.lastExportRequest.profile, expectedProfile);
+  assert.strictEqual(this.lastExportRequest.assetId, this.asset.id);
+});
+
+Then('a file download for {string} should be initiated', async function (this: PlaywrightWorld, expectedFilename: string) {
+  const page = this.getPage();
+  // Check either programmatic download captured in window.__lastDownload or Playwright download event
+  const lastProgrammaticDownload = await page.evaluate(() => (window as any).__lastDownload);
+  const foundInBrowser = this.initiatedDownloads.find((d) => d.filename === expectedFilename);
+  const foundInWindow = lastProgrammaticDownload?.filename === expectedFilename;
+
+  assert.ok(
+    foundInBrowser || foundInWindow,
+    `Expected file download for "${expectedFilename}" to be initiated. Browser downloads: ${JSON.stringify(
+      this.initiatedDownloads
+    )}, Programmatic download: ${JSON.stringify(lastProgrammaticDownload)}`
+  );
 });
 
 // ============================================================================

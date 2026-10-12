@@ -106,7 +106,11 @@ export function formatSqliteScript(sql, options = {}) {
     `PRAGMA journal_mode = WAL;\nPRAGMA foreign_keys = ON;\n\n` +
     cleanedSql + '\n';
 
-  header += `\nINSERT OR IGNORE INTO "schema_migrations" ("version", "name") VALUES (${schemaVersion}, '${migrationName}');\n`;
+  if (options.metadataTable) {
+    header += `\nINSERT OR IGNORE INTO ${options.metadataTable} (key, value) VALUES ('schema_version', '${schemaVersion}');\n`;
+  } else if (options.migrationName || options.schemaVersion) {
+    header += `\nINSERT OR IGNORE INTO "schema_migrations" ("version", "name") VALUES (${schemaVersion}, '${migrationName}');\n`;
+  }
 
   return header;
 }

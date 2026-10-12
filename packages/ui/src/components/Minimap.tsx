@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
+import {
+  CHECKERBOARD_COLOR_A,
+  CHECKERBOARD_COLOR_B,
+} from '@lego-wargame-terrain-studio/domain';
 import { Badge } from './design_system/index.js';
 
 export interface MinimapProps {
@@ -10,8 +14,6 @@ export interface MinimapProps {
   boundingBox: BoundingBox;
   onCenterAt?: (targetX: number, targetY: number) => void;
 }
-
-const BASEPLATE_COLOR = '#184632'; // Authentic dark green baseplate color per spec
 
 export const Minimap: React.FC<MinimapProps> = ({
   assetWidth,
@@ -33,9 +35,15 @@ export const Minimap: React.FC<MinimapProps> = ({
     const cw = canvas.width;
     const ch = canvas.height;
 
-    // Fill background baseplate
-    ctx.fillStyle = BASEPLATE_COLOR;
-    ctx.fillRect(0, 0, cw, ch);
+    // Fill background with neutral checkerboard matching main canvas transparency
+    const checkSize = 8;
+    for (let py = 0; py < ch; py += checkSize) {
+      for (let px = 0; px < cw; px += checkSize) {
+        const isEven = ((px / checkSize) + (py / checkSize)) % 2 === 0;
+        ctx.fillStyle = isEven ? CHECKERBOARD_COLOR_A : CHECKERBOARD_COLOR_B;
+        ctx.fillRect(px, py, checkSize, checkSize);
+      }
+    }
 
     // Compute cell dimensions on minimap
     const studW = cw / assetWidth;

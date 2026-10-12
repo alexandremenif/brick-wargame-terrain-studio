@@ -16,6 +16,7 @@
   "dependencies": {
     "@lego-wargame-terrain-studio/domain": "*",
     "@modelcontextprotocol/sdk": "^1.6.1",
+    "@napi-rs/canvas": "^1.0.11",
     "@open-rpc/schema-utils-js": "^2.2.1",
     "@open-rpc/server-js": "^1.10.1",
     "ajv": "^8.17.1",

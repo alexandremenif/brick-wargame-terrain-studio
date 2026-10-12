@@ -77,4 +77,38 @@ export class InMemoryDriver implements EngineDriver {
   async listColors(): Promise<BrickColor[]> {
     return this.colorService.listColors();
   }
+
+  async exportImage(options?: { bbox?: { x: number; y: number; width: number; height: number }; profile?: string; assetId?: string }): Promise<{ data: string }> {
+    if (options?.assetId && (!this.asset || this.asset.id !== options.assetId)) {
+      const err: any = new Error(`Asset not found: ${options.assetId}`);
+      err.code = -32602;
+      throw err;
+    }
+
+    const a = this.ensureAsset();
+    const colors = this.colorService.listColors();
+    const colorsById = new Map<number, BrickColor>();
+    for (const c of colors) {
+      colorsById.set(c.id, c);
+    }
+
+    const { ImageExportService } = await import('../../src/domain/ImageExportService.js');
+    const { NodeCanvasImageExporter } = await import('../../src/domain/ImageExporter.js');
+    const exportService = new ImageExportService(new NodeCanvasImageExporter());
+
+    return await exportService.exportImage(
+      {
+        id: a.id,
+        width: a.width,
+        height: a.height,
+        cells: a.toDto().cells,
+      },
+      colorsById,
+      {
+        assetId: a.id,
+        bbox: options?.bbox,
+        profile: (options?.profile as any) ?? 'llm',
+      }
+    );
+  }
 }

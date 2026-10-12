@@ -14,6 +14,7 @@ export interface TopHeaderBarProps {
   onDeleteClick: () => void;
   onDimensionsChange: (width: number, height: number) => void;
   onToggleGrid: () => void;
+  onExportPrint?: () => void;
 }
 
 export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
@@ -28,6 +29,7 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
   onDeleteClick,
   onDimensionsChange,
   onToggleGrid,
+  onExportPrint,
 }) => {
   return (
     <header className="flex h-12 w-full items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 text-zinc-100 select-none">
@@ -117,6 +119,15 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
           onClick={onToggleGrid}
         >
           Grid: {showGrid ? 'On' : 'Off'}
+        </Button>
+
+        <Button
+          data-testid="header-export-print-btn"
+          variant="secondary"
+          size="xs"
+          onClick={onExportPrint}
+        >
+          🖨️ Export for Printing
         </Button>
       </div>
     </header>

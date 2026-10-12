@@ -9,7 +9,7 @@ The `<Minimap>` is embedded inside the `<RightInspectorSidebar>`. It provides a 
 
 * **Whole Asset Overview**:
   * Always renders the entire terrain asset from coordinate $(0, 0)$ to $(W - 1, H - 1)$.
-  * Renders painted cells using their respective official brick hex colors, and unpainted cells with the baseplate dark green tone (`#184632`).
+  * Renders painted cells using their respective official brick hex colors, and unpainted cells using the neutral dark checkerboard (`#27272a` / `#18181b`) matching the main canvas viewport transparency rendering.
 * **Active Bounding Box Indicator**:
   * Renders a clearly framed region indicator showing the position and size of the current bounding box relative to the full asset:
     $$\text{indicatorX} = \frac{x}{W} \times \text{minimapWidth}, \quad \text{indicatorY} = \frac{y}{H} \times \text{minimapHeight}$$

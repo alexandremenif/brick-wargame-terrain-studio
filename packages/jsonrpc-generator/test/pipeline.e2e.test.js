@@ -46,13 +46,13 @@ describe('generateJsonRpc (E2E Pipeline)', () => {
       assert.doesNotMatch(typesContent, /Integer[A-Za-z0-9]+/);
 
       const serviceContent = fs.readFileSync(serviceFile, 'utf-8');
-      assert.match(serviceContent, /createMap\(command: CreateMapCommand\): Promise<CreateMapResponse>;/);
+      assert.match(serviceContent, /createAsset\(command: CreateAssetCommand\): Promise<CreateAssetResponse>;/);
 
       // Assert UI client exists
       const clientFile = path.join(targetUiDir, 'client.ts');
       assert.ok(fs.existsSync(clientFile), 'client.ts exists');
       const clientContent = fs.readFileSync(clientFile, 'utf-8');
-      assert.match(clientContent, /async createMap\(command: CreateMapCommand\): Promise<CreateMapResponse>/);
+      assert.match(clientContent, /async createAsset\(command: CreateAssetCommand\): Promise<CreateAssetResponse>/);
 
       // Assert Server router exists
       const routerFile = path.join(targetServerDir, 'router.ts');

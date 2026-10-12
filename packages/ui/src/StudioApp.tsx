@@ -268,6 +268,36 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient, storage }) => {
     bboxStoreRef.current?.fitToAsset();
   };
 
+  const handleExportPrint = async () => {
+    if (!currentAsset) return;
+    try {
+      const res = await client.exportImage({
+        assetId: currentAsset.id,
+        profile: 'print',
+      });
+      if (res?.data) {
+        // Create Blob and trigger download
+        const byteCharacters = atob(res.data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/png' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${currentAsset.name}_print.png`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error('Export print error:', err);
+    }
+  };
+
   // Paint handler (Optimistic UI + API dispatch)
   const handlePaint = useCallback(
     async (x: number, y: number, width: number, height: number, colorId: number | null) => {
@@ -347,6 +377,7 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient, storage }) => {
         onDeleteClick={() => setIsDeleteModalOpen(true)}
         onDimensionsChange={handleDimensionsChange}
         onToggleGrid={() => setShowGrid(!showGrid)}
+        onExportPrint={handleExportPrint}
       />
 
       {/* Main Workspace Body */}

@@ -2,10 +2,10 @@ Feature: Asset Image Export Across Protocol Transports
 
   Scenario: Export full asset image without profile defaults to LLM profile
     Given an asset named "HQ Bunker" with dimensions 16 by 16
-    And official brick color 28 is "Dark Green" with hex "#184632"
+    And official brick color 17 is "Earth Green" with hex "#184632"
     And the asset has painted cells:
       | x | y | colorId |
-      | 0 | 0 | 28      |
+      | 0 | 0 | 17      |
     When I export the asset image without specifying a profile
     Then the export response should contain valid base64 PNG image data
     And the exported image pixel dimensions should be 256 by 256
@@ -14,33 +14,33 @@ Feature: Asset Image Export Across Protocol Transports
 
   Scenario: Export asset image with high resolution print profile
     Given an asset named "Print Mat" with dimensions 16 by 16
-    And official brick color 21 is "Bright Red" with hex "#C4281B"
+    And official brick color 5 is "Bright Red" with hex "#C91A09"
     And the asset has painted cells:
       | x | y | colorId |
-      | 0 | 0 | 21      |
+      | 0 | 0 | 5       |
     When I export the asset image with profile "print"
     Then the export response should contain valid base64 PNG image data
     And the exported image pixel dimensions should be 1024 by 1024
-    And the exported image stud at (0, 0) should be colored "#C4281B"
+    And the exported image stud at (0, 0) should be colored "#C91A09"
     And the unpainted stud at (1, 1) should be colored "#FFFFFF"
 
   Scenario: Export framed sub-region within asset boundaries
     Given an asset named "Sector Alpha" with dimensions 32 by 32
-    And official brick color 24 is "Bright Yellow" with hex "#F5CD2F"
+    And official brick color 12 is "Bright Yellow" with hex "#F2CD37"
     And the asset has painted cells:
       | x  | y  | colorId |
-      | 10 | 10 | 24      |
+      | 10 | 10 | 12      |
     When I export the asset image with bounding box (8, 8, 8, 8) and profile "llm"
     Then the export response should contain valid base64 PNG image data
     And the exported image pixel dimensions should be 128 by 128
-    And the exported image stud at local position (2, 2) should be colored "#F5CD2F"
+    And the exported image stud at local position (2, 2) should be colored "#F2CD37"
 
   Scenario: Export exact tangent boundary edge bounding box
     Given an asset named "Edge Touch" with dimensions 16 by 16
-    And official brick color 28 is "Dark Green" with hex "#184632"
+    And official brick color 17 is "Earth Green" with hex "#184632"
     And the asset has painted cells:
       | x  | y  | colorId |
-      | 15 | 15 | 28      |
+      | 15 | 15 | 17      |
     When I export the asset image with bounding box (8, 8, 8, 8) and profile "llm"
     Then the export response should contain valid base64 PNG image data
     And the exported image pixel dimensions should be 128 by 128
@@ -48,10 +48,10 @@ Feature: Asset Image Export Across Protocol Transports
 
   Scenario: Export single stud bounding box
     Given an asset named "Single Stud Crop" with dimensions 16 by 16
-    And official brick color 28 is "Dark Green" with hex "#184632"
+    And official brick color 17 is "Earth Green" with hex "#184632"
     And the asset has painted cells:
       | x | y | colorId |
-      | 3 | 3 | 28      |
+      | 3 | 3 | 17      |
     When I export the asset image with bounding box (3, 3, 1, 1) and profile "llm"
     Then the export response should contain valid base64 PNG image data
     And the exported image pixel dimensions should be 16 by 16

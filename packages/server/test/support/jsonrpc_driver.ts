@@ -189,4 +189,28 @@ export class JsonRpcDriver implements EngineDriver {
     if (res.error) throw new Error(res.error.message);
     return res.result.colors;
   }
+
+  async exportImage(options?: { bbox?: { x: number; y: number; width: number; height: number }; profile?: string; assetId?: string }): Promise<{ data: string }> {
+    const id = options?.assetId ?? this.ensureAssetId();
+    const command: any = {
+      assetId: id
+    };
+    if (options?.bbox) command.bbox = options.bbox;
+    if (options?.profile) command.profile = options.profile;
+
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'exportImage',
+      params: [command]
+    });
+
+    if (res.error) {
+      const err: any = new Error(res.error.message);
+      err.code = res.error.code;
+      throw err;
+    }
+
+    return res.result;
+  }
 }

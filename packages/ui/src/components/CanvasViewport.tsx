@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
+import {
+  renderAssetGrid,
+  type BoundingBox,
+  type BrickColor,
+  type CellData,
+} from '@lego-wargame-terrain-studio/domain';
 import type { BrushSize, ToolMode } from './LeftToolboxSidebar.js';
 
 export interface CanvasViewportProps {
@@ -88,59 +93,27 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     };
   }, [containerSize, boundingBox]);
 
-  // Immediate-mode canvas rendering
+  // Immediate-mode canvas rendering via domain renderAssetGrid
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Fill viewport baseplate
-    ctx.fillStyle = BASEPLATE_COLOR;
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+    // Reset transform & clear
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
-    // Draw cells within the active bounding box
-    const startX = boundingBox.x;
-    const startY = boundingBox.y;
-    const endX = boundingBox.x + boundingBox.width;
-    const endY = boundingBox.y + boundingBox.height;
-
-    for (let x = startX; x < endX; x++) {
-      for (let y = startY; y < endY; y++) {
-        const colorId = cellsMap.get(`${x},${y}`);
-        if (colorId !== undefined) {
-          const color = colorsById.get(colorId);
-          ctx.fillStyle = color?.hex ?? '#FFFFFF';
-          const px = (x - startX) * studSize;
-          const py = (y - startY) * studSize;
-          ctx.fillRect(px, py, studSize, studSize);
-        }
-      }
-    }
-
-    // Optional 1px alignment grid
-    if (showGrid && studSize > 3) {
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-
-      // Vertical lines
-      for (let i = 0; i <= boundingBox.width; i++) {
-        const x = i * studSize + 0.5;
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, canvasHeight);
-      }
-
-      // Horizontal lines
-      for (let j = 0; j <= boundingBox.height; j++) {
-        const y = j * studSize + 0.5;
-        ctx.moveTo(0, y);
-        ctx.lineTo(canvasWidth, y);
-      }
-
-      ctx.stroke();
-    }
-  }, [canvasWidth, canvasHeight, boundingBox, cellsMap, colorsById, showGrid, studSize]);
+    renderAssetGrid(ctx as any, {
+      assetWidth: boundingBox.width,
+      assetHeight: boundingBox.height,
+      cells,
+      colorsById,
+      pixelsPerStud: studSize,
+      backgroundMode: 'checkerboard',
+      grid: showGrid,
+      bbox: boundingBox,
+    });
+  }, [canvasWidth, canvasHeight, boundingBox, cells, colorsById, showGrid, studSize]);
 
   // Pointer interactions: Click-to-paint (Brush/Eraser) vs Drag-to-pan (Pan)
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
