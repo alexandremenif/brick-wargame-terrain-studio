@@ -58,7 +58,7 @@ processes:
     readiness_probe:
       http_get:
         host: "127.0.0.1"
-        port: 3000
+        port: ${SERVER_PORT:-3000}
         path: "/health"
       initial_delay_seconds: 1
       period_seconds: 2
