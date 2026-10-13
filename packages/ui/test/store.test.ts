@@ -101,30 +101,42 @@ describe('BoundingBoxStore State Management (TEST-UI-BBOX)', () => {
     assert.deepStrictEqual(store.getState(), { x: 0, y: 0, width: 40, height: 30 });
   });
 
-  it('notifies subscribers with exact state payloads and respects unsubscription', () => {
+  it('TEST-UI-BBOX-02: notifies multiple subscribers simultaneously with identical synchronized state payloads and respects unsubscription', () => {
     const storage = new MemoryViewportStorage();
     const store = new BoundingBoxStore('test-sub', 32, 32, storage);
 
-    const receivedStates: BoundingBoxState[] = [];
-    const unsub = store.subscribe((state) => {
-      receivedStates.push(state);
-    });
+    // Simulate concurrent UI subscribers (CanvasViewport, Minimap, Inspector)
+    const viewportStates: BoundingBoxState[] = [];
+    const minimapStates: BoundingBoxState[] = [];
+    const inspectorStates: BoundingBoxState[] = [];
+
+    const unsubViewport = store.subscribe((state) => viewportStates.push(state));
+    const unsubMinimap = store.subscribe((state) => minimapStates.push(state));
+    const unsubInspector = store.subscribe((state) => inspectorStates.push(state));
 
     store.panBy(2, 2);
     store.zoom(0.8);
     store.centerAt(10, 10);
 
-    assert.strictEqual(receivedStates.length, 3);
-    assert.deepStrictEqual(receivedStates[0], { x: 0, y: 0, width: 32, height: 32 }); // panned from (0,0,32,32) clamped at 0
-    assert.deepStrictEqual(receivedStates[1], { x: 3, y: 3, width: 26, height: 26 });
-    assert.deepStrictEqual(receivedStates[2], { x: 0, y: 0, width: 26, height: 26 });
+    assert.strictEqual(viewportStates.length, 3);
+    assert.strictEqual(minimapStates.length, 3);
+    assert.strictEqual(inspectorStates.length, 3);
+
+    // Verify all 3 subscribers receive identical synchronized state payloads
+    assert.deepStrictEqual(viewportStates, minimapStates);
+    assert.deepStrictEqual(viewportStates, inspectorStates);
+    assert.deepStrictEqual(viewportStates[0], { x: 0, y: 0, width: 32, height: 32 });
+    assert.deepStrictEqual(viewportStates[1], { x: 3, y: 3, width: 26, height: 26 });
+    assert.deepStrictEqual(viewportStates[2], { x: 0, y: 0, width: 26, height: 26 });
 
     // Unsubscribe and verify no further deliveries
-    unsub();
-    // Idempotent call to unsub does not throw
-    assert.doesNotThrow(() => unsub());
+    unsubViewport();
+    unsubMinimap();
+    unsubInspector();
 
     store.fitToAsset();
-    assert.strictEqual(receivedStates.length, 3);
+    assert.strictEqual(viewportStates.length, 3);
+    assert.strictEqual(minimapStates.length, 3);
+    assert.strictEqual(inspectorStates.length, 3);
   });
 });

@@ -110,10 +110,7 @@ describe('Bounding Box Mathematics (TEST-DOMAIN-BBOX)', () => {
 
     it('clamps to 1x1 on extreme zoom in (scale factor 0.001)', () => {
       const zoomed = zoomBoundingBox({ x: 10, y: 10, width: 20, height: 20 }, 0.001, 32, 32);
-      assert.strictEqual(zoomed.width, 1);
-      assert.strictEqual(zoomed.height, 1);
-      assert.ok(zoomed.x >= 0 && zoomed.x <= 31);
-      assert.ok(zoomed.y >= 0 && zoomed.y <= 31);
+      assert.deepStrictEqual(zoomed, { x: 20, y: 20, width: 1, height: 1 });
     });
 
     it('clamps to full asset dimensions on extreme zoom out (scale factor 1000.0)', () => {

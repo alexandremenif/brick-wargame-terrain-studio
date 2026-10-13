@@ -70,7 +70,18 @@ Dependent processes (such as the frontend UI server) depend on `server` reaching
 
 ---
 
-## 4. Acceptance Criteria & Verification
+## 4. Acceptance Criteria & Test IDs
+
+* `TEST-SRV-HLTH-01`: `GET /health` returns 200 OK with no-cache headers, CORS header, and `{ status: "ok" }` payload.
+* `TEST-SRV-HLTH-02`: `GET /health/` trailing slash behaves identically, returning 200 OK and `{ status: "ok" }`.
+* `TEST-SRV-HLTH-03`: `HEAD /health` returns 200 OK with JSON and no-cache headers and empty response body.
+* `TEST-SRV-HLTH-04`: Unsupported HTTP methods (e.g. `POST /health`) return 405 Method Not Allowed with `{ error: "Method Not Allowed" }`.
+* `TEST-SRV-HLTH-05`: Non-existent non-RPC paths return 404 Not Found with `{ error: "Not found" }`.
+
+---
+
+## 5. Verification
 
 * **BDD Acceptance Scenarios**: Defined in [`specs/server/features/health_check.feature`](./features/health_check.feature).
-* **Automated Unit Testing**: Verified via Node.js test runner suite in `packages/server/test/http_health.test.ts`.
+* **Automated Unit Testing**: Verified via Node.js test runner suite in [`packages/server/test/http_health.test.ts`](file:///home/alexandre/Projets/brick-wargame-terrain-studio/packages/server/test/http_health.test.ts).
+

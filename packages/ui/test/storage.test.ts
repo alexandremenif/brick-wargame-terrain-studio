@@ -92,7 +92,7 @@ describe('Viewport Storage Persistence (TEST-UI-STORAGE)', () => {
       };
     });
 
-    it('persists and loads using key schema bwts:bbox:<assetId>', () => {
+    it('TEST-UI-STORAGE-01: persists and loads using key schema bwts:bbox:<assetId>', () => {
       const storage = new LocalStorageViewportStorage();
       storage.saveBoundingBox('asset-local', { x: 10, y: 10, width: 8, height: 8 });
 
