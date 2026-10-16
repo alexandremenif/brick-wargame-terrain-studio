@@ -15,10 +15,11 @@ description: "Strict rules for modifying specification files (Spec-Driven Develo
    * Every major layer under `specs/` (`domain/`, `server/`, `ui/`, `architecture/`) MUST systematically be a dedicated directory with an `index.md` entry point.
    * Subsystems and components within a layer are authored as dedicated sibling Markdown files (e.g. `canvas_viewport.md`, `left_toolbox_sidebar.md` in `specs/ui/`).
 
-3. **No Executable Code in `specs/` & Declarative Contract Colocation**:
-   * Specifications must contain NO executable code (.ts, .js, .tsx, .py).
-   * Only formal declarative formats are permitted:
-     * Markdown (`.md`) for documentation and acceptance test criteria.
+3. **No Executable Code or Implementation Language Snippets in `specs/` & Declarative Contract Colocation**:
+   * Specifications must contain NO executable code files (`.ts`, `.js`, `.tsx`, `.py`), NO implementation language code blocks/snippets (e.g. ` ```typescript `, ` ```js `), and NO framework-specific CSS utility class strings (e.g. Tailwind classes) inside Markdown files.
+   * Algorithms, interfaces, component contracts, visual styling, and layout/placement constraints in Markdown must be expressed using natural language, semantic design system references, mathematical notation (LaTeX), declarative tables, or language-agnostic pseudocode.
+   * Only formal declarative formats are permitted in `specs/`:
+     * Markdown (`.md`) for natural-language documentation, mathematical invariants, pseudocode, and acceptance test criteria.
      * Pure domain schemas in JSON Schema / YAML (`schemas/*.yaml` in `specs/domain/`).
      * Wire API specifications in OpenRPC 1.2+ (`openrpc.yaml` in `specs/server/`).
      * Relational schema definitions in DBML (`schema.dbml` in `specs/server/`).
