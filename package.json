@@ -20,6 +20,7 @@
     "test:bdd:mcp": "NODE_OPTIONS='--import tsx' cucumber-js -p mcp",
     "test:bdd:persistence": "NODE_OPTIONS='--import tsx' cucumber-js -p persistence",
     "test:bdd:headless": "npm run test:bdd:domain && npm run test:bdd:jsonrpc && npm run test:bdd:persistence && npm run test:bdd:mcp",
+    "pretest:bdd:ui": "npm run mockups:render",
     "test:bdd:ui": "NODE_OPTIONS='--import tsx' cucumber-js -p ui",
     "test:bdd:all": "npm run test:bdd:headless && npm run test:bdd:ui",
     "mockups:render": "node scripts/render_mockups.mjs",

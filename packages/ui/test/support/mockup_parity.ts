@@ -38,21 +38,11 @@ export async function assertMatchesMockup(
     path.resolve(process.cwd(), `specs/ui/mockups/${mockupName}.png`),
     path.resolve(process.cwd(), `../../specs/ui/mockups/${mockupName}.png`),
   ];
-  let refPath = candidatePaths.find((p) => fs.existsSync(p));
-  if (!refPath) {
-    console.log(`Reference image "${mockupName}.png" missing. Generating via scripts/render_mockups.mjs...`);
-    const { execSync } = await import('node:child_process');
-    const rootDir = fs.existsSync(path.resolve(process.cwd(), 'scripts/render_mockups.mjs'))
-      ? process.cwd()
-      : path.resolve(process.cwd(), '../..');
-    execSync('node scripts/render_mockups.mjs', { cwd: rootDir, stdio: 'inherit' });
-    refPath = candidatePaths.find((p) => fs.existsSync(p));
-  }
-  if (!refPath) {
-    throw new Error(
-      `Mockup reference image "${mockupName}.png" not found on disk even after running "scripts/render_mockups.mjs".`
-    );
-  }
+  const refPath = candidatePaths.find((p) => fs.existsSync(p));
+  assert.ok(
+    refPath,
+    `Mockup reference image "${mockupName}.png" not found on disk. Ensure "npm run mockups:render" ran before executing UI parity tests.`
+  );
 
   const refBuffer = fs.readFileSync(refPath);
   const liveBuffer = await livePage.screenshot({ animations: 'disabled' });
