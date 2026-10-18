@@ -1,43 +1,50 @@
 # Component: RightInspectorSidebar
 
 ## 1. Role & Responsibilities
-The `<RightInspectorSidebar>` hosts the `<Minimap>` thumbnail overview and provides numerical coordinate controls to configure the active bounding box parameters $(x, y, width, height)$ with a quick framing action.
+The `<RightInspectorSidebar>` hosts the `<Minimap>` thumbnail overview and provides numerical coordinate controls to configure active bounding box parameters $(x, y, \text{width}, \text{height})$ alongside framing actions (Fit to Asset, Zoom In, Zoom Out).
 
 ---
 
-## 2. Child Components & Controls
+## 2. Component Contract
 
-* **Minimap Panel**:
-  * Hosts the `<Minimap>` component (see [`minimap.md`](./minimap.md)).
-  * Displays the scaled overview of the entire terrain asset ($W \times H$) with an indicator highlighting the position of the active bounding box.
-  * Dynamically updates whenever bounding box parameters change or cells are painted.
-* **Bounding Box Numerical Inputs**:
-  * `X`: Origin stud X coordinate ($0 \le x < W$).
-  * `Y`: Origin stud Y coordinate ($0 \le y < H$).
-  * `Width`: Region width in studs ($width \ge 1$, $x + width \le W$).
-  * `Height`: Region height in studs ($height \ge 1$, $y + height \le H$).
-* **Input Validation & Rejection**:
-  * If the user enters an invalid value (e.g. $x + width > W$ or a non-positive dimension), the input is **rejected and immediately reverts to the previous valid value**.
-  * The main `<CanvasViewport>` and `<Minimap>` only update when valid values are entered.
-* **Framing & Zoom Actions**:
-  * `[Fit to Asset]`: Sets the bounding box to frame the full asset ($x=0, y=0, w=W, h=H$). **Disabled** when the bounding box already frames the full asset ($x=0, y=0, width=W, height=H$).
-  * `[Zoom In (+)]`: Reduces bounding box dimensions by ~25% (factor $\approx 0.8\times$), keeping the box center fixed and clamped within bounds. **Disabled** when bounding box dimensions reach $1 \times 1$ ($width=1, height=1$).
-  * `[Zoom Out (-)]`: Enlarges bounding box dimensions by ~25% (factor $\approx 1.25\times$), keeping the box center fixed and clamped within bounds. **Disabled** when bounding box dimensions equal the full asset ($width=W, height=H$).
+### Input Props
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `assetWidth` | Integer | Total asset width in studs ($W$) |
+| `assetHeight` | Integer | Total asset height in studs ($H$) |
+| `cells` | Array of CellData | Painted cell data across the entire asset |
+| `colorsById` | Map<Integer, BrickColor> | Color catalog map for rendering minimap thumbnails |
+| `boundingBox` | BoundingBox object | Active framed region coordinates $(x, y, \text{width}, \text{height})$ |
 
----
-
-## 3. Visual Ergonomics & Layout
-
-* Width: 260px fixed sidebar (`w-64`).
-* Background: `bg-zinc-900 border-l border-zinc-800`.
-* Upper section: Minimap thumbnail overview ($224 \times 148$ px).
-* Middle section: Numeric coordinate inputs with clear labels.
-* Lower section: Framing action button (`[Fit to Asset]`).
+### Callbacks
+| Callback | Arguments | Trigger Condition |
+| :--- | :--- | :--- |
+| `onBoundingBoxChange` | `bbox: BoundingBox` | User commits valid numeric changes to $x, y, \text{width}$, or $\text{height}$ |
+| `onFitToAsset` | None | User clicks the `[Fit to Asset]` button |
+| `onZoomIn` | None | User clicks the `[Zoom In (+)]` button |
+| `onZoomOut` | None | User clicks the `[Zoom Out (-)]` button |
+| `onCenterAt` | `x: Integer, y: Integer` | User clicks a point on the minimap canvas |
 
 ---
 
-## 4. Acceptance Criteria & Test IDs
+## 3. Child Controls & Web Awesome Primitives
+* **Minimap Panel**: Hosts `<Minimap>` providing thumbnail overview with real-time bounding box indicator.
+* **Coordinate Inputs**: Four `<wa-input type="number" size="small">` elements for $X, Y, \text{Width}, \text{Height}$ organized within `.studio-grid-2col`. Inputs validate ranges and reject invalid or out-of-bounds coordinates on commit.
+* **Zoom Buttons**: Two `<wa-button size="small">` elements for `Zoom In (+)` and `Zoom Out (-)`. Zoom In is disabled when the bounding box reaches $1\times 1$. Zoom Out is disabled when framing the full asset.
+* **Fit to Asset Button**: Full-width `<wa-button size="small">` disabled when already matching full asset dimensions.
 
+---
+
+## 4. Visual Ergonomics & Layout
+* **Container**: `.studio-sidebar .studio-sidebar-right .wa-stack` fixed at $16\text{rem}$ ($256\text{px}$) width with standard padding.
+* **Upper Section**: Minimap thumbnail container and metric badge.
+* **Separator**: 1px horizontal surface border divider.
+* **Middle Section**: Numerical coordinate grid and zoom action buttons.
+* **Lower Section**: Full-width "Fit to Asset" action button.
+
+---
+
+## 5. Acceptance Criteria & Test IDs
 * `TEST-UI-INSPECTOR-01`: Editing X, Y, Width, or Height values to valid numbers updates the active bounding box parameters, shifts the framed area in the canvas viewport, and moves the minimap indicator.
 * `TEST-UI-INSPECTOR-02`: Entering an invalid bounding box value rejects the input and reverts to the previous valid value.
 * `TEST-UI-INSPECTOR-03`: Clicking "Fit to Asset" sets bounding box dimensions to match the full asset ($0, 0, W, H$).

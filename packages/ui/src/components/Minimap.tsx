@@ -4,7 +4,6 @@ import {
   CHECKERBOARD_COLOR_A,
   CHECKERBOARD_COLOR_B,
 } from '@lego-wargame-terrain-studio/domain';
-import { Badge } from './design_system/index.js';
 
 export interface MinimapProps {
   assetWidth: number;
@@ -120,16 +119,16 @@ export const Minimap: React.FC<MinimapProps> = ({
   const heightPct = (boundingBox.height / assetHeight) * 100;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="wa-stack" style={{ gap: 'var(--wa-space-xs)' }}>
       <div
         ref={containerRef}
         data-testid="minimap-container"
-        className="relative h-[148px] w-full rounded border border-zinc-800 bg-zinc-950 p-2 overflow-hidden flex items-center justify-center cursor-pointer"
+        className="studio-minimap-container"
       >
         <div
           data-testid="minimap-content"
           style={{ width: `${minimapWidth}px`, height: `${minimapHeight}px` }}
-          className="relative flex items-center justify-center shrink-0"
+          className="studio-minimap-content"
         >
           <canvas
             ref={canvasRef}
@@ -137,7 +136,7 @@ export const Minimap: React.FC<MinimapProps> = ({
             width={minimapWidth}
             height={minimapHeight}
             onClick={handleCanvasClick}
-            className="h-full w-full rounded-sm cursor-crosshair pointer-events-auto shadow-sm"
+            style={{ width: '100%', height: '100%', cursor: 'crosshair', display: 'block' }}
           />
 
           {/* Bounding box position indicator */}
@@ -148,17 +147,16 @@ export const Minimap: React.FC<MinimapProps> = ({
               top: `${topPct}%`,
               width: `${widthPct}%`,
               height: `${heightPct}%`,
-              pointerEvents: 'none',
             }}
-            className="absolute pointer-events-none border-2 border-amber-400 bg-amber-400/20 transition-all duration-75"
+            className="studio-minimap-indicator"
           />
         </div>
       </div>
 
-      <div className="flex justify-center">
-        <Badge variant="neutral" data-testid="minimap-metrics-badge">
+      <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <wa-badge variant="neutral" data-testid="minimap-metrics-badge">
           Asset: {assetWidth}×{assetHeight} | BBox: {boundingBox.width}×{boundingBox.height} at [{boundingBox.x}, {boundingBox.y}]
-        </Badge>
+        </wa-badge>
       </div>
     </div>
   );

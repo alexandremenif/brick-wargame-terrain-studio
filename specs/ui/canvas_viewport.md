@@ -2,63 +2,75 @@
 
 ## 1. Role & Responsibilities
 The `<CanvasViewport>` is the central interactive editing area. It displays the **active bounding box region** of the terrain asset:
-$$[x, x + width - 1] \times [y, y + height - 1]$$
-Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustained 60–120 FPS and processes single-click painting actions.
+$$[x, x + \text{width} - 1] \times [y, y + \text{height} - 1]$$
+Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustained 60–120 FPS and processes single-click painting actions, pan navigation, and wheel zooming.
 
 ---
 
-## 2. Visual Representation & Styling
+## 2. Component Contract
+
+### Input Props
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `boundingBox` | BoundingBox object | Active framed subregion coordinates $(x, y, \text{width}, \text{height})$ |
+| `cells` | Array of CellData | Painted cell data for the active asset |
+| `colorsById` | Map<Integer, BrickColor> | Color catalog map used for canvas stud rendering |
+| `showGrid` | Boolean | Whether the alignment grid overlay lines are visible |
+| `toolMode` | Enum (`Brush`, `Eraser`, `Pan`) | Current interactive tool mode |
+| `brushSize` | Enum (`1x1`, `2x2`, `4x4`, `8x8`, `16x16`, `32x32`) | Footprint of the painting tool |
+| `selectedColorId` | Integer | Color applied in Brush mode |
+
+### Callbacks
+| Callback | Arguments | Trigger Condition |
+| :--- | :--- | :--- |
+| `onPaint` | `x: Integer, y: Integer, width: Integer, height: Integer, colorId: Integer or null` | User clicks to paint (Brush) or clear (Eraser) an area |
+| `onPanBy` | `deltaX: Integer, deltaY: Integer` | User drags mouse across canvas in Pan mode |
+| `onZoom` | `factor: Number` | User scrolls mouse wheel over canvas viewport |
+
+---
+
+## 3. Visual Representation & Styling
 
 * **View of the Active Bounding Box**:
-  * The canvas viewport displays the studs framed by the current bounding box parameters $(x, y, width, height)$.
-  * There is **no bounding box frame or outline drawn over the canvas**; the bounds of the canvas viewport *are* the active bounding box view.
-  * When bounding box parameters change in the Inspector, the canvas viewport re-frames immediately to show the specified subregion.
-  * On initial asset creation or load, the bounding box defaults to the full asset ($(0, 0, W, H)$), displaying the entire terrain.
+  * Displays studs framed by active bounding box parameters $(x, y, \text{width}, \text{height})$.
+  * When bounding box parameters change, the canvas viewport re-frames immediately to show the specified subregion.
 * **Automatic Best-Fit with Dynamic Framing**:
   * The framed bounding box area is automatically scaled to **best fit the available viewport dimensions** ($W_{\text{viewport}} \times H_{\text{viewport}}$) with zero scrolling, preserving the 1:1 stud aspect ratio:
-    $$S_{\text{stud}} = \min\left(\frac{W_{\text{viewport}}}{width}, \frac{H_{\text{viewport}}}{height}\right)$$
-  * The framed area remains centered in the viewport.
+    $$S_{\text{stud}} = \min\left(\frac{W_{\text{viewport}}}{\text{width}}, \frac{H_{\text{viewport}}}{\text{height}}\right)$$
+  * The framed area remains centered in the `.studio-viewport` container.
 * **Flat 2D Continuous Studs via Domain Rendering Engine**:
-  * Visual rasterization is processed by the pure domain function `renderAssetGrid` in `@lego-wargame-terrain-studio/domain`, guaranteeing 100% pixel-for-pixel parity with server image exports.
-  * Stud cells are rendered as continuous flat colored squares.
-  * No 3D bevels, drop shadows, or circular stud nub graphics are drawn.
+  * Visual rasterization is processed by the pure domain function `renderAssetGrid` in `@lego-wargame-terrain-studio/domain`, guaranteeing 100% pixel parity with server image exports.
+  * Stud cells are rendered as continuous flat colored squares without circular stud nubs.
 * **Neutral Checkerboard Transparency Background**:
-  * Unpainted cells display a subtle $2 \times 2$ neutral checkerboard pattern (`#27272a` and `#18181b`) per stud, clearly distinguishing unpainted empty space from official White bricks (`#FFFFFF`).
+  * Unpainted cells display a subtle $2 \times 2$ neutral checkerboard pattern per stud, distinguishing unpainted empty space from official White bricks.
 * **Optional 1px Alignment Grid**:
-  * Toggled via the "Show Grid" button in `<TopHeaderBar>`.
-  * When enabled and stud size exceeds $3\text{px}$, renders 1px semi-transparent grid lines (`rgba(0, 0, 0, 0.15)`) between studs.
-  * When disabled, cells appear as continuous flush brick surfaces.
+  * When enabled and stud size exceeds $3\text{px}$, renders 1px semi-transparent grid lines between studs.
 
 ---
 
-## 3. Interactive Behaviors
+## 4. Interactive Behaviors
 
 * **Click-to-Paint (Brush & Eraser Modes)**:
-  * In `Brush` and `Eraser` modes, painting is strictly performed on **mouse click** (`pointerdown`). Drag-to-paint is disabled in this iteration.
-  * Clicking on a visible stud at column $C$ and row $R$ paints an area matching the currently active brush size ($1\times 1, 2\times 2, 4\times 4, 8\times 8, 16\times 16, 32\times 32$), with the clicked stud at the top-left origin $(C, R)$.
+  * In `Brush` and `Eraser` modes, painting is strictly performed on **mouse click** (`pointerdown`).
+  * Clicking on a visible stud at column $C$ and row $R$ paints an area matching the currently active brush size, with the clicked stud at the top-left origin $(C, R)$.
   * Active tool behavior:
     * **Brush Tool**: Paints cells with the active official brick color ID.
-    * **Eraser Tool**: Clears cells to `colorId: null` (reverting to the neutral checkerboard transparency pattern).
-  * On click, the client immediately updates the local canvas buffer and dispatches the `paintArea` JSON-RPC HTTP request to the backend.
+    * **Eraser Tool**: Clears cells to `colorId: null` (reverting to checkerboard transparency pattern).
 * **Drag-to-Pan (Pan Mode)**:
-  * When the active tool mode is `Pan` (`[✋ Pan]`), clicking and dragging (`pointerdown` followed by `pointermove`) on the canvas viewport pans the active view.
-  * **Natural Hand / Grab Movement**: Dragging pulls the underlying terrain under the cursor (consistent with standard tools like Figma and Photoshop). Moving the cursor by pixel displacement $(\Delta X_{\text{px}}, \Delta Y_{\text{px}})$ shifts the bounding box origin inversely:
+  * In `Pan` mode, clicking and dragging on the canvas viewport shifts the active view.
+  * Moving cursor by pixel displacement $(\Delta X_{\text{px}}, \Delta Y_{\text{px}})$ shifts the bounding box origin inversely:
     $$\Delta x_{\text{studs}} = \mathrm{round}\left(\frac{\Delta X_{\text{px}}}{S_{\text{stud}}}\right), \quad \Delta y_{\text{studs}} = \mathrm{round}\left(\frac{\Delta Y_{\text{px}}}{S_{\text{stud}}}\right)$$
-    $$x_{\text{new}} = \mathrm{clamp}(x_{\text{start}} - \Delta x_{\text{studs}}, 0, W - width)$$
-    $$y_{\text{new}} = \mathrm{clamp}(y_{\text{start}} - \Delta y_{\text{studs}}, 0, H - height)$$
-  * Cursor style indicates navigation: `cursor: grab` when idle, `cursor: grabbing` while dragging.
+    $$x_{\text{new}} = \mathrm{clamp}(x_{\text{start}} - \Delta x_{\text{studs}}, 0, W - \text{width})$$
+    $$y_{\text{new}} = \mathrm{clamp}(y_{\text{start}} - \Delta y_{\text{studs}}, 0, H - \text{height})$$
 * **Mouse Wheel Zooming**:
-  * Scrolling the mouse wheel over the canvas viewport enlarges or reduces the bounding box dimensions centered on the current bounding box center:
-    * **Wheel Up (Zoom In)**: Decreases bounding box dimensions ($width, height$) by ~25% (scaling factor $\approx 0.8\times$), maintaining aspect ratio and centering the new box at the existing center. Minimum dimensions are $1 \times 1$ stud.
-    * **Wheel Down (Zoom Out)**: Increases bounding box dimensions ($width, height$) by ~25% (scaling factor $\approx 1.25\times$), maintaining aspect ratio and centering the new box at the existing center. Maximum dimensions are capped at full asset dimensions $(W, H)$.
-  * Origin coordinates $(x, y)$ are recomputed to keep the bounding box center fixed and clamped within $[0, W - width]$ and $[0, H - height]$.
-  * Wheel zooming is active across all tool modes.
+  * Scrolling the mouse wheel over the canvas viewport scales bounding box dimensions centered on the current center:
+    * **Wheel Up (Zoom In)**: Decreases bounding box dimensions by ~25% down to $1\times 1$.
+    * **Wheel Down (Zoom Out)**: Increases bounding box dimensions by ~25% up to full asset dimensions $(W, H)$.
 
 ---
 
-## 4. Acceptance Criteria & Test IDs
-
-* `TEST-UI-VIEWPORT-01`: Viewport renders the active bounding box region $(x, y, width, height)$ scaled to fit the viewport container with no scrollbars.
+## 5. Acceptance Criteria & Test IDs
+* `TEST-UI-VIEWPORT-01`: Viewport renders the active bounding box region $(x, y, \text{width}, \text{height})$ scaled to fit the viewport container with no scrollbars.
 * `TEST-UI-VIEWPORT-02`: Changing bounding box parameters updates the canvas to frame the new subregion.
 * `TEST-UI-VIEWPORT-03`: Clicking on a stud paints the cell(s) matching the active brush size and active color immediately.
 * `TEST-UI-VIEWPORT-04`: Toggling the grid overlay turns the 1px reference grid lines on and off without modifying cell data.

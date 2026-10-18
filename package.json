@@ -22,6 +22,7 @@
     "test:bdd:headless": "npm run test:bdd:domain && npm run test:bdd:jsonrpc && npm run test:bdd:persistence && npm run test:bdd:mcp",
     "test:bdd:ui": "NODE_OPTIONS='--import tsx' cucumber-js -p ui",
     "test:bdd:all": "npm run test:bdd:headless && npm run test:bdd:ui",
+    "mockups:render": "node scripts/render_mockups.mjs",
     "test": "npm run --if-present test --workspaces && npm run test:bdd:domain"
   },
   "devDependencies": {

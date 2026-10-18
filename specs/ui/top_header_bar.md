@@ -1,43 +1,56 @@
 # Component: TopHeaderBar
 
 ## 1. Role & Responsibilities
-The `<TopHeaderBar>` sits at the top of the Studio viewport. It provides clean generic project identity, asset switching, new asset creation, asset deletion trigger, and asset dimension controls ($W \times H$).
+The `<TopHeaderBar>` sits at the top of the Studio viewport. It provides clean project identity, asset switching, new asset creation, asset deletion trigger, dimension controls ($W \times H$), grid visibility toggle, and print export triggers.
 
-## 2. Child Components & Controls
-* **Project Brand**: Clean generic text/icon logo ("Brick Wargame Terrain Studio") with no third-party trademark branding.
-* **Asset Selector Dropdown**:
-  * Dropdown populated via `listAssets` displaying active asset name (e.g. "Modular Outpost").
-  * Selecting an asset switches the active studio session.
-* **Bootstrapping & Empty State Prompt**:
-  * If the database contains no assets when the application loads, the studio immediately prompts the user with a modal dialog to create their first asset.
-  * When the active asset is deleted: if other assets exist, the studio switches to the next available asset; if no assets remain, the studio presents the create asset prompt.
-* **New Asset Button**:
-  * Action button `[+ New]` opening creation dialog/prompt.
-* **Delete Asset Button**:
-  * Destructive action button `[🗑 Delete]` styled with warning/danger hover feedback (`text-red-400 hover:text-red-300 hover:bg-red-950/40 border border-red-900/50`).
-  * Clicking triggers the confirmation modal `<DeleteAssetModal>` (see [`delete_asset_modal.md`](./delete_asset_modal.md)).
-* **Dimensions Controls**:
-  * Numeric input for `Width` ($W \ge 1, \le 1000$).
-  * Numeric input for `Height` ($H \ge 1, \le 1000$).
-  * Changing dimensions triggers `updateAsset(assetId, width, height)`.
-  * **Crop Warning on Downsizing**: When shrinking an asset dimension (e.g. from $32 \times 32$ to $16 \times 16$), cells outside the new dimensions will be permanently removed. The UI prompts with a confirmation warning before applying the reduction if painted cells will be cropped.
-* **Grid Mode Toggle**:
-  * Toggle button `[Grid: On / Off]` switching continuous stud surface versus overlaid reference grid lines on the canvas viewport.
-* **Export for Printing Button**:
-  * Action button `[🖨️ Export for Printing]` located in the right section next to Grid Mode toggle.
-  * Clicking triggers `exportImage({ assetId, profile: 'print' })` over JSON-RPC.
-  * On response, creates a PNG Blob and initiates a direct browser file download named `${asset.name}_print.png`.
+---
 
-## 3. Visual Ergonomics & Layout
-* Height: 48px fixed banner (`h-12`).
-* Background: `bg-zinc-900 border-b border-zinc-800`.
-* Left section: Branding, Asset selector dropdown, `[+ New]` button, and `[Delete]` button.
-* Right section: Dimension inputs ($W \times H$), Grid Mode toggle, and `[🖨️ Export for Printing]` button.
+## 2. Component Contract
 
-## 4. Acceptance Criteria & Test IDs
+### Input Props
+| Prop | Type | Description |
+| :--- | :--- | :--- |
+| `assetName` | String | Name of the active asset displayed in the header badge |
+| `width` | Integer ($\ge 1, \le 1000$) | Width of the active asset in studs |
+| `height` | Integer ($\ge 1, \le 1000$) | Height of the active asset in studs |
+| `availableAssets` | Array of AssetSummary | List of existing assets available in the studio session |
+| `currentAssetId` | String | Identifier of the currently selected asset |
+| `showGrid` | Boolean | Whether the canvas reference grid lines are currently active |
+
+### Callbacks
+| Callback | Arguments | Trigger Condition |
+| :--- | :--- | :--- |
+| `onSelectAsset` | `assetId: String` | User selects an asset from the `<wa-select>` dropdown |
+| `onNewAsset` | None | User clicks the `[+ New]` button |
+| `onDeleteClick` | None | User clicks the `[🗑 Delete]` button |
+| `onDimensionsChange` | `width: Integer, height: Integer` | User commits valid new dimensions via `<wa-input>` |
+| `onToggleGrid` | None | User clicks the grid toggle button |
+| `onExportPrint` | None | User clicks the `[🖨️ Export for Printing]` button |
+
+---
+
+## 3. Child Controls & Web Awesome Primitives
+* **Branding Badge & Title**: Visual amber marker and title text within `.wa-cluster`.
+* **Asset Selector Dropdown**: `<wa-select size="small">` with child `<wa-option>` elements.
+* **Asset Name Badge**: `<wa-badge variant="neutral" appearance="accent">` displaying the current asset name.
+* **New Asset Button**: `<wa-button variant="neutral" size="small">` labelled `+ New`.
+* **Delete Asset Button**: `<wa-button variant="danger" size="small">` labelled `🗑 Delete`.
+* **Dimension Inputs**: Two `<wa-input type="number" size="small">` elements for width and height ($W, H \in [1, 1000]$).
+* **Grid Mode Toggle**: `<wa-button size="small">` with active variant highlighting.
+* **Export for Printing Button**: `<wa-button variant="neutral" size="small">` triggering JSON-RPC image export.
+
+---
+
+## 4. Visual Ergonomics & Layout
+* **Container**: `.studio-header` flex bar spanning full width with `wa-split` distribution.
+* **Left Section**: `.wa-cluster` containing brand icon, title, separator divider, `<wa-select>`, `<wa-badge>`, and action buttons.
+* **Right Section**: `.wa-cluster` containing dimension inputs, separator divider, grid toggle, and export button.
+
+---
+
+## 5. Acceptance Criteria & Test IDs
 * `TEST-UI-HEADER-01`: Displays the currently selected asset name.
 * `TEST-UI-HEADER-02`: Changing width or height input values dispatches dimension updates and resizes the displayed asset grid.
 * `TEST-UI-HEADER-03`: Width and height inputs enforce minimum values ($W \ge 1, H \ge 1$).
 * `TEST-UI-HEADER-04`: Clicking the `[Delete]` button opens the `<DeleteAssetModal>` confirmation dialog.
 * `TEST-UI-HEADER-05`: Clicking `[🖨️ Export for Printing]` dispatches an image export request with profile 'print' and downloads `${asset.name}_print.png`.
-

@@ -10,12 +10,20 @@ let sharedServer: http.Server | null = null;
 let sharedServerPort: number = 5180;
 let sharedBrowser: Browser | null = null;
 
-const distDir = path.resolve(process.cwd(), 'packages/ui/dist');
+import { waitForWebAwesome, assertMatchesMockup } from './mockup_parity.js';
+export { waitForWebAwesome, assertMatchesMockup };
+
+const rootDir = process.cwd();
+const distDir = path.resolve(rootDir, 'packages/ui/dist');
 const mimeTypes: Record<string, string> = {
   '.html': 'text/html',
   '.js': 'application/javascript',
   '.css': 'text/css',
   '.svg': 'image/svg+xml',
+  '.json': 'application/json',
+  '.png': 'image/png',
+  '.woff': 'font/woff',
+  '.woff2': 'font/woff2',
 };
 
 export async function ensureSharedServer(): Promise<number> {
@@ -25,14 +33,28 @@ export async function ensureSharedServer(): Promise<number> {
     sharedServer = http.createServer((req, res) => {
       let reqPath = req.url?.split('?')[0] || '/';
       if (reqPath === '/') reqPath = '/index.html';
-      const filePath = path.join(distDir, reqPath);
+
+      let filePath: string;
+      if (
+        reqPath.startsWith('/specs/') ||
+        reqPath.startsWith('/node_modules/') ||
+        reqPath.startsWith('/packages/')
+      ) {
+        filePath = path.join(rootDir, reqPath);
+      } else {
+        filePath = path.join(distDir, reqPath);
+      }
+
       if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
         const ext = path.extname(filePath);
         res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'application/octet-stream' });
         fs.createReadStream(filePath).pipe(res);
-      } else {
+      } else if (!reqPath.startsWith('/specs/') && !reqPath.startsWith('/node_modules/')) {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         fs.createReadStream(path.join(distDir, 'index.html')).pipe(res);
+      } else {
+        res.writeHead(404);
+        res.end();
       }
     });
 
@@ -347,6 +369,7 @@ export class PlaywrightWorld extends World {
 
     await this.page.goto(`http://localhost:${sharedServerPort}`);
     await this.page.waitForSelector('[data-testid="header-asset-name"]');
+    await waitForWebAwesome(this.page);
     return this.page;
   }
 
@@ -355,6 +378,14 @@ export class PlaywrightWorld extends World {
       throw new Error('Playwright page is not initialized. Call initLiveApp first.');
     }
     return this.page;
+  }
+
+  public getServerPort(): number {
+    return sharedServerPort;
+  }
+
+  public async getBrowser(): Promise<Browser> {
+    return await getSharedBrowser();
   }
 }
 

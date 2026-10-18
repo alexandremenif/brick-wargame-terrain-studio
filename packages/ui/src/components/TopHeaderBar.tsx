@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import type { AssetSummary } from '@lego-wargame-terrain-studio/domain';
-import { Button, NumberInput, Select, Badge } from './design_system/index.js';
 
 export interface TopHeaderBarProps {
   assetName: string;
@@ -31,104 +30,155 @@ export const TopHeaderBar: React.FC<TopHeaderBarProps> = ({
   onToggleGrid,
   onExportPrint,
 }) => {
+  const [localWidth, setLocalWidth] = useState<string>(String(width));
+  const [localHeight, setLocalHeight] = useState<string>(String(height));
+
+  useEffect(() => {
+    setLocalWidth(String(width));
+  }, [width]);
+
+  useEffect(() => {
+    setLocalHeight(String(height));
+  }, [height]);
+
+  const commitWidth = (valStr: string) => {
+    const parsed = parseInt(valStr, 10);
+    if (!isNaN(parsed) && parsed >= 1 && parsed <= 1000) {
+      onDimensionsChange(parsed, height);
+    } else {
+      setLocalWidth(String(width));
+    }
+  };
+
+  const commitHeight = (valStr: string) => {
+    const parsed = parseInt(valStr, 10);
+    if (!isNaN(parsed) && parsed >= 1 && parsed <= 1000) {
+      onDimensionsChange(width, parsed);
+    } else {
+      setLocalHeight(String(height));
+    }
+  };
+
   return (
-    <header className="flex h-12 w-full items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 text-zinc-100 select-none">
+    <header className="studio-header wa-split" data-testid="studio-top-header">
       {/* Left: Branding, Selector, Actions */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 rounded-sm bg-amber-500 shadow-sm" />
-          <span className="font-semibold text-sm tracking-wide text-zinc-100">
-            Brick Wargame Terrain Studio
-          </span>
+      <div className="wa-cluster">
+        <div className="wa-cluster" style={{ gap: 'var(--wa-space-2xs)' }}>
+          <div className="studio-brand-badge" />
+          <span className="studio-brand-title">Brick Wargame Terrain Studio</span>
         </div>
 
-        <div className="h-4 w-px bg-zinc-800" />
+        <div className="studio-header-divider" />
 
-        <div className="flex items-center gap-2">
-          <Select
+        <div className="wa-cluster" style={{ gap: 'var(--wa-space-xs)' }}>
+          <wa-select
             data-testid="asset-selector-dropdown"
+            className="studio-asset-select"
+            size="small"
             value={currentAssetId}
-            onChange={(e) => onSelectAsset(e.target.value)}
+            onwa-change={(e: any) => onSelectAsset(e.target.value)}
+            onChange={(e: any) => onSelectAsset(e.target.value)}
           >
             {availableAssets.map((asset) => (
-              <option key={asset.id} value={asset.id}>
+              <wa-option key={asset.id} value={asset.id}>
                 {asset.name}
-              </option>
+              </wa-option>
             ))}
-          </Select>
+          </wa-select>
 
-          <Badge variant="subtle" data-testid="header-asset-name">
+          <wa-badge variant="neutral" appearance="accent" data-testid="header-asset-name">
             {assetName}
-          </Badge>
+          </wa-badge>
 
-          <Button
+          <wa-button
             data-testid="header-new-asset-btn"
-            variant="secondary"
-            size="xs"
+            variant="neutral"
+            size="small"
             onClick={onNewAsset}
           >
             + New
-          </Button>
+          </wa-button>
 
-          <Button
+          <wa-button
             data-testid="header-delete-asset-btn"
-            variant="destructive"
-            size="xs"
+            variant="danger"
+            size="small"
             onClick={onDeleteClick}
           >
             🗑 Delete
-          </Button>
+          </wa-button>
         </div>
       </div>
 
-      {/* Right: Dimensions & Grid Toggle */}
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 text-xs text-zinc-400">
-          <label className="flex items-center gap-1.5">
+      {/* Right: Dimensions, Grid, Export */}
+      <div className="wa-cluster">
+        <div className="wa-cluster studio-field-label" style={{ gap: 'var(--wa-space-2xs)' }}>
+          <label className="wa-cluster" style={{ gap: 'var(--wa-space-3xs)' }}>
             <span>W:</span>
-            <NumberInput
+            <wa-input
               data-testid="header-width-input"
-              value={width}
+              type="number"
+              size="small"
               min={1}
               max={1000}
-              onCommit={(newW) => onDimensionsChange(newW, height)}
-              className="w-14 text-right"
+              value={localWidth}
+              className="studio-dimension-input"
+              onwa-input={(e: any) => setLocalWidth(e.target.value)}
+              onInput={(e: any) => setLocalWidth(e.target.value)}
+              onBlur={(e: any) => commitWidth(e.target.value)}
+              onKeyDown={(e: any) => {
+                if (e.key === 'Enter') {
+                  commitWidth((e.target as any).value);
+                } else if (e.key === 'Escape') {
+                  setLocalWidth(String(width));
+                }
+              }}
             />
           </label>
           <span>×</span>
-          <label className="flex items-center gap-1.5">
+          <label className="wa-cluster" style={{ gap: 'var(--wa-space-3xs)' }}>
             <span>H:</span>
-            <NumberInput
+            <wa-input
               data-testid="header-height-input"
-              value={height}
+              type="number"
+              size="small"
               min={1}
               max={1000}
-              onCommit={(newH) => onDimensionsChange(width, newH)}
-              className="w-14 text-right"
+              value={localHeight}
+              className="studio-dimension-input"
+              onwa-input={(e: any) => setLocalHeight(e.target.value)}
+              onInput={(e: any) => setLocalHeight(e.target.value)}
+              onBlur={(e: any) => commitHeight(e.target.value)}
+              onKeyDown={(e: any) => {
+                if (e.key === 'Enter') {
+                  commitHeight((e.target as any).value);
+                } else if (e.key === 'Escape') {
+                  setLocalHeight(String(height));
+                }
+              }}
             />
           </label>
         </div>
 
-        <div className="h-4 w-px bg-zinc-800" />
+        <div className="studio-header-divider" />
 
-        <Button
+        <wa-button
           data-testid="header-grid-toggle-btn"
-          variant="secondary"
-          size="xs"
-          isActive={showGrid}
+          variant={showGrid ? 'brand' : 'neutral'}
+          size="small"
           onClick={onToggleGrid}
         >
           Grid: {showGrid ? 'On' : 'Off'}
-        </Button>
+        </wa-button>
 
-        <Button
+        <wa-button
           data-testid="header-export-print-btn"
-          variant="secondary"
-          size="xs"
+          variant="neutral"
+          size="small"
           onClick={onExportPrint}
         >
           🖨️ Export for Printing
-        </Button>
+        </wa-button>
       </div>
     </header>
   );

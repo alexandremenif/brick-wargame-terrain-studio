@@ -1,5 +1,7 @@
-import { Before, After, AfterAll } from '@cucumber/cucumber';
+import { Before, After, AfterAll, setDefaultTimeout } from '@cucumber/cucumber';
 import { PlaywrightWorld, closeSharedBrowser } from '../support/playwright_world.js';
+
+setDefaultTimeout(30000);
 
 Before({ tags: '@ui' }, async function (this: PlaywrightWorld) {
   this.toolMode = 'Brush';

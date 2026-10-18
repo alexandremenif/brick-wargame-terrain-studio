@@ -1,6 +1,5 @@
 import React from 'react';
 import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
-import { Button, Tooltip } from './design_system/index.js';
 
 export type ToolMode = 'Brush' | 'Eraser' | 'Pan';
 export type BrushSize = '1x1' | '2x2' | '4x4' | '8x8' | '16x16' | '32x32';
@@ -29,115 +28,102 @@ export const LeftToolboxSidebar: React.FC<LeftToolboxSidebarProps> = ({
   const isColorDisabled = toolMode === 'Eraser' || toolMode === 'Pan';
 
   return (
-    <aside className="flex w-64 flex-col border-r border-zinc-800 bg-zinc-900 text-zinc-100 select-none">
+    <aside className="studio-sidebar studio-sidebar-left wa-stack" data-testid="left-toolbox-sidebar">
       {/* Tool Mode Buttons */}
-      <div className="p-3 border-b border-zinc-800">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-          Tool Mode
-        </label>
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
-          <Button
+      <div className="studio-sidebar-section wa-stack" style={{ gap: 'var(--wa-space-2xs)' }}>
+        <span className="studio-section-label">Tool Mode</span>
+        <div className="studio-grid-3col">
+          <wa-button
             data-testid="tool-brush-btn"
-            variant="secondary"
-            size="sm"
-            isActive={toolMode === 'Brush'}
+            variant={toolMode === 'Brush' ? 'brand' : 'neutral'}
+            size="small"
+            data-active={toolMode === 'Brush'}
+            className={toolMode === 'Brush' ? 'border-amber-500' : ''}
             onClick={() => onSelectToolMode('Brush')}
-            className="flex items-center gap-1"
           >
-            <span>🖌</span>
-            <span>Brush</span>
-          </Button>
+            🖌 Brush
+          </wa-button>
 
-          <Button
+          <wa-button
             data-testid="tool-eraser-btn"
-            variant="secondary"
-            size="sm"
-            isActive={toolMode === 'Eraser'}
+            variant={toolMode === 'Eraser' ? 'brand' : 'neutral'}
+            size="small"
+            data-active={toolMode === 'Eraser'}
+            className={toolMode === 'Eraser' ? 'border-amber-500' : ''}
             onClick={() => onSelectToolMode('Eraser')}
-            className="flex items-center gap-1"
           >
-            <span>🧹</span>
-            <span>Eraser</span>
-          </Button>
+            🧹 Eraser
+          </wa-button>
 
-          <Button
+          <wa-button
             data-testid="tool-pan-btn"
-            variant="secondary"
-            size="sm"
-            isActive={toolMode === 'Pan'}
+            variant={toolMode === 'Pan' ? 'brand' : 'neutral'}
+            size="small"
+            data-active={toolMode === 'Pan'}
+            className={toolMode === 'Pan' ? 'border-amber-500' : ''}
             onClick={() => onSelectToolMode('Pan')}
-            className="flex items-center gap-1"
           >
-            <span>✋</span>
-            <span>Pan</span>
-          </Button>
+            ✋ Pan
+          </wa-button>
         </div>
       </div>
 
       {/* Brush Size Presets */}
-      <div className="p-3 border-b border-zinc-800">
-        <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-          Brush Size
-        </label>
-        <div className="mt-2 grid grid-cols-3 gap-1.5">
+      <div className="studio-sidebar-section wa-stack" style={{ gap: 'var(--wa-space-2xs)' }}>
+        <span className="studio-section-label">Brush Size</span>
+        <div className="studio-grid-3col">
           {BRUSH_SIZES.map((size) => (
-            <Button
+            <wa-button
               key={size}
               data-testid={`brush-size-${size}`}
-              variant="secondary"
-              size="xs"
-              isActive={brushSize === size}
+              variant={brushSize === size ? 'brand' : 'neutral'}
+              size="small"
+              data-active={brushSize === size}
+              className={brushSize === size ? 'border-amber-500' : ''}
               onClick={() => onSelectBrushSize(size)}
             >
               {size}
-            </Button>
+            </wa-button>
           ))}
         </div>
       </div>
 
       {/* 41 Color Swatches */}
-      <div className="flex-1 overflow-y-auto p-3">
-        <div className="flex items-center justify-between">
-          <label className="text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
-            Official Colors ({colors.length})
-          </label>
+      <div className="wa-stack" style={{ flex: '1 1 0%', overflowY: 'auto', padding: 'var(--wa-space-s)', gap: 'var(--wa-space-2xs)' }}>
+        <div className="wa-split">
+          <span className="studio-section-label">Official Colors ({colors.length})</span>
           {isColorDisabled && (
-            <span className="text-[10px] text-zinc-400 italic">
-              (Disabled in {toolMode})
-            </span>
+            <span style={{ fontSize: '10px', color: 'var(--wa-color-text-quiet)' }}>(Disabled in {toolMode})</span>
           )}
         </div>
 
-        <div
-          className={`mt-2 grid grid-cols-6 gap-1.5 ${
-            isColorDisabled ? 'opacity-40 pointer-events-none' : ''
-          }`}
-        >
+        <div className={`studio-color-grid ${isColorDisabled ? 'disabled' : ''}`}>
           {colors.map((color) => {
             const isSelected = selectedColorId === color.id && toolMode === 'Brush';
+            const swatchId = `swatch-${color.id}`;
             return (
-              <Tooltip
+              <button
                 key={color.id}
-                content={`${color.name} (${color.hex})`}
-                position="top"
-              >
-                <button
-                  type="button"
-                  data-testid={`color-swatch-${color.name}`}
-                  data-color-id={color.id}
-                  data-color-name={color.name}
-                  data-color-hex={color.hex}
-                  onClick={() => onSelectColor(color.id)}
-                  className={`relative aspect-square w-full rounded-sm border cursor-pointer transition-all ${
-                    isSelected
-                      ? 'border-white ring-2 ring-white scale-105 z-10'
-                      : 'border-black/40 hover:scale-105 hover:border-zinc-400'
-                  }`}
-                  style={{ backgroundColor: color.hex }}
-                />
-              </Tooltip>
+                type="button"
+                id={swatchId}
+                data-testid={`color-swatch-${color.name}`}
+                data-color-id={color.id}
+                data-color-name={color.name}
+                data-color-hex={color.hex}
+                data-selected={isSelected ? 'true' : 'false'}
+                onClick={() => onSelectColor(color.id)}
+                className={`color-swatch ${isSelected ? 'active ring-2 ring-white' : ''}`}
+                style={{ backgroundColor: color.hex }}
+              />
             );
           })}
+        </div>
+        <div style={{ display: 'none' }}>
+          {colors.map((color) => (
+            <wa-tooltip key={color.id} for={`swatch-${color.id}`}>
+              {color.name} ({color.hex})
+            </wa-tooltip>
+          ))}
         </div>
       </div>
     </aside>

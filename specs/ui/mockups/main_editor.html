@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en" class="wa-theme-default wa-dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brick Wargame Terrain Studio - Main Editor Mockup</title>
+    <link rel="stylesheet" href="../../../node_modules/@awesome.me/webawesome/dist/styles/webawesome.css" />
+    <link rel="stylesheet" href="./mockup.css" />
+    <script src="./webawesome.elements.js"></script>
+    <style>
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body class="wa-theme-default wa-dark">
+    <div class="studio-shell">
+      <!-- Top Header Bar -->
+      <header class="studio-header wa-split" data-testid="studio-top-header">
+        <!-- Left: Branding, Selector, Actions -->
+        <div class="wa-cluster">
+          <div class="wa-cluster" style="gap: var(--wa-space-2xs);">
+            <div class="studio-brand-badge"></div>
+            <span class="studio-brand-title">Brick Wargame Terrain Studio</span>
+          </div>
+
+          <div class="studio-header-divider"></div>
+
+          <div class="wa-cluster" style="gap: var(--wa-space-xs);">
+            <wa-select data-testid="asset-selector-dropdown" class="studio-asset-select" size="small" value="asset-1">
+              <wa-option value="asset-1">Modular Outpost</wa-option>
+            </wa-select>
+
+            <wa-badge variant="neutral" appearance="accent" data-testid="header-asset-name">
+              Modular Outpost
+            </wa-badge>
+
+            <wa-button data-testid="header-new-asset-btn" variant="neutral" size="small">
+              + New
+            </wa-button>
+
+            <wa-button data-testid="header-delete-asset-btn" variant="danger" size="small">
+              🗑 Delete
+            </wa-button>
+          </div>
+        </div>
+
+        <!-- Right: Dimensions, Grid, Export -->
+        <div class="wa-cluster">
+          <div class="wa-cluster studio-field-label" style="gap: var(--wa-space-2xs);">
+            <label class="wa-cluster" style="gap: var(--wa-space-3xs);">
+              <span>W:</span>
+              <wa-input
+                data-testid="header-width-input"
+                type="number"
+                size="small"
+                min="1"
+                max="1000"
+                value="32"
+                class="studio-dimension-input"
+              ></wa-input>
+            </label>
+            <span>×</span>
+            <label class="wa-cluster" style="gap: var(--wa-space-3xs);">
+              <span>H:</span>
+              <wa-input
+                data-testid="header-height-input"
+                type="number"
+                size="small"
+                min="1"
+                max="1000"
+                value="32"
+                class="studio-dimension-input"
+              ></wa-input>
+            </label>
+          </div>
+
+          <div class="studio-header-divider"></div>
+
+          <wa-button data-testid="header-grid-toggle-btn" variant="brand" size="small">
+            Grid: On
+          </wa-button>
+
+          <wa-button data-testid="header-export-print-btn" variant="neutral" size="small">
+            🖨️ Export for Printing
+          </wa-button>
+        </div>
+      </header>
+
+      <!-- Main Workspace -->
+      <div class="studio-workspace">
+        <!-- Left Toolbox -->
+        <aside class="studio-sidebar studio-sidebar-left wa-stack" data-testid="left-toolbox-sidebar">
+          <!-- Tool Mode -->
+          <div class="studio-sidebar-section wa-stack" style="gap: var(--wa-space-2xs);">
+            <span class="studio-section-label">Tool Mode</span>
+            <div class="studio-grid-3col">
+              <wa-button data-testid="tool-brush-btn" variant="brand" size="small" data-active="true" class="border-amber-500">
+                🖌 Brush
+              </wa-button>
+              <wa-button data-testid="tool-eraser-btn" variant="neutral" size="small">
+                🧹 Eraser
+              </wa-button>
+              <wa-button data-testid="tool-pan-btn" variant="neutral" size="small">
+                ✋ Pan
+              </wa-button>
+            </div>
+          </div>
+
+          <!-- Brush Size -->
+          <div class="studio-sidebar-section wa-stack" style="gap: var(--wa-space-2xs);">
+            <span class="studio-section-label">Brush Size</span>
+            <div class="studio-grid-3col">
+              <wa-button data-testid="brush-size-1x1" variant="brand" size="small" data-active="true" class="border-amber-500">1x1</wa-button>
+              <wa-button data-testid="brush-size-2x2" variant="neutral" size="small">2x2</wa-button>
+              <wa-button data-testid="brush-size-4x4" variant="neutral" size="small">4x4</wa-button>
+              <wa-button data-testid="brush-size-8x8" variant="neutral" size="small">8x8</wa-button>
+              <wa-button data-testid="brush-size-16x16" variant="neutral" size="small">16x16</wa-button>
+              <wa-button data-testid="brush-size-32x32" variant="neutral" size="small">32x32</wa-button>
+            </div>
+          </div>
+
+          <!-- 41 Official Colors -->
+          <div class="wa-stack" style="flex: 1 1 0%; overflow-y: auto; padding: var(--wa-space-s); gap: var(--wa-space-2xs);">
+            <div class="wa-split">
+              <span class="studio-section-label">Official Colors (41)</span>
+            </div>
+
+                        <div class="studio-color-grid">
+              <button type="button" id="swatch-1" data-testid="color-swatch-White" data-color-id="1" data-color-name="White" data-color-hex="#FFFFFF" data-selected="true" class="color-swatch active ring-2 ring-white" style="background-color: #FFFFFF;"></button>
+              <button type="button" id="swatch-2" data-testid="color-swatch-Medium Stone Grey" data-color-id="2" data-color-name="Medium Stone Grey" data-color-hex="#A0A5A9" data-selected="false" class="color-swatch" style="background-color: #A0A5A9;"></button>
+              <button type="button" id="swatch-3" data-testid="color-swatch-Dark Stone Grey" data-color-id="3" data-color-name="Dark Stone Grey" data-color-hex="#6C6E68" data-selected="false" class="color-swatch" style="background-color: #6C6E68;"></button>
+              <button type="button" id="swatch-4" data-testid="color-swatch-Black" data-color-id="4" data-color-name="Black" data-color-hex="#05131D" data-selected="false" class="color-swatch" style="background-color: #05131D;"></button>
+              <button type="button" id="swatch-5" data-testid="color-swatch-Bright Red" data-color-id="5" data-color-name="Bright Red" data-color-hex="#C91A09" data-selected="false" class="color-swatch" style="background-color: #C91A09;"></button>
+              <button type="button" id="swatch-6" data-testid="color-swatch-Dark Red" data-color-id="6" data-color-name="Dark Red" data-color-hex="#720E0F" data-selected="false" class="color-swatch" style="background-color: #720E0F;"></button>
+              <button type="button" id="swatch-7" data-testid="color-swatch-Reddish Orange" data-color-id="7" data-color-name="Reddish Orange" data-color-hex="#CA4C0B" data-selected="false" class="color-swatch" style="background-color: #CA4C0B;"></button>
+              <button type="button" id="swatch-8" data-testid="color-swatch-Bright Orange" data-color-id="8" data-color-name="Bright Orange" data-color-hex="#FE8A18" data-selected="false" class="color-swatch" style="background-color: #FE8A18;"></button>
+              <button type="button" id="swatch-9" data-testid="color-swatch-Dark Orange" data-color-id="9" data-color-name="Dark Orange" data-color-hex="#A95500" data-selected="false" class="color-swatch" style="background-color: #A95500;"></button>
+              <button type="button" id="swatch-10" data-testid="color-swatch-Flame Yellowish Orange" data-color-id="10" data-color-name="Flame Yellowish Orange" data-color-hex="#F8BB3D" data-selected="false" class="color-swatch" style="background-color: #F8BB3D;"></button>
+              <button type="button" id="swatch-11" data-testid="color-swatch-Coral" data-color-id="11" data-color-name="Coral" data-color-hex="#FF698F" data-selected="false" class="color-swatch" style="background-color: #FF698F;"></button>
+              <button type="button" id="swatch-12" data-testid="color-swatch-Bright Yellow" data-color-id="12" data-color-name="Bright Yellow" data-color-hex="#F2CD37" data-selected="false" class="color-swatch" style="background-color: #F2CD37;"></button>
+              <button type="button" id="swatch-13" data-testid="color-swatch-Cool Yellow" data-color-id="13" data-color-name="Cool Yellow" data-color-hex="#FFF03A" data-selected="false" class="color-swatch" style="background-color: #FFF03A;"></button>
+              <button type="button" id="swatch-14" data-testid="color-swatch-Bright Yellowish Green" data-color-id="14" data-color-name="Bright Yellowish Green" data-color-hex="#BBE90B" data-selected="false" class="color-swatch" style="background-color: #BBE90B;"></button>
+              <button type="button" id="swatch-15" data-testid="color-swatch-Bright Green" data-color-id="15" data-color-name="Bright Green" data-color-hex="#4B9F4A" data-selected="false" class="color-swatch" style="background-color: #4B9F4A;"></button>
+              <button type="button" id="swatch-16" data-testid="color-swatch-Dark Green" data-color-id="16" data-color-name="Dark Green" data-color-hex="#237841" data-selected="false" class="color-swatch" style="background-color: #237841;"></button>
+              <button type="button" id="swatch-17" data-testid="color-swatch-Earth Green" data-color-id="17" data-color-name="Earth Green" data-color-hex="#184632" data-selected="false" class="color-swatch" style="background-color: #184632;"></button>
+              <button type="button" id="swatch-18" data-testid="color-swatch-Olive Green" data-color-id="18" data-color-name="Olive Green" data-color-hex="#9B9A5A" data-selected="false" class="color-swatch" style="background-color: #9B9A5A;"></button>
+              <button type="button" id="swatch-19" data-testid="color-swatch-Sand Green" data-color-id="19" data-color-name="Sand Green" data-color-hex="#A0BCAC" data-selected="false" class="color-swatch" style="background-color: #A0BCAC;"></button>
+              <button type="button" id="swatch-20" data-testid="color-swatch-Earth Blue" data-color-id="20" data-color-name="Earth Blue" data-color-hex="#0A3463" data-selected="false" class="color-swatch" style="background-color: #0A3463;"></button>
+              <button type="button" id="swatch-21" data-testid="color-swatch-Bright Blue" data-color-id="21" data-color-name="Bright Blue" data-color-hex="#0055BF" data-selected="false" class="color-swatch" style="background-color: #0055BF;"></button>
+              <button type="button" id="swatch-22" data-testid="color-swatch-Medium Blue" data-color-id="22" data-color-name="Medium Blue" data-color-hex="#5A93DB" data-selected="false" class="color-swatch" style="background-color: #5A93DB;"></button>
+              <button type="button" id="swatch-23" data-testid="color-swatch-Light Royal Blue" data-color-id="23" data-color-name="Light Royal Blue" data-color-hex="#9FC3E9" data-selected="false" class="color-swatch" style="background-color: #9FC3E9;"></button>
+              <button type="button" id="swatch-24" data-testid="color-swatch-Sand Blue" data-color-id="24" data-color-name="Sand Blue" data-color-hex="#6074A1" data-selected="false" class="color-swatch" style="background-color: #6074A1;"></button>
+              <button type="button" id="swatch-25" data-testid="color-swatch-Dark Azur" data-color-id="25" data-color-name="Dark Azur" data-color-hex="#078BC9" data-selected="false" class="color-swatch" style="background-color: #078BC9;"></button>
+              <button type="button" id="swatch-26" data-testid="color-swatch-Medium Azure" data-color-id="26" data-color-name="Medium Azure" data-color-hex="#36AEBF" data-selected="false" class="color-swatch" style="background-color: #36AEBF;"></button>
+              <button type="button" id="swatch-27" data-testid="color-swatch-Bright Bluish Green" data-color-id="27" data-color-name="Bright Bluish Green" data-color-hex="#008F9B" data-selected="false" class="color-swatch" style="background-color: #008F9B;"></button>
+              <button type="button" id="swatch-28" data-testid="color-swatch-Aqua" data-color-id="28" data-color-name="Aqua" data-color-hex="#ADC3C0" data-selected="false" class="color-swatch" style="background-color: #ADC3C0;"></button>
+              <button type="button" id="swatch-29" data-testid="color-swatch-Medium Lilac" data-color-id="29" data-color-name="Medium Lilac" data-color-hex="#3F3691" data-selected="false" class="color-swatch" style="background-color: #3F3691;"></button>
+              <button type="button" id="swatch-30" data-testid="color-swatch-Medium Lavender" data-color-id="30" data-color-name="Medium Lavender" data-color-hex="#AC78BA" data-selected="false" class="color-swatch" style="background-color: #AC78BA;"></button>
+              <button type="button" id="swatch-31" data-testid="color-swatch-Lavender" data-color-id="31" data-color-name="Lavender" data-color-hex="#E1D5ED" data-selected="false" class="color-swatch" style="background-color: #E1D5ED;"></button>
+              <button type="button" id="swatch-32" data-testid="color-swatch-Bright Reddish Violet" data-color-id="32" data-color-name="Bright Reddish Violet" data-color-hex="#923978" data-selected="false" class="color-swatch" style="background-color: #923978;"></button>
+              <button type="button" id="swatch-33" data-testid="color-swatch-Bright Purple" data-color-id="33" data-color-name="Bright Purple" data-color-hex="#C870A0" data-selected="false" class="color-swatch" style="background-color: #C870A0;"></button>
+              <button type="button" id="swatch-34" data-testid="color-swatch-Light Purple" data-color-id="34" data-color-name="Light Purple" data-color-hex="#E4ADC8" data-selected="false" class="color-swatch" style="background-color: #E4ADC8;"></button>
+              <button type="button" id="swatch-35" data-testid="color-swatch-Brick Yellow" data-color-id="35" data-color-name="Brick Yellow" data-color-hex="#E4CD9E" data-selected="false" class="color-swatch" style="background-color: #E4CD9E;"></button>
+              <button type="button" id="swatch-36" data-testid="color-swatch-Sand Yellow" data-color-id="36" data-color-name="Sand Yellow" data-color-hex="#958A73" data-selected="false" class="color-swatch" style="background-color: #958A73;"></button>
+              <button type="button" id="swatch-37" data-testid="color-swatch-Reddish Brown" data-color-id="37" data-color-name="Reddish Brown" data-color-hex="#582A12" data-selected="false" class="color-swatch" style="background-color: #582A12;"></button>
+              <button type="button" id="swatch-38" data-testid="color-swatch-Dark Brown" data-color-id="38" data-color-name="Dark Brown" data-color-hex="#352100" data-selected="false" class="color-swatch" style="background-color: #352100;"></button>
+              <button type="button" id="swatch-39" data-testid="color-swatch-Light Nougat" data-color-id="39" data-color-name="Light Nougat" data-color-hex="#F6D7B3" data-selected="false" class="color-swatch" style="background-color: #F6D7B3;"></button>
+              <button type="button" id="swatch-40" data-testid="color-swatch-Nougat" data-color-id="40" data-color-name="Nougat" data-color-hex="#D09168" data-selected="false" class="color-swatch" style="background-color: #D09168;"></button>
+              <button type="button" id="swatch-41" data-testid="color-swatch-Medium Nougat" data-color-id="41" data-color-name="Medium Nougat" data-color-hex="#AA7D55" data-selected="false" class="color-swatch" style="background-color: #AA7D55;"></button>
+            </div>
+            <div style="display: none;">
+            <wa-tooltip for="swatch-1">White (#FFFFFF)</wa-tooltip>
+            <wa-tooltip for="swatch-2">Medium Stone Grey (#A0A5A9)</wa-tooltip>
+            <wa-tooltip for="swatch-3">Dark Stone Grey (#6C6E68)</wa-tooltip>
+            <wa-tooltip for="swatch-4">Black (#05131D)</wa-tooltip>
+            <wa-tooltip for="swatch-5">Bright Red (#C91A09)</wa-tooltip>
+            <wa-tooltip for="swatch-6">Dark Red (#720E0F)</wa-tooltip>
+            <wa-tooltip for="swatch-7">Reddish Orange (#CA4C0B)</wa-tooltip>
+            <wa-tooltip for="swatch-8">Bright Orange (#FE8A18)</wa-tooltip>
+            <wa-tooltip for="swatch-9">Dark Orange (#A95500)</wa-tooltip>
+            <wa-tooltip for="swatch-10">Flame Yellowish Orange (#F8BB3D)</wa-tooltip>
+            <wa-tooltip for="swatch-11">Coral (#FF698F)</wa-tooltip>
+            <wa-tooltip for="swatch-12">Bright Yellow (#F2CD37)</wa-tooltip>
+            <wa-tooltip for="swatch-13">Cool Yellow (#FFF03A)</wa-tooltip>
+            <wa-tooltip for="swatch-14">Bright Yellowish Green (#BBE90B)</wa-tooltip>
+            <wa-tooltip for="swatch-15">Bright Green (#4B9F4A)</wa-tooltip>
+            <wa-tooltip for="swatch-16">Dark Green (#237841)</wa-tooltip>
+            <wa-tooltip for="swatch-17">Earth Green (#184632)</wa-tooltip>
+            <wa-tooltip for="swatch-18">Olive Green (#9B9A5A)</wa-tooltip>
+            <wa-tooltip for="swatch-19">Sand Green (#A0BCAC)</wa-tooltip>
+            <wa-tooltip for="swatch-20">Earth Blue (#0A3463)</wa-tooltip>
+            <wa-tooltip for="swatch-21">Bright Blue (#0055BF)</wa-tooltip>
+            <wa-tooltip for="swatch-22">Medium Blue (#5A93DB)</wa-tooltip>
+            <wa-tooltip for="swatch-23">Light Royal Blue (#9FC3E9)</wa-tooltip>
+            <wa-tooltip for="swatch-24">Sand Blue (#6074A1)</wa-tooltip>
+            <wa-tooltip for="swatch-25">Dark Azur (#078BC9)</wa-tooltip>
+            <wa-tooltip for="swatch-26">Medium Azure (#36AEBF)</wa-tooltip>
+            <wa-tooltip for="swatch-27">Bright Bluish Green (#008F9B)</wa-tooltip>
+            <wa-tooltip for="swatch-28">Aqua (#ADC3C0)</wa-tooltip>
+            <wa-tooltip for="swatch-29">Medium Lilac (#3F3691)</wa-tooltip>
+            <wa-tooltip for="swatch-30">Medium Lavender (#AC78BA)</wa-tooltip>
+            <wa-tooltip for="swatch-31">Lavender (#E1D5ED)</wa-tooltip>
+            <wa-tooltip for="swatch-32">Bright Reddish Violet (#923978)</wa-tooltip>
+            <wa-tooltip for="swatch-33">Bright Purple (#C870A0)</wa-tooltip>
+            <wa-tooltip for="swatch-34">Light Purple (#E4ADC8)</wa-tooltip>
+            <wa-tooltip for="swatch-35">Brick Yellow (#E4CD9E)</wa-tooltip>
+            <wa-tooltip for="swatch-36">Sand Yellow (#958A73)</wa-tooltip>
+            <wa-tooltip for="swatch-37">Reddish Brown (#582A12)</wa-tooltip>
+            <wa-tooltip for="swatch-38">Dark Brown (#352100)</wa-tooltip>
+            <wa-tooltip for="swatch-39">Light Nougat (#F6D7B3)</wa-tooltip>
+            <wa-tooltip for="swatch-40">Nougat (#D09168)</wa-tooltip>
+            <wa-tooltip for="swatch-41">Medium Nougat (#AA7D55)</wa-tooltip>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Center Canvas Viewport -->
+        <main data-testid="canvas-viewport-container" class="studio-viewport">
+          <canvas
+            data-testid="canvas-viewport"
+            width="704"
+            height="704"
+            style="cursor: crosshair;"
+          ></canvas>
+        </main>
+
+        <!-- Right Inspector Sidebar -->
+        <aside class="studio-sidebar studio-sidebar-right wa-stack" data-testid="right-inspector-sidebar" style="gap: var(--wa-space-m);">
+          <!-- Minimap -->
+          <div class="wa-stack" style="gap: var(--wa-space-xs);">
+            <span class="studio-section-label">Minimap Overview</span>
+            <div class="wa-stack" style="gap: var(--wa-space-xs);">
+              <div data-testid="minimap-container" class="studio-minimap-container">
+                <div data-testid="minimap-content" class="studio-minimap-content" style="width: 130px; height: 130px;">
+                  <canvas data-testid="minimap-canvas" width="130" height="130" style="width: 100%; height: 100%; cursor: crosshair; display: block;"></canvas>
+                  <div data-testid="minimap-bounding-box-indicator" class="studio-minimap-indicator" style="left: 0%; top: 0%; width: 100%; height: 100%;"></div>
+                </div>
+              </div>
+              <div style="display: flex; justify-content: center;">
+                <wa-badge variant="neutral" data-testid="minimap-metrics-badge">
+                  Asset: 32×32 | BBox: 32×32 at [0, 0]
+                </wa-badge>
+              </div>
+            </div>
+          </div>
+
+          <div style="width: 100%; height: 1px; background-color: var(--wa-color-surface-border, #27272a);"></div>
+
+          <!-- Framed Region (BBox) -->
+          <div class="wa-stack" style="gap: var(--wa-space-s);">
+            <span class="studio-section-label">Framed Region (BBox)</span>
+
+            <div class="studio-grid-2col">
+              <label class="wa-stack" style="gap: var(--wa-space-3xs);">
+                <span class="studio-field-label">X Origin</span>
+                <wa-input data-testid="inspector-bbox-x" type="number" size="small" min="0" max="0" value="0"></wa-input>
+              </label>
+              <label class="wa-stack" style="gap: var(--wa-space-3xs);">
+                <span class="studio-field-label">Y Origin</span>
+                <wa-input data-testid="inspector-bbox-y" type="number" size="small" min="0" max="0" value="0"></wa-input>
+              </label>
+              <label class="wa-stack" style="gap: var(--wa-space-3xs);">
+                <span class="studio-field-label">Width</span>
+                <wa-input data-testid="inspector-bbox-w" type="number" size="small" min="1" max="32" value="32"></wa-input>
+              </label>
+              <label class="wa-stack" style="gap: var(--wa-space-3xs);">
+                <span class="studio-field-label">Height</span>
+                <wa-input data-testid="inspector-bbox-h" type="number" size="small" min="1" max="32" value="32"></wa-input>
+              </label>
+            </div>
+
+            <div class="studio-grid-2col">
+              <wa-button data-testid="inspector-zoom-in-btn" variant="neutral" size="small">Zoom In (+)</wa-button>
+              <wa-button data-testid="inspector-zoom-out-btn" variant="neutral" size="small" disabled>Zoom Out (-)</wa-button>
+            </div>
+
+            <wa-button data-testid="inspector-fit-to-asset-btn" variant="neutral" size="small" disabled style="width: 100%;">Fit to Asset</wa-button>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </body>
+</html>

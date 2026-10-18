@@ -59,3 +59,6 @@ ehthumbs.db
 !.vscode/settings.json
 !.vscode/extensions.json
 !.vscode/launch.json
+
+# Intermediate webawesome bundle for mockups (generated via npm run mockups:render)
+specs/ui/mockups/webawesome.elements.js

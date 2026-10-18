@@ -1,5 +1,4 @@
 import React from 'react';
-import { Modal, Button } from './design_system/index.js';
 
 export interface DeleteAssetModalProps {
   isOpen: boolean;
@@ -19,34 +18,15 @@ export const DeleteAssetModal: React.FC<DeleteAssetModalProps> = ({
   onCancel,
 }) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onCancel}
-      title="Delete Asset?"
-      footer={
-        <>
-          <Button
-            data-testid="modal-cancel-btn"
-            variant="secondary"
-            size="sm"
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
-          <Button
-            data-testid="modal-confirm-delete-btn"
-            variant="destructive"
-            size="sm"
-            onClick={onConfirm}
-          >
-            Delete Asset
-          </Button>
-        </>
-      }
+    <wa-dialog
+      data-testid="delete-asset-dialog"
+      open={isOpen}
+      label="Delete Asset?"
+      onwa-after-hide={onCancel}
     >
-      <div className="flex items-start gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-950/60 text-red-500">
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div className="studio-modal-warning">
+        <div className="studio-modal-warning-icon">
+          <svg style={{ width: '1.25rem', height: '1.25rem' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -56,13 +36,32 @@ export const DeleteAssetModal: React.FC<DeleteAssetModalProps> = ({
           </svg>
         </div>
         <div>
-          <p id="delete-asset-desc" className="text-xs text-zinc-400 leading-relaxed">
+          <p id="delete-asset-desc" className="studio-modal-warning-text">
             Are you sure you want to delete{' '}
-            <strong className="text-zinc-200">"{assetName}"</strong> ({width}×{height} studs)?
+            <strong style={{ color: 'var(--wa-color-text-normal)' }}>"{assetName}"</strong> ({width}×{height} studs)?
             This action cannot be undone and will permanently remove all painted cells.
           </p>
         </div>
       </div>
-    </Modal>
+
+      <wa-button
+        slot="footer"
+        data-testid="modal-cancel-btn"
+        variant="neutral"
+        size="small"
+        onClick={onCancel}
+      >
+        Cancel
+      </wa-button>
+      <wa-button
+        slot="footer"
+        data-testid="modal-confirm-delete-btn"
+        variant="danger"
+        size="small"
+        onClick={onConfirm}
+      >
+        Delete Asset
+      </wa-button>
+    </wa-dialog>
   );
 };

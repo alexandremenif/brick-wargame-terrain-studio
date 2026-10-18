@@ -356,14 +356,14 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient, storage }) => {
 
   if (!currentAsset) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-zinc-950 text-zinc-400">
+      <div className="studio-shell" style={{ alignItems: 'center', justifyContent: 'center', color: 'var(--wa-color-text-quiet)' }}>
         Loading Brick Studio...
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-zinc-950 font-sans text-zinc-100">
+    <div className="studio-shell">
       {/* Top Header Bar */}
       <TopHeaderBar
         assetName={currentAsset.name}
@@ -381,7 +381,7 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient, storage }) => {
       />
 
       {/* Main Workspace Body */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="studio-workspace">
         {/* Left Toolbox */}
         <LeftToolboxSidebar
           toolMode={toolMode}

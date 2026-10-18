@@ -216,7 +216,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     <main
       ref={containerRef}
       data-testid="canvas-viewport-container"
-      className="relative flex-1 bg-zinc-950 overflow-hidden select-none flex items-center justify-center"
+      className="studio-viewport"
     >
       <canvas
         ref={canvasRef}
@@ -234,7 +234,6 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
         style={{
           cursor: getCursorStyle(),
         }}
-        className="shadow-2xl border border-zinc-800"
       />
     </main>
   );

@@ -1,6 +1,34 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import assert from 'node:assert/strict';
 import type { PlaywrightWorld } from '../support/playwright_world.js';
+import { assertMatchesMockup } from '../support/playwright_world.js';
+
+async function getWaInputValue(page: any, selector: string): Promise<string> {
+  const customEl = page.locator(selector);
+  return await customEl.evaluate((el: any) => {
+    return String(el?.value ?? el?.getAttribute('value') ?? '');
+  });
+}
+
+async function fillWaInput(page: any, selector: string, value: string | number): Promise<void> {
+  const valStr = String(value);
+  const customEl = page.locator(selector);
+  const innerInput = customEl.locator('input');
+  if (await innerInput.count() > 0) {
+    await innerInput.fill(valStr);
+    await innerInput.press('Enter');
+    await innerInput.blur();
+  } else {
+    await customEl.evaluate((el: any, v: string) => {
+      el.value = v;
+      el.dispatchEvent(new CustomEvent('wa-input', { bubbles: true, composed: true, detail: { value: v } }));
+      el.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+      el.dispatchEvent(new CustomEvent('wa-change', { bubbles: true, composed: true, detail: { value: v } }));
+      el.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+      el.dispatchEvent(new FocusEvent('blur', { bubbles: true, composed: true }));
+    }, valStr);
+  }
+}
 
 // ============================================================================
 // Background & Lifecycle
@@ -27,54 +55,48 @@ Then('the header should display asset name {string}', async function (this: Play
 
 Then('the width input should be {int}', async function (this: PlaywrightWorld, expectedWidth: number) {
   const page = this.getPage();
-  const val = await page.inputValue('[data-testid="header-width-input"]');
+  const val = await getWaInputValue(page, '[data-testid="header-width-input"]');
   assert.strictEqual(parseInt(val, 10), expectedWidth);
 });
 
 Then('the height input should be {int}', async function (this: PlaywrightWorld, expectedHeight: number) {
   const page = this.getPage();
-  const val = await page.inputValue('[data-testid="header-height-input"]');
+  const val = await getWaInputValue(page, '[data-testid="header-height-input"]');
   assert.strictEqual(parseInt(val, 10), expectedHeight);
 });
 
 When('I change the width input to {int}', async function (this: PlaywrightWorld, newWidth: number) {
   const page = this.getPage();
-  const input = page.locator('[data-testid="header-width-input"]');
-  await input.fill(String(newWidth));
-  await input.blur();
+  await fillWaInput(page, '[data-testid="header-width-input"]', newWidth);
 });
 
 When('I change the height input to {int}', async function (this: PlaywrightWorld, newHeight: number) {
   const page = this.getPage();
-  const input = page.locator('[data-testid="header-height-input"]');
-  await input.fill(String(newHeight));
-  await input.blur();
+  await fillWaInput(page, '[data-testid="header-height-input"]', newHeight);
 });
 
 Then('the asset width should be updated to {int} studs', async function (this: PlaywrightWorld, expectedWidth: number) {
   const page = this.getPage();
-  const val = await page.inputValue('[data-testid="header-width-input"]');
+  const val = await getWaInputValue(page, '[data-testid="header-width-input"]');
   assert.strictEqual(parseInt(val, 10), expectedWidth);
   assert.strictEqual(this.asset.width, expectedWidth);
 });
 
 Then('the asset height should be updated to {int} studs', async function (this: PlaywrightWorld, expectedHeight: number) {
   const page = this.getPage();
-  const val = await page.inputValue('[data-testid="header-height-input"]');
+  const val = await getWaInputValue(page, '[data-testid="header-height-input"]');
   assert.strictEqual(parseInt(val, 10), expectedHeight);
   assert.strictEqual(this.asset.height, expectedHeight);
 });
 
 When('I attempt to enter a width of {int}', async function (this: PlaywrightWorld, invalidWidth: number) {
   const page = this.getPage();
-  const input = page.locator('[data-testid="header-width-input"]');
-  await input.fill(String(invalidWidth));
-  await input.blur();
+  await fillWaInput(page, '[data-testid="header-width-input"]', invalidWidth);
 });
 
 Then('the width input should revert to {int}', async function (this: PlaywrightWorld, expectedWidth: number) {
   const page = this.getPage();
-  const val = await page.inputValue('[data-testid="header-width-input"]');
+  const val = await getWaInputValue(page, '[data-testid="header-width-input"]');
   assert.strictEqual(parseInt(val, 10), expectedWidth);
 });
 
@@ -86,13 +108,24 @@ When('I click the {string} button in the header', async function (this: Playwrig
     await page.click('[data-testid="header-new-asset-btn"]');
   } else if (buttonText === 'Export for Printing') {
     await page.click('[data-testid="header-export-print-btn"]');
+  } else if (buttonText.startsWith('Grid:')) {
+    await page.click('[data-testid="header-grid-toggle-btn"]');
   }
+});
+
+Then('the grid toggle button should display {string}', async function (this: PlaywrightWorld, expectedText: string) {
+  const page = this.getPage();
+  const btn = page.locator('[data-testid="header-grid-toggle-btn"]');
+  const text = await btn.textContent();
+  assert.strictEqual(text?.trim(), expectedText);
 });
 
 Then('the delete confirmation modal should be displayed', async function (this: PlaywrightWorld) {
   const page = this.getPage();
-  const modal = page.locator('dialog[role="alertdialog"]');
-  assert.ok(await modal.isVisible(), 'Expected delete confirmation modal to be visible');
+  const dialog = page.locator('[data-testid="delete-asset-dialog"]');
+  await dialog.waitFor({ state: 'attached' });
+  const isOpen = await dialog.evaluate((el: any) => el.open || el.hasAttribute('open'));
+  assert.ok(isOpen, 'Expected delete confirmation modal to be open');
 });
 
 Then(
@@ -110,8 +143,10 @@ Given('the delete confirmation modal is open for {string}', async function (this
   const currentName = await page.textContent('[data-testid="header-asset-name"]');
   assert.strictEqual(currentName?.trim(), assetName);
   await page.click('[data-testid="header-delete-asset-btn"]');
-  const modal = page.locator('dialog[role="alertdialog"]');
-  assert.ok(await modal.isVisible(), 'Modal must be open');
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-testid="delete-asset-dialog"]') as any;
+    return el && (el.open || el.hasAttribute('open'));
+  });
 });
 
 When('I click the {string} button in the modal', async function (this: PlaywrightWorld, buttonText: string) {
@@ -125,10 +160,15 @@ When('I click the {string} button in the modal', async function (this: Playwrigh
 
 Then('the modal should be closed', async function (this: PlaywrightWorld) {
   const page = this.getPage();
-  const modal = page.locator('dialog[role="alertdialog"]');
-  await modal.waitFor({ state: 'hidden', timeout: 3000 });
-  const isVis = await modal.isVisible();
-  assert.strictEqual(isVis, false, 'Modal should not be visible when closed');
+  await page.waitForFunction(() => {
+    const el = document.querySelector('[data-testid="delete-asset-dialog"]') as any;
+    return !el || (!el.open && !el.hasAttribute('open'));
+  }, { timeout: 3000 });
+  const dialog = page.locator('[data-testid="delete-asset-dialog"]');
+  if (await dialog.count() > 0) {
+    const isOpen = await dialog.evaluate((el: any) => el.open || el.hasAttribute('open'));
+    assert.strictEqual(isOpen, false, 'Modal should not be open when closed');
+  }
 });
 
 Then('the asset {string} should still exist and remain active', async function (this: PlaywrightWorld, expectedName: string) {
@@ -139,8 +179,8 @@ Then('the asset {string} should still exist and remain active', async function (
   assert.strictEqual(text?.trim(), expectedName);
 });
 
-Then('the asset {string} should be deleted', async function (this: PlaywrightWorld, _expectedName: string) {
-  assert.ok(this.deletedAssetId);
+Then('the asset {string} should be deleted', async function (this: PlaywrightWorld, expectedName: string) {
+  assert.ok(this.deletedAssetId, `Expected asset "${expectedName}" to have been deleted`);
 });
 
 Then('an image export should be requested with profile {string}', async function (this: PlaywrightWorld, expectedProfile: string) {
@@ -156,14 +196,22 @@ Then('an image export should be requested with profile {string}', async function
 
 Then('a file download for {string} should be initiated', async function (this: PlaywrightWorld, expectedFilename: string) {
   const page = this.getPage();
-  // Check either programmatic download captured in window.__lastDownload or Playwright download event
-  const lastProgrammaticDownload = await page.evaluate(() => (window as any).__lastDownload);
-  const foundInBrowser = this.initiatedDownloads.find((d) => d.filename === expectedFilename);
-  const foundInWindow = lastProgrammaticDownload?.filename === expectedFilename;
+  const startTime = Date.now();
+  let lastProgrammaticDownload: any = null;
+  let foundInBrowser = false;
+  let foundInWindow = false;
+
+  while (Date.now() - startTime < 3000) {
+    lastProgrammaticDownload = await page.evaluate(() => (window as any).__lastDownload);
+    foundInBrowser = !!this.initiatedDownloads.find((d) => d.filename === expectedFilename);
+    foundInWindow = lastProgrammaticDownload?.filename === expectedFilename;
+    if (foundInBrowser || foundInWindow) break;
+    await page.waitForTimeout(50);
+  }
 
   assert.ok(
     foundInBrowser || foundInWindow,
-    `Expected file download for "${expectedFilename}" to be initiated. Browser downloads: ${JSON.stringify(
+    `Expected file download for "${expectedFilename}" to be initiated within 3000ms. Browser downloads: ${JSON.stringify(
       this.initiatedDownloads
     )}, Programmatic download: ${JSON.stringify(lastProgrammaticDownload)}`
   );
@@ -247,41 +295,45 @@ When(
   'the active bounding box is set to X {int}, Y {int}, Width {int}, Height {int}',
   async function (this: PlaywrightWorld, x: number, y: number, w: number, h: number) {
     const page = this.getPage();
-    const xInput = page.locator('[data-testid="inspector-bbox-x"]');
-    const yInput = page.locator('[data-testid="inspector-bbox-y"]');
-    const wInput = page.locator('[data-testid="inspector-bbox-w"]');
-    const hInput = page.locator('[data-testid="inspector-bbox-h"]');
-
-    await wInput.fill(String(w));
-    await wInput.blur();
-    await hInput.fill(String(h));
-    await hInput.blur();
-    await xInput.fill(String(x));
-    await xInput.blur();
-    await yInput.fill(String(y));
-    await yInput.blur();
+    await fillWaInput(page, '[data-testid="inspector-bbox-w"]', w);
+    await fillWaInput(page, '[data-testid="inspector-bbox-h"]', h);
+    await fillWaInput(page, '[data-testid="inspector-bbox-x"]', x);
+    await fillWaInput(page, '[data-testid="inspector-bbox-y"]', y);
   }
 );
 
 Then(
   'the canvas viewport should frame exactly the {int} by {int} subregion from \\({int}, {int}\\) to \\({int}, {int}\\)',
-  async function (this: PlaywrightWorld, _w: number, _h: number, _x1: number, _y1: number, _x2: number, _y2: number) {
+  async function (this: PlaywrightWorld, w: number, h: number, x1: number, y1: number, x2: number, y2: number) {
     const page = this.getPage();
     const canvas = page.locator('canvas[data-testid="canvas-viewport"]');
     assert.ok(await canvas.isVisible(), 'Canvas viewport must be visible in DOM');
+
+    const ix = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
+
+    assert.strictEqual(ix, x1, 'Viewport subregion X mismatch');
+    assert.strictEqual(iy, y1, 'Viewport subregion Y mismatch');
+    assert.strictEqual(iw, w, 'Viewport subregion Width mismatch');
+    assert.strictEqual(ih, h, 'Viewport subregion Height mismatch');
+    assert.strictEqual(ix + iw - 1, x2, 'Viewport subregion X2 boundary mismatch');
+    assert.strictEqual(iy + ih - 1, y2, 'Viewport subregion Y2 boundary mismatch');
   }
 );
 
 Then('the studs should be scaled to best fit the viewport with no scrollbars', async function (this: PlaywrightWorld) {
   const page = this.getPage();
-  const canvasWidth = await page.$eval('canvas[data-testid="canvas-viewport"]', (el) =>
-    parseInt((el as HTMLCanvasElement).getAttribute('width') || '0', 10)
-  );
-  const canvasHeight = await page.$eval('canvas[data-testid="canvas-viewport"]', (el) =>
-    parseInt((el as HTMLCanvasElement).getAttribute('height') || '0', 10)
-  );
-  assert.ok(canvasWidth > 0, 'Canvas width must be strictly positive');
-  assert.ok(canvasHeight > 0, 'Canvas height must be strictly positive');
+  const container = page.locator('[data-testid="canvas-viewport-container"]');
+  const scrollInfo = await container.evaluate((el) => ({
+    scrollWidth: el.scrollWidth,
+    clientWidth: el.clientWidth,
+    scrollHeight: el.scrollHeight,
+    clientHeight: el.clientHeight,
+  }));
+  assert.ok(scrollInfo.scrollWidth <= scrollInfo.clientWidth + 1, 'Horizontal scrollbar detected in viewport');
+  assert.ok(scrollInfo.scrollHeight <= scrollInfo.clientHeight + 1, 'Vertical scrollbar detected in viewport');
 });
 
 Then('there should be no pink bounding box overlay on the canvas', async function (this: PlaywrightWorld) {
@@ -300,10 +352,10 @@ When(
     const canvas = page.locator('[data-testid="canvas-viewport"]');
 
     // Get active bounding box from inspector inputs
-    const bboxX = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const bboxY = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const bboxW = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const bboxH = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const bboxX = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const bboxY = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const bboxW = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const bboxH = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     const canvasWidth = parseInt((await canvas.getAttribute('width')) || '0', 10);
     const canvasHeight = parseInt((await canvas.getAttribute('height')) || '0', 10);
@@ -364,10 +416,10 @@ Given(
     await page.click('[data-testid="brush-size-1x1"]');
 
     const canvas = page.locator('[data-testid="canvas-viewport"]');
-    const bboxX = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const bboxY = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const bboxW = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const bboxH = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const bboxX = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const bboxY = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const bboxW = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const bboxH = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     const canvasWidth = parseInt((await canvas.getAttribute('width')) || '0', 10);
     const canvasHeight = parseInt((await canvas.getAttribute('height')) || '0', 10);
@@ -394,19 +446,10 @@ When(
   'I enter bounding box coordinates X {int}, Y {int}, Width {int}, Height {int}',
   async function (this: PlaywrightWorld, x: number, y: number, w: number, h: number) {
     const page = this.getPage();
-    const xInput = page.locator('[data-testid="inspector-bbox-x"]');
-    const yInput = page.locator('[data-testid="inspector-bbox-y"]');
-    const wInput = page.locator('[data-testid="inspector-bbox-w"]');
-    const hInput = page.locator('[data-testid="inspector-bbox-h"]');
-
-    await wInput.fill(String(w));
-    await wInput.blur();
-    await hInput.fill(String(h));
-    await hInput.blur();
-    await xInput.fill(String(x));
-    await xInput.blur();
-    await yInput.fill(String(y));
-    await yInput.blur();
+    await fillWaInput(page, '[data-testid="inspector-bbox-w"]', w);
+    await fillWaInput(page, '[data-testid="inspector-bbox-h"]', h);
+    await fillWaInput(page, '[data-testid="inspector-bbox-x"]', x);
+    await fillWaInput(page, '[data-testid="inspector-bbox-y"]', y);
   }
 );
 
@@ -414,10 +457,10 @@ Then(
   'the inspector inputs should reflect X {int}, Y {int}, Width {int}, Height {int}',
   async function (this: PlaywrightWorld, x: number, y: number, w: number, h: number) {
     const page = this.getPage();
-    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const ix = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     assert.strictEqual(ix, x);
     assert.strictEqual(iy, y);
@@ -430,10 +473,10 @@ Then(
   'the canvas viewport should frame the subregion \\({int}, {int}, {int}, {int}\\)',
   async function (this: PlaywrightWorld, x: number, y: number, w: number, h: number) {
     const page = this.getPage();
-    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const ix = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     assert.strictEqual(ix, x);
     assert.strictEqual(iy, y);
@@ -469,36 +512,21 @@ Given(
   'the bounding box is currently at X {int}, Y {int}, Width {int}, Height {int}',
   async function (this: PlaywrightWorld, x: number, y: number, w: number, h: number) {
     const page = this.getPage();
-    const xInput = page.locator('[data-testid="inspector-bbox-x"]');
-    const yInput = page.locator('[data-testid="inspector-bbox-y"]');
-    const wInput = page.locator('[data-testid="inspector-bbox-w"]');
-    const hInput = page.locator('[data-testid="inspector-bbox-h"]');
-
-    // To prevent validation collisions when current (x, y) + new (w, h) exceeds asset dimensions:
-    // First shrink width and height so that (32 - current x) is not exceeded, or if current is 0,0:
-    await wInput.fill(String(w));
-    await wInput.blur();
-    await hInput.fill(String(h));
-    await hInput.blur();
-
-    // Now x and y can safely be set up to 32 - w/h:
-    await xInput.fill(String(x));
-    await xInput.blur();
-    await yInput.fill(String(y));
-    await yInput.blur();
+    await fillWaInput(page, '[data-testid="inspector-bbox-w"]', w);
+    await fillWaInput(page, '[data-testid="inspector-bbox-h"]', h);
+    await fillWaInput(page, '[data-testid="inspector-bbox-x"]', x);
+    await fillWaInput(page, '[data-testid="inspector-bbox-y"]', y);
   }
 );
 
 When('I enter bounding box coordinate X {int}', async function (this: PlaywrightWorld, newX: number) {
   const page = this.getPage();
-  const xInput = page.locator('[data-testid="inspector-bbox-x"]');
-  await xInput.fill(String(newX));
-  await xInput.blur();
+  await fillWaInput(page, '[data-testid="inspector-bbox-x"]', newX);
 });
 
 Then('the input should be rejected and revert to X {int}', async function (this: PlaywrightWorld, expectedX: number) {
   const page = this.getPage();
-  const val = await page.inputValue('[data-testid="inspector-bbox-x"]');
+  const val = await getWaInputValue(page, '[data-testid="inspector-bbox-x"]');
   assert.strictEqual(parseInt(val, 10), expectedX);
 });
 
@@ -506,10 +534,10 @@ Then(
   'the canvas viewport framing should remain at \\({int}, {int}, {int}, {int}\\)',
   async function (this: PlaywrightWorld, x: number, y: number, w: number, h: number) {
     const page = this.getPage();
-    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const ix = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     assert.strictEqual(ix, x);
     assert.strictEqual(iy, y);
@@ -520,14 +548,12 @@ Then(
 
 When('I enter bounding box Width {int}', async function (this: PlaywrightWorld, newW: number) {
   const page = this.getPage();
-  const wInput = page.locator('[data-testid="inspector-bbox-w"]');
-  await wInput.fill(String(newW));
-  await wInput.blur();
+  await fillWaInput(page, '[data-testid="inspector-bbox-w"]', newW);
 });
 
 Then('the input should be rejected and revert to Width {int}', async function (this: PlaywrightWorld, expectedW: number) {
   const page = this.getPage();
-  const val = await page.inputValue('[data-testid="inspector-bbox-w"]');
+  const val = await getWaInputValue(page, '[data-testid="inspector-bbox-w"]');
   assert.strictEqual(parseInt(val, 10), expectedW);
 });
 
@@ -547,10 +573,10 @@ Then(
   'the canvas viewport should frame the full asset \\({int}, {int}, {int}, {int}\\)',
   async function (this: PlaywrightWorld, x: number, y: number, w: number, h: number) {
     const page = this.getPage();
-    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const ix = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     assert.strictEqual(ix, x);
     assert.strictEqual(iy, y);
@@ -584,8 +610,8 @@ Then(
   'the bounding box width and height should decrease by approximately 25 percent',
   async function (this: PlaywrightWorld) {
     const page = this.getPage();
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
     // Was 16x16, 25% decrease -> ~12 or 13
     assert.ok(iw < 16 && iw >= 11, `Expected width to decrease by ~25%, got ${iw}`);
     assert.ok(ih < 16 && ih >= 11, `Expected height to decrease by ~25%, got ${ih}`);
@@ -596,8 +622,8 @@ Then(
   'the bounding box width and height should increase by approximately 25 percent',
   async function (this: PlaywrightWorld) {
     const page = this.getPage();
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
     // Was 8x8, 25% increase -> ~10
     assert.ok(iw > 8 && iw <= 11, `Expected width to increase by ~25%, got ${iw}`);
     assert.ok(ih > 8 && ih <= 11, `Expected height to increase by ~25%, got ${ih}`);
@@ -608,10 +634,10 @@ Then(
   'the center of the bounding box should remain approximately at \\({int}, {int}\\)',
   async function (this: PlaywrightWorld, cx: number, cy: number) {
     const page = this.getPage();
-    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const ix = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     const actualCx = ix + iw / 2;
     const actualCy = iy + ih / 2;
@@ -647,10 +673,10 @@ Then(
   'the minimap bounding box indicator should be centered at position \\({int}, {int}\\)',
   async function (this: PlaywrightWorld, cx: number, cy: number) {
     const page = this.getPage();
-    const ix = parseInt(await page.inputValue('[data-testid="inspector-bbox-x"]'), 10);
-    const iy = parseInt(await page.inputValue('[data-testid="inspector-bbox-y"]'), 10);
-    const iw = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
-    const ih = parseInt(await page.inputValue('[data-testid="inspector-bbox-h"]'), 10);
+    const ix = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-x"]'), 10);
+    const iy = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-y"]'), 10);
+    const iw = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
+    const ih = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-h"]'), 10);
 
     const actualCx = ix + iw / 2;
     const actualCy = iy + ih / 2;
@@ -668,7 +694,11 @@ Then('the {string} button in the inspector should be disabled', async function (
   else if (btnName === 'Fit to Asset') selector = '[data-testid="inspector-fit-to-asset-btn"]';
 
   assert.ok(selector, `Unknown inspector button "${btnName}"`);
-  const isDisabled = await page.isDisabled(selector);
+  const isDisabled = await page.evaluate((sel) => {
+    const el = document.querySelector(sel);
+    if (!el) return false;
+    return el.hasAttribute('disabled') || (el as any).disabled || !!el.shadowRoot?.querySelector('button')?.disabled;
+  }, selector);
   assert.ok(isDisabled, `Expected button "${btnName}" to be disabled`);
 });
 
@@ -680,7 +710,7 @@ When(
     const box = await canvas.boundingBox();
     assert.ok(box, 'Canvas bounding box must be available');
 
-    const width = parseInt(await page.inputValue('[data-testid="inspector-bbox-w"]'), 10);
+    const width = parseInt(await getWaInputValue(page, '[data-testid="inspector-bbox-w"]'), 10);
     const studSize = box.width / width;
 
     const startX = box.x + box.width / 2;
@@ -806,6 +836,9 @@ Then(
   'the minimap thumbnail canvas should preserve the aspect ratio for a {int} by {int} asset',
   async function (this: PlaywrightWorld, width: number, height: number) {
     const page = this.getPage();
+    await page.locator('[data-testid="minimap-metrics-badge"]')
+      .filter({ hasText: `Asset: ${width}×${height}` })
+      .waitFor({ timeout: 5000 });
     const containerBox = await page.locator('[data-testid="minimap-container"]').boundingBox();
     const canvasBox = await page.locator('canvas[data-testid="minimap-canvas"]').boundingBox();
     assert.ok(containerBox, 'Minimap container must be present');
@@ -849,3 +882,18 @@ Then(
     );
   }
 );
+
+// ============================================================================
+// Mockup Parity Steps (mockup_parity.feature)
+// ============================================================================
+
+Then(
+  'the live UI should structurally and visually match the {string} mockup',
+  async function (this: PlaywrightWorld, mockupName: string) {
+    const page = this.getPage();
+    const port = this.getServerPort();
+    const browser = await this.getBrowser();
+    await assertMatchesMockup(page, mockupName, port, browser);
+  }
+);
+
