@@ -76,7 +76,7 @@ methods:
         message: "Internal engine error"
 
   - name: "paintArea"
-    description: "Paint or erase a rectangular bounding box or 1x1 stud cell with an official brick color (or null to clear)"
+    description: "Paint or erase a rectangular bounding box or 1x1 stud cell with an official brick color (or 0 to clear)"
     params:
       - name: "command"
         required: true

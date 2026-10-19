@@ -29,9 +29,9 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
    * Defined in [`mcp.md`](./mcp.md).
    * Implements the Model Context Protocol (MCP) over Streamable HTTP allowing external AI agents to manipulate assets and inspect structured cell state with parity.
 
-3. **Relational Storage Adapter (SQLite)**:
+3. **Relational / Document Storage Adapter (SQLite)**:
    * Defined in [`schema.dbml`](./schema.dbml).
-   * Generates SQLite DDL migrations (`assets` and `cells` tables) with foreign key enforcement and Write-Ahead Logging (WAL) concurrency.
+   * Generates SQLite DDL migrations (single `assets` table storing the `Asset` aggregate as `JSONB` with `STORED` derived summary columns) and Write-Ahead Logging (WAL) concurrency.
 
 4. **HTTP Operational & Health Check Adapter**:
    * Defined in [`health_check.md`](./health_check.md).
@@ -58,8 +58,7 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 
 * **[`asset_repository.md`](./asset_repository.md)** (`AssetRepository`):
   * Manages the persistence lifecycle and CRUD operations for the `Asset` aggregate root in SQLite.
-  * Adheres strictly to Domain-Driven Design (DDD): external callers interact exclusively with the `Asset` aggregate (`create`, `findById`, `listAll`, `update`, `delete`), never directly mutating raw cells in isolation.
-  * Handles transactional state mutations, cascading deletes, and cell synchronization within SQLite transactions.
+  * Adheres strictly to Domain-Driven Design (DDD): external callers interact exclusively with the `Asset` aggregate (`create`, `findById`, `listAll`, `update`, `delete`), persisting the entire aggregate as a `JSONB` document with `STORED` derived summary columns.
 
 ---
 
@@ -68,16 +67,16 @@ The `specs/server/` directory defines technical inbound and outbound adapters br
 * **Static In-Memory Catalog**:
   * Brick colors are static reference data defined authoritatively in [`specs/domain/colors.csv`](../domain/colors.csv).
   * **Not Stored in Database**: Loaded into memory by `ColorService` at startup. There is no `brick_colors` table or seed migration in SQLite.
-  * In SQLite, the `cells` table stores only the numeric `color_id INTEGER NOT NULL`.
+  * In the persisted `Asset` document, the 2D `cells` matrix stores only numeric color IDs (`0` for unpainted, `1..41` for official brick colors).
   * The server exposes the static catalog via the `list_colors` endpoint (JSON-RPC and MCP tool), ensuring both the UI and AI agents query the exact same color definitions dynamically.
 
 ---
 
 ## 4. Server Testing & Acceptance Criteria
 
-* **Wire Protocol BDD Scenarios**:
-  * Located in [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature), [`features/health_check.feature`](./features/health_check.feature), and [`features/export_image.feature`](./features/export_image.feature).
-  * Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`), HTTP transport behavior, readiness probe health responses, and end-to-end asset image export across protocols.
+* **Wire Protocol & Persistence BDD Scenarios**:
+  * Located in [`features/jsonrpc_protocol.feature`](./features/jsonrpc_protocol.feature), [`features/persistence.feature`](./features/persistence.feature), [`features/health_check.feature`](./features/health_check.feature), and [`features/export_image.feature`](./features/export_image.feature).
+  * Verifies JSON-RPC 2.0 error codes (`-32602`, `-32601`), HTTP transport behavior, SQLite restart durability through the APIs, readiness probe health responses, and end-to-end asset image export across protocols.
 
 
 * **Component Unit & Integration Testing Strategy**:

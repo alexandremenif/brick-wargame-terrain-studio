@@ -42,10 +42,10 @@ Feature: Asset Management & Spatial Invariants
     When I attempt to paint the area (5, 5, 1, 1) with brick color ID 212
     Then an invalid action error should be raised
 
-  Scenario: Erasing an area by passing null color ID
+  Scenario: Erasing an area by passing color ID 0
     When I paint the area (10, 10, 5, 5) with brick color ID 37
     Then exactly 25 cells should be painted
-    When I paint the area (10, 10, 5, 5) with null color ID
+    When I paint the area (10, 10, 5, 5) with brick color ID 0
     Then exactly 0 cells should be painted
     And the cell at (10, 10) should be unpainted
 
@@ -62,6 +62,12 @@ Feature: Asset Management & Spatial Invariants
     When I paint the area (-2, -2, 5, 5) with brick color ID 37
     Then exactly 9 cells should be painted
     And the cell at (0, 0) should have brick color ID 37
+
+  Scenario: Listing assets reflects updated summary metadata and painted cell count
+    When I paint the area (0, 0, 4, 4) with brick color ID 15
+    And I update the asset name to "Refinery Sector"
+    And I update the asset to dimensions 40 by 20 studs
+    Then the asset list should contain "Refinery Sector" with dimensions 40 by 20 and 16 painted cells
 
   Scenario: Deleting an asset
     When I delete the asset

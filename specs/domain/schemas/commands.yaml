@@ -134,8 +134,9 @@ definitions:
       bbox:
         $ref: "model.yaml#/definitions/BoundingBox"
       colorId:
-        type: ["integer", "null"]
-        description: Official brick color ID to apply, or null to erase/clear cells
+        type: integer
+        minimum: 0
+        description: Official brick color ID to apply (>= 1), or 0 to erase/clear cells
     required:
       - assetId
       - bbox

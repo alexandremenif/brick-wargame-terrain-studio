@@ -29,5 +29,5 @@ This document formalizes the fundamental rules and invariants governing the doma
   * `id`: Numeric code ($1 \dots 41$).
   * `name`: **Official brick color name** (e.g. `Medium Stone Grey`, `Dark Stone Grey`, `Earth Green`, `Bright Red`). Unofficial or community names (e.g. "Light Bluish Gray") are strictly excluded.
   * `hex`: Hexadecimal RGB string (`#RRGGBB`).
-* **Cell Storage**: Cells in an asset store only the numeric `colorId`.
-* **Unpainted State**: Unpainted cells have no applied color ID (`null` / transparent base).
+* **Cell Storage**: Cells in an asset are stored as a dense 2D row-major matrix `cells[y][x]` (`height` rows of `width` integer color IDs).
+* **Unpainted State**: Unpainted cells have color ID `0` (transparent base). Painting with `colorId: 0` erases cells back to their unpainted state.

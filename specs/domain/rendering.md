@@ -34,10 +34,11 @@ The rendering function `renderAssetGrid(ctx, options)` follows an explicit multi
   - Unpainted/empty studs are filled with solid white `#FFFFFF` to ensure printer ink efficiency and paper compatibility.
 
 ### 3.2 Cell Rendering
-- Painted cells iterate through the asset's `cells: CellData[]`.
-- For each cell $(x, y)$ that intersects the active region $[x_0, x_0 + W - 1] \times [y_0, y_0 + H - 1]$:
-  - Lookup the `BrickColor` from `colorsById` by `cell.colorId`.
-  - Draw a solid square at local canvas coordinate $((x - x_0) \times s, (y - y_0) \times s)$ with dimensions $s \times s$ (where $s = \text{pixelsPerStud}$).
+- The asset's cells are provided as a 2D row-major matrix `cells: number[][]` (`cells[y][x]`, where `0` is unpainted and $\ge 1$ is a painted brick color ID).
+- For each stud coordinate $(x, y)$ in the active region $[x_0, x_0 + W - 1] \times [y_0, y_0 + H - 1]$:
+  - Read `colorId = cells[y]?.[x] ?? 0`.
+  - If `colorId > 0`, lookup the `BrickColor` from `colorsById` by `colorId` and draw a solid square at local canvas coordinate $((x - x_0) \times s, (y - y_0) \times s)$ with dimensions $s \times s$ (where $s = \text{pixelsPerStud}$).
+  - If `colorId === 0`, draw the configured background representation (`'checkerboard'` or `'white'`).
 
 ### 3.3 Alignment Grid Overlay
 - When `grid: true` and $\text{pixelsPerStud} > 3$:

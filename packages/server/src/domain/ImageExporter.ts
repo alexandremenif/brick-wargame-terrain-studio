@@ -4,14 +4,13 @@ import {
   computeAdaptivePixelsPerStud,
   type BoundingBox,
   type BrickColor,
-  type CellData,
 } from '@lego-wargame-terrain-studio/domain';
 
 export interface ImageExporter {
   exportPngBase64(options: {
     assetWidth: number;
     assetHeight: number;
-    cells: CellData[];
+    cells: number[][];
     colorsById: Map<number, BrickColor>;
     bbox?: BoundingBox;
     profile: 'llm' | 'print';
@@ -22,7 +21,7 @@ export class NodeCanvasImageExporter implements ImageExporter {
   async exportPngBase64(options: {
     assetWidth: number;
     assetHeight: number;
-    cells: CellData[];
+    cells: number[][];
     colorsById: Map<number, BrickColor>;
     bbox?: BoundingBox;
     profile: 'llm' | 'print';

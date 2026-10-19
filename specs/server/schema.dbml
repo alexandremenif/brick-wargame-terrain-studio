@@ -16,27 +16,17 @@ Table schema_migrations {
 }
 
 Table assets {
-  id varchar(36) [pk, note: 'Unique asset identifier']
-  name varchar(100) [not null, note: 'Asset name']
-  width integer [not null, note: 'Width in stud count (>= 1)']
-  height integer [not null, note: 'Height in stud count (>= 1)']
-  created_at timestamp [default: `CURRENT_TIMESTAMP`]
-  updated_at timestamp [default: `CURRENT_TIMESTAMP`]
-  Note: 'Single editable asset'
-}
-
-Table cells {
-  asset_id varchar(36) [not null]
-  x integer [not null, note: 'X coordinate in studs (0 <= x < width)']
-  y integer [not null, note: 'Y coordinate in studs (0 <= y < height)']
-  color_id integer [not null, note: 'Official brick color ID from static catalog']
-  Note: 'Customized studs matrix'
+  id varchar(36) [pk, not null, note: "check: id = (data ->> '$.id')"]
+  name varchar(100) [not null, note: "generated: (data ->> '$.name')"]
+  width integer [not null, note: "generated: (data ->> '$.width')"]
+  height integer [not null, note: "generated: (data ->> '$.height')"]
+  painted_cells_count integer [not null, note: "generated: (data ->> '$.paintedCellsCount')"]
+  created_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  updated_at timestamp [not null, default: `CURRENT_TIMESTAMP`]
+  data blob [not null, note: "check: json_valid(data, 4)"]
+  Note: 'Single-table JSONB aggregate root with stored derived summary columns'
 
   indexes {
-    (asset_id, x, y) [pk]
-    (asset_id, x, y) [name: 'idx_cells_spatial']
+    (created_at) [name: 'idx_assets_created_at']
   }
 }
-
-// Relationships & Foreign Keys
-Ref: cells.asset_id > assets.id [delete: cascade]

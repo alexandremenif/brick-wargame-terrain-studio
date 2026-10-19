@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
+import type { BoundingBox, BrickColor } from '@lego-wargame-terrain-studio/domain';
 import { Minimap } from './Minimap.js';
 
 export interface RightInspectorSidebarProps {
   assetWidth: number;
   assetHeight: number;
-  cells: CellData[];
+  cells: number[][];
   colorsById: Map<number, BrickColor>;
   boundingBox: BoundingBox;
   onBoundingBoxChange: (bbox: BoundingBox) => void;

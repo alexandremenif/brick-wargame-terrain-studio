@@ -43,10 +43,10 @@ All command and response payloads are formally defined in declarative YAML schem
   * Input: `PaintAreaCommand` (assetId, bbox, colorId).
   * Behavior:
     1. Loads `Asset` aggregate via `AssetRepository.findById`.
-    2. Validates `colorId` against `ColorService` (when `colorId` is non-null).
-    3. Invokes aggregate domain method `asset.paintArea(bbox, colorId)` which leniently clips coordinates to $[0, W-1] \times [0, H-1]$ and updates internal cells (or clears them if `colorId` is null).
+    2. Validates `colorId` against `ColorService` (when `colorId > 0`; `colorId === 0` is the eraser sentinel).
+    3. Invokes aggregate domain method `asset.paintArea(bbox, colorId)` which leniently clips coordinates to $[0, W-1] \times [0, H-1]$ and updates internal cells (or resets them to `0` if `colorId === 0`).
     4. Persists the modified aggregate via `AssetRepository.update(asset)`.
-  * Output: `PaintAreaResponse` containing updated `Asset` and number of modified cells.
+  * Output: `PaintAreaResponse` containing number of modified cells.
 
 ---
 
@@ -57,19 +57,19 @@ All command and response payloads are formally defined in declarative YAML schem
   * It has zero direct dependency on HTTP transports, JSON-RPC routers, or MCP SDKs.
 * **Domain Error Mapping**:
   * Missing asset ID $\rightarrow$ throws `AssetNotFoundError` (mapped by RPC router to `-32602` or custom application error).
-  * Invalid color ID $\rightarrow$ throws `InvalidColorIdError` when `colorId` is not null and not found in `ColorService`.
+  * Invalid color ID $\rightarrow$ throws `InvalidColorIdError` when `colorId !== 0` and not found in `ColorService`.
   * Out of bounds dimension values $\rightarrow$ throws `InvalidDimensionsError`.
 * **Atomicity & Aggregate Invariant Preservation**:
   * Every command execution operates on the single `Asset` aggregate.
-  * Ensures that cell coordinates never exceed asset dimensions and unpainted cells are never persisted as dummy records.
+  * Ensures that the 2D `cells` matrix strictly matches `height` $\times$ `width` and unpainted cells are represented by `0`.
 
 ---
 
 ## 4. Acceptance Criteria & Test IDs
 
 * `TEST-SRV-ASSET-01`: `createAsset` validates input, generates a unique ID, persists the aggregate, and returns the created `Asset`.
-* `TEST-SRV-ASSET-02`: `getAsset` returns the reconstituted aggregate including all painted cells.
+* `TEST-SRV-ASSET-02`: `getAsset` returns the reconstituted aggregate including its 2D `cells` grid.
 * `TEST-SRV-ASSET-03`: `updateAsset` updates properties, trims cells when downsized, and persists the modified aggregate.
 * `TEST-SRV-ASSET-04`: `deleteAsset` permanently removes the asset via the repository and returns `success: true`.
 * `TEST-SRV-ASSET-05`: `paintArea` validates the color ID via `ColorService`, mutates cells on the `Asset` aggregate with clipping, persists the updated aggregate, and returns the result.
-* `TEST-SRV-ASSET-06`: `paintArea` with `colorId: null` erases cells within the specified bounding box.
+* `TEST-SRV-ASSET-06`: `paintArea` with `colorId: 0` erases cells within the specified bounding box back to `0`.

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import type { BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
+import type { BoundingBox, BrickColor } from '@lego-wargame-terrain-studio/domain';
 import {
   CHECKERBOARD_COLOR_A,
   CHECKERBOARD_COLOR_B,
@@ -8,7 +8,7 @@ import {
 export interface MinimapProps {
   assetWidth: number;
   assetHeight: number;
-  cells: CellData[];
+  cells: number[][];
   colorsById: Map<number, BrickColor>;
   boundingBox: BoundingBox;
   onCenterAt?: (targetX: number, targetY: number) => void;
@@ -85,11 +85,18 @@ export const Minimap: React.FC<MinimapProps> = ({
     const studW = cw / assetWidth;
     const studH = ch / assetHeight;
 
-    // Draw painted cells
-    for (const cell of cells) {
-      const color = colorsById.get(cell.colorId);
-      ctx.fillStyle = color?.hex ?? '#FFFFFF';
-      ctx.fillRect(cell.x * studW, cell.y * studH, Math.max(1, studW), Math.max(1, studH));
+    // Draw painted cells from 2D row-major matrix cells[y][x]
+    for (let y = 0; y < assetHeight; y++) {
+      const row = cells[y];
+      if (!row) continue;
+      for (let x = 0; x < assetWidth; x++) {
+        const colorId = row[x] ?? 0;
+        if (colorId > 0) {
+          const color = colorsById.get(colorId);
+          ctx.fillStyle = color?.hex ?? '#FFFFFF';
+          ctx.fillRect(x * studW, y * studH, Math.max(1, studW), Math.max(1, studH));
+        }
+      }
     }
   }, [assetWidth, assetHeight, cells, colorsById, minimapWidth, minimapHeight]);
 

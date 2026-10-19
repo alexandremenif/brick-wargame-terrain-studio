@@ -3,7 +3,7 @@
  * Follows specs/domain/rendering.md
  */
 
-import type { BoundingBox, BrickColor, CellData } from './generated/types.js';
+import type { BoundingBox, BrickColor } from './generated/types.js';
 
 export const MIN_PIXELS_PER_STUD = 2;
 export const MAX_PIXELS_PER_STUD = 16;
@@ -30,7 +30,7 @@ export interface Canvas2DContextLike {
 export interface RenderAssetGridOptions {
   assetWidth: number;
   assetHeight: number;
-  cells: CellData[];
+  cells: number[][];
   colorsById: Map<number, BrickColor>;
   pixelsPerStud: number;
   backgroundMode?: BackgroundMode;
@@ -76,22 +76,16 @@ export function renderAssetGrid(
   const regionW = bbox ? bbox.width : assetWidth;
   const regionH = bbox ? bbox.height : assetHeight;
 
-  // Build coordinate lookup map for fast cell access
-  const cellMap = new Map<string, number>();
-  for (const cell of cells) {
-    cellMap.set(`${cell.x},${cell.y}`, cell.colorId);
-  }
-
-  // Draw studs
+  // Draw studs directly from the 2D row-major matrix cells[y][x]
   for (let rx = 0; rx < regionW; rx++) {
     for (let ry = 0; ry < regionH; ry++) {
       const assetX = regionX + rx;
       const assetY = regionY + ry;
-      const colorId = cellMap.get(`${assetX},${assetY}`);
+      const colorId = cells[assetY]?.[assetX] ?? 0;
       const px = rx * pixelsPerStud;
       const py = ry * pixelsPerStud;
 
-      if (colorId !== undefined) {
+      if (colorId > 0) {
         const brickColor = colorsById.get(colorId);
         ctx.fillStyle = brickColor ? brickColor.hex : WHITE_COLOR;
         ctx.fillRect(px, py, pixelsPerStud, pixelsPerStud);

@@ -13,23 +13,16 @@ CREATE TABLE "schema_migrations" (
 );
 
 CREATE TABLE "assets" (
-  "id" varchar(36) PRIMARY KEY,
-  "name" varchar(100) NOT NULL,
-  "width" integer NOT NULL,
-  "height" integer NOT NULL,
-  "created_at" timestamp DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" timestamp DEFAULT (CURRENT_TIMESTAMP)
+  "id" varchar(36) PRIMARY KEY NOT NULL CHECK (id = (data ->> '$.id')),
+  "name" varchar(100) GENERATED ALWAYS AS ((data ->> '$.name')) STORED NOT NULL,
+  "width" integer GENERATED ALWAYS AS ((data ->> '$.width')) STORED NOT NULL,
+  "height" integer GENERATED ALWAYS AS ((data ->> '$.height')) STORED NOT NULL,
+  "painted_cells_count" integer GENERATED ALWAYS AS ((data ->> '$.paintedCellsCount')) STORED NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  "updated_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+  "data" blob NOT NULL CHECK (json_valid(data, 4))
 );
 
-CREATE TABLE "cells" (
-  "asset_id" varchar(36) NOT NULL,
-  "x" integer NOT NULL,
-  "y" integer NOT NULL,
-  "color_id" integer NOT NULL,
-  PRIMARY KEY ("asset_id", "x", "y"),
-  FOREIGN KEY ("asset_id") REFERENCES "assets" ("id") ON DELETE CASCADE
-);
-
-CREATE INDEX "idx_cells_spatial" ON "cells" ("asset_id", "x", "y");
+CREATE INDEX "idx_assets_created_at" ON "assets" ("created_at");
 
 INSERT OR IGNORE INTO "schema_migrations" ("version", "name") VALUES (1, '0001_initial_schema');

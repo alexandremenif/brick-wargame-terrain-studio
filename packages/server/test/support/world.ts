@@ -89,15 +89,6 @@ After(async function (this: StudioWorld) {
     this.db = null;
   }
 
-  if (this.tempDbPath && fs.existsSync(this.tempDbPath)) {
-    try {
-      fs.unlinkSync(this.tempDbPath);
-    } catch (_) {
-      // Ignored if already deleted
-    }
-    this.tempDbPath = null;
-  }
-
   if (this.httpServer) {
     await new Promise<void>((resolve) => {
       this.httpServer.close(() => resolve());
@@ -106,4 +97,18 @@ After(async function (this: StudioWorld) {
   }
 
   await this.driver.stop();
+
+  if (this.tempDbPath) {
+    for (const suffix of ['', '-wal', '-shm']) {
+      const target = this.tempDbPath + suffix;
+      if (fs.existsSync(target)) {
+        try {
+          fs.unlinkSync(target);
+        } catch (_) {
+          // Ignored if already deleted
+        }
+      }
+    }
+    this.tempDbPath = null;
+  }
 });

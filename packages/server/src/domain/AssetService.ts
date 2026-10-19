@@ -91,7 +91,7 @@ export class AssetService {
       throw new Error(`Asset not found: ${command.assetId}`);
     }
 
-    if (command.colorId !== null) {
+    if (command.colorId !== 0) {
       if (!this.colorService.isValidColorId(command.colorId)) {
         throw new Error(`Invalid color ID: ${command.colorId}`);
       }

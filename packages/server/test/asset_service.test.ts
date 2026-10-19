@@ -49,7 +49,10 @@ describe('AssetService', () => {
     assert.strictEqual(res.asset.name, 'Modular Outpost');
     assert.strictEqual(res.asset.width, 32);
     assert.strictEqual(res.asset.height, 32);
-    assert.strictEqual(res.asset.cells.length, 0);
+    assert.strictEqual(res.asset.paintedCellsCount, 0);
+    assert.strictEqual(res.asset.cells.length, 32);
+    assert.strictEqual(res.asset.cells[0].length, 32);
+    assert.strictEqual(res.asset.cells[0][0], 0);
 
     // Verify actual persistence in repository
     const persisted = await repo.findById(res.asset.id);
@@ -65,7 +68,7 @@ describe('AssetService', () => {
     await assert.rejects(async () => service.createAsset({ name: 'Valid', width: 1001, height: 10 }), /Asset width must be an integer between 1 and 1000/);
   });
 
-  // TEST-SRV-ASSET-02: getAsset returns the reconstituted aggregate including all painted cells
+  // TEST-SRV-ASSET-02: getAsset returns the reconstituted aggregate including its 2D cells grid
   test('TEST-SRV-ASSET-02: getAsset returns full state and fails on nonexistent', async () => {
     const created = await service.createAsset({
       name: 'Watchtower',
@@ -82,7 +85,10 @@ describe('AssetService', () => {
     const res = await service.getAsset({ assetId: created.asset.id });
     assert.strictEqual(res.asset.name, 'Watchtower');
     assert.strictEqual(res.asset.paintedCellsCount, 4);
-    assert.strictEqual(res.asset.cells.length, 4);
+    assert.strictEqual(res.asset.cells.length, 16);
+    assert.strictEqual(res.asset.cells[2][2], 15);
+    assert.strictEqual(res.asset.cells[3][3], 15);
+    assert.strictEqual(res.asset.cells[0][0], 0);
 
     await assert.rejects(
       async () => service.getAsset({ assetId: 'nonexistent-id' }),
@@ -124,7 +130,7 @@ describe('AssetService', () => {
     assert.strictEqual(persisted.height, 16);
     assert.strictEqual(persisted.getPaintedCellCount(), 256);
     assert.strictEqual(persisted.getCellColor(15, 15), 37);
-    assert.strictEqual(persisted.getCellColor(16, 16), null);
+    assert.strictEqual(persisted.getCellColor(16, 16), 0);
 
     // Non-existent error path
     await assert.rejects(
@@ -176,7 +182,7 @@ describe('AssetService', () => {
     assert.strictEqual(persisted.getPaintedCellCount(), 4);
     assert.strictEqual(persisted.getCellColor(18, 18), 15);
     assert.strictEqual(persisted.getCellColor(19, 19), 15);
-    assert.strictEqual(persisted.getCellColor(17, 17), null);
+    assert.strictEqual(persisted.getCellColor(17, 17), 0);
 
     // Invalid color ID rejection
     await assert.rejects(
@@ -201,8 +207,8 @@ describe('AssetService', () => {
     );
   });
 
-  // TEST-SRV-ASSET-06: paintArea with colorId: null erases cells within specified bounding box
-  test('TEST-SRV-ASSET-06: paintArea with null color erases targeted cells while preserving surrounding cells in DB', async () => {
+  // TEST-SRV-ASSET-06: paintArea with colorId: 0 erases cells within specified bounding box back to 0
+  test('TEST-SRV-ASSET-06: paintArea with colorId 0 erases targeted cells while preserving surrounding cells in DB', async () => {
     const created = await service.createAsset({
       name: 'Eraser Test',
       width: 10,
@@ -219,19 +225,19 @@ describe('AssetService', () => {
     const getBefore = await service.getAsset({ assetId: created.asset.id });
     assert.strictEqual(getBefore.asset.paintedCellsCount, 16);
 
-    // Erase 2x2 area: (2,2) to (3,3)
+    // Erase 2x2 area: (2,2) to (3,3) via colorId: 0
     await service.paintArea({
       assetId: created.asset.id,
       bbox: { x: 2, y: 2, width: 2, height: 2 },
-      colorId: null
+      colorId: 0
     });
 
-    // Verify database state: erased cells are null, surrounding cells preserved
+    // Verify database state: erased cells are 0, surrounding cells preserved
     const persisted = await repo.findById(created.asset.id);
     assert.ok(persisted);
     assert.strictEqual(persisted.getPaintedCellCount(), 12);
-    assert.strictEqual(persisted.getCellColor(2, 2), null, '(2,2) must be erased');
-    assert.strictEqual(persisted.getCellColor(3, 3), null, '(3,3) must be erased');
+    assert.strictEqual(persisted.getCellColor(2, 2), 0, '(2,2) must be erased to 0');
+    assert.strictEqual(persisted.getCellColor(3, 3), 0, '(3,3) must be erased to 0');
     assert.strictEqual(persisted.getCellColor(4, 4), 15, '(4,4) must be preserved');
     assert.strictEqual(persisted.getCellColor(5, 5), 15, '(5,5) must be preserved');
   });

@@ -43,7 +43,7 @@ export class InMemoryDriver implements EngineDriver {
     return a.getPaintedCellCount();
   }
 
-  async getCellColor(x: number, y: number): Promise<number | null> {
+  async getCellColor(x: number, y: number): Promise<number> {
     const a = this.ensureAsset();
     return a.getCellColor(x, y);
   }
@@ -58,9 +58,9 @@ export class InMemoryDriver implements EngineDriver {
     a.updateName(name);
   }
 
-  async paintArea(x: number, y: number, width: number, height: number, colorId: number | null): Promise<number> {
+  async paintArea(x: number, y: number, width: number, height: number, colorId: number): Promise<number> {
     const a = this.ensureAsset();
-    if (colorId !== null && !this.colorService.isValidColorId(colorId)) {
+    if (colorId !== 0 && !this.colorService.isValidColorId(colorId)) {
       throw new Error(`Invalid color ID: ${colorId}`);
     }
     return a.paintArea({ x, y, width, height }, colorId);
@@ -72,6 +72,19 @@ export class InMemoryDriver implements EngineDriver {
 
   async assetExists(): Promise<boolean> {
     return this.asset !== null;
+  }
+
+  async listAssets() {
+    if (!this.asset) return [];
+    return [
+      {
+        id: this.asset.id,
+        name: this.asset.name,
+        width: this.asset.width,
+        height: this.asset.height,
+        paintedCellsCount: this.asset.getPaintedCellCount(),
+      },
+    ];
   }
 
   async listColors(): Promise<BrickColor[]> {

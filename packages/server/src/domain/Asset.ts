@@ -1,11 +1,11 @@
-import type { Asset as AssetDto, CellData, BoundingBox } from '@lego-wargame-terrain-studio/domain';
+import type { Asset as AssetDto, BoundingBox } from '@lego-wargame-terrain-studio/domain';
 
 export interface AssetProps {
   id: string;
   name: string;
   width: number;
   height: number;
-  cells?: Map<string, number> | CellData[];
+  cells?: number[][];
 }
 
 export class Asset {
@@ -13,7 +13,8 @@ export class Asset {
   private _name: string;
   private _width: number;
   private _height: number;
-  private _cells: Map<string, number>;
+  private _cells: number[][];
+  private _paintedCellsCount: number;
 
   constructor(props: AssetProps) {
     if (!props.id || typeof props.id !== 'string') {
@@ -33,26 +34,17 @@ export class Asset {
     this._name = props.name;
     this._width = props.width;
     this._height = props.height;
-    this._cells = new Map<string, number>();
+    this._paintedCellsCount = 0;
 
-    if (props.cells) {
-      if (props.cells instanceof Map) {
-        for (const [key, colorId] of props.cells.entries()) {
-          const [xStr, yStr] = key.split(',');
-          const x = Number(xStr);
-          const y = Number(yStr);
-          if (x >= 0 && x < this._width && y >= 0 && y < this._height) {
-            this._cells.set(key, colorId);
-          }
+    this._cells = Array.from({ length: this._height }, (_, y) =>
+      Array.from({ length: this._width }, (_, x) => {
+        const val = props.cells?.[y]?.[x] ?? 0;
+        if (val > 0) {
+          this._paintedCellsCount++;
         }
-      } else if (Array.isArray(props.cells)) {
-        for (const cell of props.cells) {
-          if (cell.x >= 0 && cell.x < this._width && cell.y >= 0 && cell.y < this._height) {
-            this._cells.set(`${cell.x},${cell.y}`, cell.colorId);
-          }
-        }
-      }
-    }
+        return val;
+      })
+    );
   }
 
   public get name(): string {
@@ -82,27 +74,30 @@ export class Asset {
       throw new Error('Asset height must be an integer between 1 and 1000');
     }
 
+    let paintedCellsCount = 0;
+    const resizedCells = Array.from({ length: height }, (_, y) =>
+      Array.from({ length: width }, (_, x) => {
+        const val = this._cells[y]?.[x] ?? 0;
+        if (val > 0) {
+          paintedCellsCount++;
+        }
+        return val;
+      })
+    );
+
     this._width = width;
     this._height = height;
-
-    // Crop cells outside the new dimensions
-    for (const key of Array.from(this._cells.keys())) {
-      const [xStr, yStr] = key.split(',');
-      const x = Number(xStr);
-      const y = Number(yStr);
-      if (x >= width || y >= height) {
-        this._cells.delete(key);
-      }
-    }
+    this._cells = resizedCells;
+    this._paintedCellsCount = paintedCellsCount;
   }
 
   /**
    * Paint or erase a rectangular area.
    * Leniently clips coordinates to [0, width - 1] x [0, height - 1].
-   * If colorId is null, erases cells.
-   * Returns count of affected/modified cells.
+   * If colorId is 0, erases cells to 0 (unpainted).
+   * Returns count of affected/modified cells within bounds.
    */
-  public paintArea(bbox: BoundingBox, colorId: number | null): number {
+  public paintArea(bbox: BoundingBox, colorId: number): number {
     const minX = Math.max(0, bbox.x);
     const minY = Math.max(0, bbox.y);
     const maxX = Math.min(this._width - 1, bbox.x + bbox.width - 1);
@@ -113,16 +108,16 @@ export class Asset {
     }
 
     let affectedCount = 0;
-    for (let x = minX; x <= maxX; x++) {
-      for (let y = minY; y <= maxY; y++) {
-        const key = `${x},${y}`;
-        if (colorId === null) {
-          if (this._cells.has(key)) {
-            this._cells.delete(key);
-          }
-        } else {
-          this._cells.set(key, colorId);
+    for (let y = minY; y <= maxY; y++) {
+      const row = this._cells[y];
+      for (let x = minX; x <= maxX; x++) {
+        const prev = row[x];
+        if (prev > 0 && colorId === 0) {
+          this._paintedCellsCount--;
+        } else if (prev === 0 && colorId > 0) {
+          this._paintedCellsCount++;
         }
+        row[x] = colorId;
         affectedCount++;
       }
     }
@@ -130,28 +125,19 @@ export class Asset {
     return affectedCount;
   }
 
-  public getCellColor(x: number, y: number): number | null {
+  public getCellColor(x: number, y: number): number {
     if (x < 0 || x >= this._width || y < 0 || y >= this._height) {
-      return null;
+      return 0;
     }
-    return this._cells.get(`${x},${y}`) ?? null;
+    return this._cells[y]?.[x] ?? 0;
   }
 
   public getPaintedCellCount(): number {
-    return this._cells.size;
+    return this._paintedCellsCount;
   }
 
-  public getCells(): CellData[] {
-    const result: CellData[] = [];
-    for (const [key, colorId] of this._cells.entries()) {
-      const [xStr, yStr] = key.split(',');
-      result.push({
-        x: Number(xStr),
-        y: Number(yStr),
-        colorId
-      });
-    }
-    return result;
+  public getCells(): number[][] {
+    return this._cells.map(row => [...row]);
   }
 
   public toDto(): AssetDto {
@@ -160,7 +146,7 @@ export class Asset {
       name: this._name,
       width: this._width,
       height: this._height,
-      paintedCellsCount: this._cells.size,
+      paintedCellsCount: this._paintedCellsCount,
       cells: this.getCells()
     };
   }

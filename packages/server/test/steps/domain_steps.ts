@@ -58,13 +58,6 @@ Then('an invalid action error should be raised', function (this: StudioWorld) {
   assert.match(this.lastError.message, /invalid color id/i);
 });
 
-When(
-  'I paint the area \\({int}, {int}, {int}, {int}\\) with null color ID',
-  async function (this: StudioWorld, x: number, y: number, w: number, h: number) {
-    await this.driver.paintArea(x, y, w, h, null);
-  }
-);
-
 Then('exactly {int} cells should be painted', async function (this: StudioWorld, expectedCount: number) {
   const count = await this.driver.getPaintedCellCount();
   assert.strictEqual(count, expectedCount, `Expected exactly ${expectedCount} painted cells, found ${count}`);
@@ -82,7 +75,19 @@ Then(
   'the cell at \\({int}, {int}\\) should be unpainted',
   async function (this: StudioWorld, x: number, y: number) {
     const color = await this.driver.getCellColor(x, y);
-    assert.strictEqual(color, null, `Expected cell (${x}, ${y}) to be unpainted, found color ID ${color}`);
+    assert.strictEqual(color, 0, `Expected cell (${x}, ${y}) to be unpainted (0), found color ID ${color}`);
+  }
+);
+
+Then(
+  'the asset list should contain {string} with dimensions {int} by {int} and {int} painted cells',
+  async function (this: StudioWorld, expectedName: string, expectedWidth: number, expectedHeight: number, expectedPaintedCount: number) {
+    const assets = await this.driver.listAssets();
+    const found = assets.find(a => a.name === expectedName);
+    assert.ok(found, `Expected asset "${expectedName}" to be present in listAssets() result`);
+    assert.strictEqual(found.width, expectedWidth);
+    assert.strictEqual(found.height, expectedHeight);
+    assert.strictEqual(found.paintedCellsCount, expectedPaintedCount);
   }
 );
 

@@ -10,24 +10,39 @@ import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
 
 export class JsonRpcDriver implements EngineDriver {
   private db!: Database.Database;
+  private dbPath: string = ':memory:';
   private colorService!: DefaultColorService;
   private repo!: SqliteAssetRepository;
   private service!: AssetService;
   private currentAssetId: string | null = null;
 
-  async start(): Promise<void> {
-    this.db = new Database(':memory:');
+  async start(options?: { dbPath?: string }): Promise<void> {
+    this.dbPath = options?.dbPath || ':memory:';
+    this.db = new Database(this.dbPath);
     this.db.pragma('foreign_keys = ON');
 
     const migrationPath = path.resolve('packages/server/src/persistence/migrations/0001_initial_schema.sql');
     const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
-    this.db.exec(migrationSql);
+    // Only run initial DDL if assets table does not exist yet (for restart recovery)
+    const hasAssetsTable = this.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'assets'")
+      .get();
+    if (!hasAssetsTable) {
+      this.db.exec(migrationSql);
+    }
 
     this.colorService = new DefaultColorService();
     await this.colorService.loadColors();
 
     this.repo = new SqliteAssetRepository(this.db);
     this.service = new AssetService(this.repo, this.colorService);
+  }
+
+  async restart(): Promise<void> {
+    if (this.db) {
+      this.db.close();
+    }
+    await this.start({ dbPath: this.dbPath });
   }
 
   async stop(): Promise<void> {
@@ -99,7 +114,7 @@ export class JsonRpcDriver implements EngineDriver {
     return res.result.asset.paintedCellsCount;
   }
 
-  async getCellColor(x: number, y: number): Promise<number | null> {
+  async getCellColor(x: number, y: number): Promise<number> {
     const id = this.ensureAssetId();
     const res = await dispatchJsonRpc(this.service, {
       jsonrpc: '2.0',
@@ -109,8 +124,7 @@ export class JsonRpcDriver implements EngineDriver {
     });
 
     if (res.error) throw new Error(res.error.message);
-    const cell = res.result.asset.cells.find((c: any) => c.x === x && c.y === y);
-    return cell ? cell.colorId : null;
+    return res.result.asset.cells[y]?.[x] ?? 0;
   }
 
   async updateDimensions(width: number, height: number): Promise<void> {
@@ -137,7 +151,7 @@ export class JsonRpcDriver implements EngineDriver {
     if (res.error) throw new Error(res.error.message);
   }
 
-  async paintArea(x: number, y: number, width: number, height: number, colorId: number | null): Promise<number> {
+  async paintArea(x: number, y: number, width: number, height: number, colorId: number): Promise<number> {
     const id = this.ensureAssetId();
     const res = await dispatchJsonRpc(this.service, {
       jsonrpc: '2.0',
@@ -176,6 +190,18 @@ export class JsonRpcDriver implements EngineDriver {
       params: [{ assetId: this.currentAssetId }]
     });
     return !res.error;
+  }
+
+  async listAssets() {
+    const res = await dispatchJsonRpc(this.service, {
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'listAssets',
+      params: [{}]
+    });
+
+    if (res.error) throw new Error(res.error.message);
+    return res.result.assets;
   }
 
   async listColors(): Promise<BrickColor[]> {

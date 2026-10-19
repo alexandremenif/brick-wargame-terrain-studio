@@ -24,8 +24,8 @@ sequenceDiagram
   Api->>Router: HTTP POST /rpc (JSON-RPC 2.0)
   Router->>Domain: Dispatch PaintAreaCommand
   Note over Domain: Clip to asset surface (lenient bounds)
-  Domain->>Domain: Mutate in-memory cells
-  Domain->>Store: Persist affected cells
+  Domain->>Domain: Mutate in-memory 2D cells grid
+  Domain->>Store: Persist Asset aggregate as JSONB
   Store-->>Domain: Transaction committed
   Domain-->>Router: Command response (affectedCells)
   Router-->>Api: HTTP 200 {"result": {"affectedCells": 16}}
@@ -47,8 +47,8 @@ sequenceDiagram
 
   AI->>MCP: callTool("paint_area", { boundingBox, colorId })
   MCP->>Domain: Execute PaintAreaCommand
-  Domain->>Domain: Mutate in-memory cells
-  Domain->>Store: Persist cells to SQLite
+  Domain->>Domain: Mutate in-memory 2D cells grid
+  Domain->>Store: Persist Asset aggregate as JSONB
   Store-->>Domain: Transaction committed
   Domain-->>MCP: Tool execution result
   MCP-->>AI: HTTP Response (MCP tool response)

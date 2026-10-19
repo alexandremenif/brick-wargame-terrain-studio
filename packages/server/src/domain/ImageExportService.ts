@@ -3,7 +3,6 @@ import type {
   ExportImageResponse,
   BoundingBox,
   BrickColor,
-  CellData,
 } from '@lego-wargame-terrain-studio/domain';
 import type { ImageExporter } from './ImageExporter.js';
 
@@ -11,7 +10,7 @@ export interface ExportTargetAsset {
   id: string;
   width: number;
   height: number;
-  cells: CellData[];
+  cells: number[][];
 }
 
 export class ImageExportService {

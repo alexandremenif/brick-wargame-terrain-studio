@@ -73,7 +73,7 @@ export function createMcpServer(assetService: AssetService, colorService: ColorS
         },
         {
           name: 'paint_area',
-          description: 'Paints or erases a rectangular area or 1x1 stud cell with official brick color ID (or null to clear)',
+          description: 'Paints or erases a rectangular area or 1x1 stud cell with official brick color ID (or 0 to clear)',
           inputSchema: {
             type: 'object',
             properties: {
@@ -82,7 +82,7 @@ export function createMcpServer(assetService: AssetService, colorService: ColorS
               y: { type: 'integer', description: 'Top-left Y coordinate' },
               width: { type: 'integer', minimum: 1, description: 'Area width in studs' },
               height: { type: 'integer', minimum: 1, description: 'Area height in studs' },
-              color_id: { type: ['integer', 'null'], description: 'Official brick color ID or null to erase' }
+              color_id: { type: 'integer', minimum: 0, description: 'Official brick color ID (>= 1) or 0 to erase' }
             },
             required: ['asset_id', 'x', 'y', 'width', 'height', 'color_id']
           }
@@ -182,7 +182,7 @@ export function createMcpServer(assetService: AssetService, colorService: ColorS
             y: number;
             width: number;
             height: number;
-            color_id: number | null;
+            color_id: number;
           };
           const result = await assetService.paintArea({
             assetId: params.asset_id,

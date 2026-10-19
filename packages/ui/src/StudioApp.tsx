@@ -4,7 +4,6 @@ import type {
   AssetSummary,
   BoundingBox,
   BrickColor,
-  CellData,
 } from '@lego-wargame-terrain-studio/domain';
 import { TerrainApiClient } from './generated/client.js';
 import { TopHeaderBar } from './components/TopHeaderBar.js';
@@ -300,42 +299,37 @@ export const StudioApp: React.FC<StudioAppProps> = ({ apiClient, storage }) => {
 
   // Paint handler (Optimistic UI + API dispatch)
   const handlePaint = useCallback(
-    async (x: number, y: number, width: number, height: number, colorId: number | null) => {
+    async (x: number, y: number, width: number, height: number, colorId: number) => {
       if (!currentAsset) return;
 
       // Optimistic local state update
       setCurrentAsset((prev) => {
         if (!prev) return prev;
-        const cellMap = new Map<string, number>();
-        for (const c of prev.cells) {
-          cellMap.set(`${c.x},${c.y}`, c.colorId);
-        }
 
         const minX = Math.max(0, x);
         const minY = Math.max(0, y);
         const maxX = Math.min(prev.width - 1, x + width - 1);
         const maxY = Math.min(prev.height - 1, y + height - 1);
 
-        for (let cx = minX; cx <= maxX; cx++) {
-          for (let cy = minY; cy <= maxY; cy++) {
-            const key = `${cx},${cy}`;
-            if (colorId === null) {
-              cellMap.delete(key);
-            } else {
-              cellMap.set(key, colorId);
+        const newCells = prev.cells.map((row) => [...row]);
+        for (let cy = minY; cy <= maxY; cy++) {
+          if (newCells[cy]) {
+            for (let cx = minX; cx <= maxX; cx++) {
+              newCells[cy][cx] = colorId;
             }
           }
         }
 
-        const newCells: CellData[] = [];
-        for (const [key, cid] of cellMap.entries()) {
-          const [cx, cy] = key.split(',').map(Number);
-          newCells.push({ x: cx, y: cy, colorId: cid });
+        let paintedCellsCount = 0;
+        for (const row of newCells) {
+          for (const val of row) {
+            if (val > 0) paintedCellsCount++;
+          }
         }
 
         return {
           ...prev,
-          paintedCellsCount: newCells.length,
+          paintedCellsCount,
           cells: newCells,
         };
       });

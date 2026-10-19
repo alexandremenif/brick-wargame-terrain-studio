@@ -11,14 +11,15 @@ describe('ImageExportService (TEST-SRV-EXP)', () => {
     [37, { id: 37, name: 'Bright Green', hex: '#4B9F4A' }],
   ]);
 
+  const sampleCells = Array.from({ length: 30 }, () => new Array(40).fill(0));
+  sampleCells[5][5] = 15;
+  sampleCells[5][6] = 15;
+
   const sampleAsset: ExportTargetAsset = {
     id: 'asset-export-1',
     width: 40,
     height: 30,
-    cells: [
-      { x: 5, y: 5, colorId: 15 },
-      { x: 6, y: 5, colorId: 15 },
-    ],
+    cells: sampleCells,
   };
 
   // Helper to read PNG dimensions from IHDR chunk
@@ -75,7 +76,7 @@ describe('ImageExportService (TEST-SRV-EXP)', () => {
       id: 'small-print-asset',
       width: 10,
       height: 8,
-      cells: [],
+      cells: Array.from({ length: 8 }, () => new Array(10).fill(0)),
     };
 
     const res = await service.exportImage(smallAsset, dummyColors, { profile: 'print' });

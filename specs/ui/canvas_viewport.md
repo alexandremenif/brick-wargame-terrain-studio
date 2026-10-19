@@ -13,7 +13,7 @@ Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustain
 | Prop | Type | Description |
 | :--- | :--- | :--- |
 | `boundingBox` | BoundingBox object | Active framed subregion coordinates $(x, y, \text{width}, \text{height})$ |
-| `cells` | Array of CellData | Painted cell data for the active asset |
+| `cells` | 2D Array of Integer (`number[][]`) | Row-major 2D cell color ID matrix (`0` for unpainted) for the active asset |
 | `colorsById` | Map<Integer, BrickColor> | Color catalog map used for canvas stud rendering |
 | `showGrid` | Boolean | Whether the alignment grid overlay lines are visible |
 | `toolMode` | Enum (`Brush`, `Eraser`, `Pan`) | Current interactive tool mode |
@@ -23,7 +23,7 @@ Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustain
 ### Callbacks
 | Callback | Arguments | Trigger Condition |
 | :--- | :--- | :--- |
-| `onPaint` | `x: Integer, y: Integer, width: Integer, height: Integer, colorId: Integer or null` | User clicks to paint (Brush) or clear (Eraser) an area |
+| `onPaint` | `x: Integer, y: Integer, width: Integer, height: Integer, colorId: Integer` | User clicks to paint (Brush, `colorId >= 1`) or clear (Eraser, `colorId = 0`) an area |
 | `onPanBy` | `deltaX: Integer, deltaY: Integer` | User drags mouse across canvas in Pan mode |
 | `onZoom` | `factor: Number` | User scrolls mouse wheel over canvas viewport |
 
@@ -42,7 +42,7 @@ Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustain
   * Visual rasterization is processed by the pure domain function `renderAssetGrid` in `@lego-wargame-terrain-studio/domain`, guaranteeing 100% pixel parity with server image exports.
   * Stud cells are rendered as continuous flat colored squares without circular stud nubs.
 * **Neutral Checkerboard Transparency Background**:
-  * Unpainted cells display a subtle $2 \times 2$ neutral checkerboard pattern per stud, distinguishing unpainted empty space from official White bricks.
+  * Unpainted cells (`0`) display a subtle $2 \times 2$ neutral checkerboard pattern per stud, distinguishing unpainted empty space from official White bricks.
 * **Optional 1px Alignment Grid**:
   * When enabled and stud size exceeds $3\text{px}$, renders 1px semi-transparent grid lines between studs.
 
@@ -55,7 +55,7 @@ Using an immediate-mode HTML5 2D `<canvas>`, it renders flat 2D studs at sustain
   * Clicking on a visible stud at column $C$ and row $R$ paints an area matching the currently active brush size, with the clicked stud at the top-left origin $(C, R)$.
   * Active tool behavior:
     * **Brush Tool**: Paints cells with the active official brick color ID.
-    * **Eraser Tool**: Clears cells to `colorId: null` (reverting to checkerboard transparency pattern).
+    * **Eraser Tool**: Clears cells to `colorId: 0` (reverting to checkerboard transparency pattern).
 * **Drag-to-Pan (Pan Mode)**:
   * In `Pan` mode, clicking and dragging on the canvas viewport shifts the active view.
   * Moving cursor by pixel displacement $(\Delta X_{\text{px}}, \Delta Y_{\text{px}})$ shifts the bounding box origin inversely:

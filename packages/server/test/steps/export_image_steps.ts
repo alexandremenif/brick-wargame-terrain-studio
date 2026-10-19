@@ -29,7 +29,9 @@ Given('the asset has painted cells:', async function (this: StudioWorld, dataTab
     const x = parseInt(row.x, 10);
     const y = parseInt(row.y, 10);
     const colorId = parseInt(row.colorId, 10);
-    renderState.cells.push({ x, y, colorId });
+    if (renderState.cells[y] && x >= 0 && x < renderState.cells[y].length) {
+      renderState.cells[y][x] = colorId;
+    }
     if (await this.driver.assetExists()) {
       await this.driver.paintArea(x, y, 1, 1, colorId);
     }

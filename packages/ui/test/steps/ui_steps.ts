@@ -376,9 +376,9 @@ When(
 Then(
   'the stud at coordinate \\({int}, {int}\\) should be rendered with color {string}',
   async function (this: PlaywrightWorld, x: number, y: number, expectedColorName: string) {
-    const cell = this.asset.cells.find((c) => c.x === x && c.y === y);
-    assert.ok(cell, `Expected cell (${x}, ${y}) to be painted`);
-    const color = this.colors.find((c) => c.id === cell.colorId);
+    const colorId = this.asset.cells[y]?.[x] ?? 0;
+    assert.ok(colorId > 0, `Expected cell (${x}, ${y}) to be painted, got ${colorId}`);
+    const color = this.colors.find((c) => c.id === colorId);
     assert.ok(color);
     assert.strictEqual(color.name, expectedColorName);
   }
@@ -399,9 +399,8 @@ Then(
     assert.ok(color);
     for (let cx = x; cx < x + w; cx++) {
       for (let cy = y; cy < y + h; cy++) {
-        const cell = this.asset.cells.find((c) => c.x === cx && c.y === cy);
-        assert.ok(cell, `Cell (${cx}, ${cy}) must be painted`);
-        assert.strictEqual(cell.colorId, color.id);
+        const colorId = this.asset.cells[cy]?.[cx] ?? 0;
+        assert.strictEqual(colorId, color.id, `Cell (${cx}, ${cy}) must have colorId ${color.id}, got ${colorId}`);
       }
     }
   }
@@ -434,8 +433,8 @@ Given(
 );
 
 Then('the stud at coordinate \\({int}, {int}\\) should be unpainted', async function (this: PlaywrightWorld, x: number, y: number) {
-  const cell = this.asset.cells.find((c) => c.x === x && c.y === y);
-  assert.strictEqual(cell, undefined, `Expected cell (${x}, ${y}) to be unpainted`);
+  const colorId = this.asset.cells[y]?.[x] ?? 0;
+  assert.strictEqual(colorId, 0, `Expected cell (${x}, ${y}) to be unpainted (0), got ${colorId}`);
 });
 
 // ============================================================================

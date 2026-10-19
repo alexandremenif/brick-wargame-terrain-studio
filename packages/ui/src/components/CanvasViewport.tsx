@@ -3,19 +3,18 @@ import {
   renderAssetGrid,
   type BoundingBox,
   type BrickColor,
-  type CellData,
 } from '@lego-wargame-terrain-studio/domain';
 import type { BrushSize, ToolMode } from './LeftToolboxSidebar.js';
 
 export interface CanvasViewportProps {
   boundingBox: BoundingBox;
-  cells: CellData[];
+  cells: number[][];
   colorsById: Map<number, BrickColor>;
   showGrid: boolean;
   toolMode: ToolMode;
   brushSize: BrushSize;
   selectedColorId: number;
-  onPaint: (x: number, y: number, width: number, height: number, colorId: number | null) => void;
+  onPaint: (x: number, y: number, width: number, height: number, colorId: number) => void;
   onPanBy?: (deltaX: number, deltaY: number) => void;
   onZoom?: (factor: number) => void;
 }
@@ -44,15 +43,6 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     accDeltaX: 0,
     accDeltaY: 0,
   });
-
-  // Map coordinate key "x,y" to colorId for O(1) cell color lookup
-  const cellsMap = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const cell of cells) {
-      map.set(`${cell.x},${cell.y}`, cell.colorId);
-    }
-    return map;
-  }, [cells]);
 
   // Track viewport container size
   useEffect(() => {
@@ -156,7 +146,7 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     const bw = parseInt(bwStr, 10);
     const bh = parseInt(bhStr, 10);
 
-    const colorToApply = toolMode === 'Eraser' ? null : selectedColorId;
+    const colorToApply = toolMode === 'Eraser' ? 0 : selectedColorId;
 
     onPaint(studX, studY, bw, bh, colorToApply);
   };

@@ -1,6 +1,6 @@
 import { Given, When, Then } from '@cucumber/cucumber';
 import assert from 'node:assert/strict';
-import type { BrickColor, CellData, BoundingBox } from '@lego-wargame-terrain-studio/domain';
+import type { BrickColor, BoundingBox } from '@lego-wargame-terrain-studio/domain';
 import { renderAssetGrid, Canvas2DContextLike } from '@lego-wargame-terrain-studio/domain';
 import { DefaultColorService } from '../../src/domain/ColorService.js';
 
@@ -51,7 +51,7 @@ interface DomainRenderState {
   assetName: string;
   assetWidth: number;
   assetHeight: number;
-  cells: CellData[];
+  cells: number[][];
   colorsById: Map<number, BrickColor>;
   pixelsPerStud: number;
   lastError: Error | null;
@@ -84,7 +84,7 @@ Given('an asset {string} with dimensions {int} by {int}', function (name: string
   renderState.assetName = name;
   renderState.assetWidth = width;
   renderState.assetHeight = height;
-  renderState.cells = [];
+  renderState.cells = Array.from({ length: height }, () => new Array(width).fill(0));
   renderState.lastError = null;
   renderState.mockCtx = null;
 });

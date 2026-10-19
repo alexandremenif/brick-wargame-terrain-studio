@@ -12,7 +12,7 @@ The `<RightInspectorSidebar>` hosts the `<Minimap>` thumbnail overview and provi
 | :--- | :--- | :--- |
 | `assetWidth` | Integer | Total asset width in studs ($W$) |
 | `assetHeight` | Integer | Total asset height in studs ($H$) |
-| `cells` | Array of CellData | Painted cell data across the entire asset |
+| `cells` | 2D Array of Integer (`number[][]`) | Row-major 2D matrix of cell color IDs (`0` for unpainted) across the entire asset |
 | `colorsById` | Map<Integer, BrickColor> | Color catalog map for rendering minimap thumbnails |
 | `boundingBox` | BoundingBox object | Active framed region coordinates $(x, y, \text{width}, \text{height})$ |
 

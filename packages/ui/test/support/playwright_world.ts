@@ -1,6 +1,6 @@
 import { setWorldConstructor, World } from '@cucumber/cucumber';
 import type { IWorldOptions } from '@cucumber/cucumber';
-import type { Asset, BoundingBox, BrickColor, CellData } from '@lego-wargame-terrain-studio/domain';
+import type { Asset, BoundingBox, BrickColor } from '@lego-wargame-terrain-studio/domain';
 import fs from 'node:fs';
 import path from 'node:path';
 import http from 'node:http';
@@ -12,6 +12,22 @@ let sharedBrowser: Browser | null = null;
 
 import { waitForWebAwesome, assertMatchesMockup } from './mockup_parity.js';
 export { waitForWebAwesome, assertMatchesMockup };
+
+function createEmptyGrid(width: number, height: number): number[][] {
+  return Array.from({ length: height }, () => Array(width).fill(0));
+}
+
+function resizeGrid(oldCells: number[][], newWidth: number, newHeight: number): { cells: number[][]; paintedCellsCount: number } {
+  let paintedCellsCount = 0;
+  const cells = Array.from({ length: newHeight }, (_, y) =>
+    Array.from({ length: newWidth }, (_, x) => {
+      const val = oldCells[y]?.[x] ?? 0;
+      if (val > 0) paintedCellsCount++;
+      return val;
+    })
+  );
+  return { cells, paintedCellsCount };
+}
 
 const rootDir = process.cwd();
 const distDir = path.resolve(rootDir, 'packages/ui/dist');
@@ -94,7 +110,7 @@ export class PlaywrightWorld extends World {
     width: 32,
     height: 32,
     paintedCellsCount: 0,
-    cells: [],
+    cells: createEmptyGrid(32, 32),
   };
 
   public colors: BrickColor[] = [];
@@ -143,7 +159,7 @@ export class PlaywrightWorld extends World {
       width,
       height,
       paintedCellsCount: 0,
-      cells: [],
+      cells: createEmptyGrid(width, height),
     };
     this.deletedAssetId = null;
     this.lastExportRequest = null;
@@ -196,7 +212,7 @@ export class PlaywrightWorld extends World {
                 name: this.asset.name,
                 width: this.asset.width,
                 height: this.asset.height,
-                paintedCellsCount: this.asset.cells.length,
+                paintedCellsCount: this.asset.paintedCellsCount,
               },
             ]
           : [];
@@ -237,10 +253,17 @@ export class PlaywrightWorld extends World {
       if (method === 'updateAsset') {
         const p = params[0];
         if (this.asset) {
+          const newName = p.name ?? this.asset.name;
+          const newWidth = p.width ?? this.asset.width;
+          const newHeight = p.height ?? this.asset.height;
+          const { cells, paintedCellsCount } = resizeGrid(this.asset.cells, newWidth, newHeight);
           this.asset = {
             ...this.asset,
-            width: p.width,
-            height: p.height,
+            name: newName,
+            width: newWidth,
+            height: newHeight,
+            paintedCellsCount,
+            cells,
           };
         }
         return route.fulfill({
@@ -256,13 +279,15 @@ export class PlaywrightWorld extends World {
 
       if (method === 'createAsset') {
         const p = params[0];
+        const w = p.width || 32;
+        const h = p.height || 32;
         const newAsset: Asset = {
           id: 'asset-test-2',
           name: p.name || 'Modular Outpost',
-          width: p.width || 32,
-          height: p.height || 32,
+          width: w,
+          height: h,
           paintedCellsCount: 0,
-          cells: [],
+          cells: createEmptyGrid(w, h),
         };
         this.asset = newAsset;
         return route.fulfill({
@@ -300,31 +325,23 @@ export class PlaywrightWorld extends World {
           const maxX = Math.min(this.asset.width - 1, bbox.x + bbox.width - 1);
           const maxY = Math.min(this.asset.height - 1, bbox.y + bbox.height - 1);
 
-          const cellMap = new Map<string, number>();
-          for (const c of this.asset.cells) {
-            cellMap.set(`${c.x},${c.y}`, c.colorId);
-          }
-
-          for (let cx = minX; cx <= maxX; cx++) {
-            for (let cy = minY; cy <= maxY; cy++) {
-              const key = `${cx},${cy}`;
-              if (colorId === null) {
-                cellMap.delete(key);
-              } else {
-                cellMap.set(key, colorId);
-              }
+          const updatedCells = this.asset.cells.map((row) => [...row]);
+          for (let cy = minY; cy <= maxY; cy++) {
+            for (let cx = minX; cx <= maxX; cx++) {
+              updatedCells[cy][cx] = colorId;
             }
           }
 
-          const updatedCells: CellData[] = [];
-          for (const [key, cid] of cellMap.entries()) {
-            const [cx, cy] = key.split(',').map(Number);
-            updatedCells.push({ x: cx, y: cy, colorId: cid });
+          let paintedCellsCount = 0;
+          for (const row of updatedCells) {
+            for (const val of row) {
+              if (val > 0) paintedCellsCount++;
+            }
           }
 
           this.asset = {
             ...this.asset,
-            paintedCellsCount: updatedCells.length,
+            paintedCellsCount,
             cells: updatedCells,
           };
         }

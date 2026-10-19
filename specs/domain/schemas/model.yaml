@@ -49,26 +49,6 @@ definitions:
       - hex
     additionalProperties: false
 
-  CellData:
-    title: CellData
-    type: object
-    description: Individual stud coordinate with applied brick color ID
-    properties:
-      x:
-        type: integer
-        description: Stud X coordinate
-      y:
-        type: integer
-        description: Stud Y coordinate
-      colorId:
-        type: integer
-        description: Applied brick color ID
-    required:
-      - x
-      - y
-      - colorId
-    additionalProperties: false
-
   AssetSummary:
     title: AssetSummary
     type: object
@@ -103,7 +83,7 @@ definitions:
   Asset:
     title: Asset
     type: object
-    description: Complete asset domain entity with painted cells
+    description: Complete asset domain entity with 2D grid of cell color IDs
     properties:
       id:
         type: string
@@ -124,12 +104,15 @@ definitions:
       paintedCellsCount:
         type: integer
         minimum: 0
-        description: Total count of painted cells
+        description: Total count of painted cells (cells with colorId > 0)
       cells:
         type: array
         items:
-          $ref: "#/definitions/CellData"
-        description: List of currently painted cells
+          type: array
+          items:
+            type: integer
+            minimum: 0
+        description: 2D row-major grid (cells[y][x]) of brick color IDs (0 for unpainted, >= 1 for official brick color)
     required:
       - id
       - name

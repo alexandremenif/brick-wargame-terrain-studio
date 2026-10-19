@@ -131,7 +131,16 @@ When('I send a JSON-RPC request for {string} to inspect the active asset', async
 });
 
 Then('the JSON-RPC response should contain {int} painted cells', function (this: StudioWorld, expectedCount: number) {
-  assert.ok(this.lastJsonRpcResponse?.result?.asset, 'Response must contain asset result');
-  assert.strictEqual(this.lastJsonRpcResponse.result.asset.paintedCellsCount, expectedCount);
-  assert.strictEqual(this.lastJsonRpcResponse.result.asset.cells.length, expectedCount);
+  const asset = this.lastJsonRpcResponse?.result?.asset;
+  assert.ok(asset, 'Response must contain asset result');
+  assert.strictEqual(asset.paintedCellsCount, expectedCount);
+  assert.strictEqual(asset.cells.length, asset.height);
+  let nonZeroCount = 0;
+  for (const row of asset.cells) {
+    assert.strictEqual(row.length, asset.width);
+    for (const colorId of row) {
+      if (colorId > 0) nonZeroCount++;
+    }
+  }
+  assert.strictEqual(nonZeroCount, expectedCount);
 });

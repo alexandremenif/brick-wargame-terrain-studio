@@ -10,19 +10,26 @@ import type { BrickColor } from '@lego-wargame-terrain-studio/domain';
 
 export class McpDriver implements EngineDriver {
   private db!: Database.Database;
+  private dbPath: string = ':memory:';
   private colorService!: DefaultColorService;
   private repo!: SqliteAssetRepository;
   private service!: AssetService;
   private mcpServer: any;
   private currentAssetId: string | null = null;
 
-  async start(): Promise<void> {
-    this.db = new Database(':memory:');
+  async start(options?: { dbPath?: string }): Promise<void> {
+    this.dbPath = options?.dbPath || ':memory:';
+    this.db = new Database(this.dbPath);
     this.db.pragma('foreign_keys = ON');
 
     const migrationPath = path.resolve('packages/server/src/persistence/migrations/0001_initial_schema.sql');
     const migrationSql = fs.readFileSync(migrationPath, 'utf-8');
-    this.db.exec(migrationSql);
+    const hasAssetsTable = this.db
+      .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'assets'")
+      .get();
+    if (!hasAssetsTable) {
+      this.db.exec(migrationSql);
+    }
 
     this.colorService = new DefaultColorService();
     await this.colorService.loadColors();
@@ -30,6 +37,13 @@ export class McpDriver implements EngineDriver {
     this.repo = new SqliteAssetRepository(this.db);
     this.service = new AssetService(this.repo, this.colorService);
     this.mcpServer = createMcpServer(this.service, this.colorService);
+  }
+
+  async restart(): Promise<void> {
+    if (this.db) {
+      this.db.close();
+    }
+    await this.start({ dbPath: this.dbPath });
   }
 
   async stop(): Promise<void> {
@@ -87,11 +101,10 @@ export class McpDriver implements EngineDriver {
     return asset.paintedCellsCount;
   }
 
-  async getCellColor(x: number, y: number): Promise<number | null> {
+  async getCellColor(x: number, y: number): Promise<number> {
     const id = this.ensureAssetId();
     const asset = await this.callMcpTool('get_asset', { asset_id: id });
-    const cell = asset.cells.find((c: any) => c.x === x && c.y === y);
-    return cell ? cell.colorId : null;
+    return asset.cells[y]?.[x] ?? 0;
   }
 
   async updateDimensions(width: number, height: number): Promise<void> {
@@ -104,7 +117,7 @@ export class McpDriver implements EngineDriver {
     await this.callMcpTool('update_asset', { asset_id: id, name });
   }
 
-  async paintArea(x: number, y: number, width: number, height: number, colorId: number | null): Promise<number> {
+  async paintArea(x: number, y: number, width: number, height: number, colorId: number): Promise<number> {
     const id = this.ensureAssetId();
     const res = await this.callMcpTool('paint_area', {
       asset_id: id,
@@ -131,6 +144,10 @@ export class McpDriver implements EngineDriver {
     } catch {
       return false;
     }
+  }
+
+  async listAssets() {
+    return await this.callMcpTool('list_assets', {});
   }
 
   async listColors(): Promise<BrickColor[]> {

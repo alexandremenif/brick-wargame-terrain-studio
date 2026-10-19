@@ -3,7 +3,52 @@
  */
 
 /**
- * 1. Removes PostgreSQL COMMENT ON statements unsupported in SQLite.
+ * 1. Inlines column-level `generated:` and `check:` directives declared in DBML column notes
+ * (exported by @dbml/core as PostgreSQL COMMENT ON COLUMN statements) into their CREATE TABLE definitions.
+ *
+ * @param {string} sql
+ * @returns {string}
+ */
+export function inlineColumnDirectives(sql) {
+  const commentRegex = /COMMENT ON COLUMN\s+["']?(\w+)["']?\.["']?(\w+)["']?\s+IS\s+'((?:[^']|'')*)';/gi;
+
+  const directives = [];
+  let match;
+  while ((match = commentRegex.exec(sql)) !== null) {
+    const [, table, column, rawNote] = match;
+    const note = rawNote.replace(/''/g, "'").trim();
+    if (note.startsWith('generated:')) {
+      const expr = note.slice('generated:'.length).trim();
+      directives.push({ table, column, kind: 'generated', expr });
+    } else if (note.startsWith('check:')) {
+      const expr = note.slice('check:'.length).trim();
+      directives.push({ table, column, kind: 'check', expr });
+    }
+  }
+
+  let resultSql = sql;
+  for (const { table, column, kind, expr } of directives) {
+    const tableRegex = new RegExp(`(CREATE TABLE ["']?${table}["']?\\s*\\()([\\s\\S]*?)(\\n\\);)`, 'i');
+    resultSql = resultSql.replace(tableRegex, (_fullMatch, open, body, close) => {
+      const colRegex = new RegExp(`(^\\s*["']?${column}["']?\\s+[^,\\n]+?)(,?)$`, 'im');
+      const updatedBody = body.replace(colRegex, (_colMatch, colDef, trailingComma) => {
+        if (kind === 'generated') {
+          if (/\bNOT\s+NULL\b/i.test(colDef)) {
+            return colDef.replace(/\bNOT\s+NULL\b/i, `GENERATED ALWAYS AS (${expr}) STORED NOT NULL`) + trailingComma;
+          }
+          return `${colDef} GENERATED ALWAYS AS (${expr}) STORED${trailingComma}`;
+        }
+        return `${colDef} CHECK (${expr})${trailingComma}`;
+      });
+      return `${open}${updatedBody}${close}`;
+    });
+  }
+
+  return resultSql;
+}
+
+/**
+ * 2. Removes PostgreSQL COMMENT ON statements unsupported in SQLite.
  *
  * @param {string} sql
  * @returns {string}
@@ -130,6 +175,7 @@ export function normalizePostgresSqlToSqlite(rawSql, options = {}) {
 
   sql = inlineForeignKeys(sql);
   sql = normalizeAutoIncrement(sql);
+  sql = inlineColumnDirectives(sql);
   sql = stripPostgresComments(sql);
   sql = normalizeBooleans(sql);
   sql = formatSqliteScript(sql, options);

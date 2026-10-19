@@ -18,7 +18,7 @@ The domain layer encapsulates the core logic, entities, invariants, and commands
 
 Domain entities, command contracts, and static catalogs are formally specified under `specs/domain/`:
 * [`colors.csv`](./colors.csv): Canonical tabular list of all 41 official brick colors (`id`, `name`, `hex`).
-* [`schemas/model.yaml`](./schemas/model.yaml): Domain entities (`BoundingBox`, `BrickColor`, `CellData`, `Asset`).
+* [`schemas/model.yaml`](./schemas/model.yaml): Domain entities (`BoundingBox`, `BrickColor`, `AssetSummary`, `Asset`).
 * [`schemas/commands.yaml`](./schemas/commands.yaml): Domain commands (`CreateAssetCommand`, `UpdateAssetCommand`, `GetAssetCommand`, `DeleteAssetCommand`, `PaintAreaCommand`, `ListAssetsCommand`, `ListColorsCommand`, `ExportImageCommand`).
 * [`bounding_box_math.md`](./bounding_box_math.md): Pure domain math operations and clamping invariants (`clampBoundingBox`, `panBoundingBox`, `centerBoundingBoxAt`, `zoomBoundingBox`, `recoverBoundingBox`).
 * [`rendering.md`](./rendering.md): Pure domain 2D canvas grid rendering rules and transparency representation.

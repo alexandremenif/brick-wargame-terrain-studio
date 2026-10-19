@@ -12,9 +12,9 @@ Each MCP tool is mapped directly from our domain command definitions to guarante
 | :--- | :--- | :--- |
 | `create_asset` | `CreateAssetCommand` | Creates a new terrain asset with a name and dimensions ($W \times H$). |
 | `update_asset` | `UpdateAssetCommand` | Updates an asset's name or dimensions ($W \times H$). Resizing down crops cells outside the new bounds. |
-| `get_asset` | `GetAssetCommand` | Retrieves an asset's full state, dimensions, and list of painted cells for structured AI inspection. |
+| `get_asset` | `GetAssetCommand` | Retrieves an asset's full state, dimensions, and 2D row-major `cells` color ID matrix (`0` for unpainted) for structured AI inspection. |
 | `delete_asset` | `DeleteAssetCommand` | Deletes an asset and all its associated cells. |
-| `paint_area` | `PaintAreaCommand` | Paints or erases a rectangular area (or $1 \times 1$ cell) with an official brick `color_id` (or `null` to clear cells). Overflow is clipped. |
+| `paint_area` | `PaintAreaCommand` | Paints or erases a rectangular area (or $1 \times 1$ cell) with an official brick `color_id` (or `0` to clear cells). Overflow is clipped. |
 | `list_assets` | `ListAssetsCommand` | Lists all available assets in the studio. |
 | `list_colors` | `ListColorsCommand` | Lists the official brick colors catalog (`id`, `name`, `hex`). |
 | `export_image` | `ExportImageCommand` | Exports an asset or framed sub-region as a PNG image with adaptive resolution and checkerboard transparency. Returns native MCP `ImageContent` (`image/png`). |

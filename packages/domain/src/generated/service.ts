@@ -4,7 +4,6 @@ import type {
   AssetSummary,
   BoundingBox,
   BrickColor,
-  CellData,
   CreateAssetCommand,
   CreateAssetResponse,
   DeleteAssetCommand,
@@ -45,7 +44,7 @@ export interface TerrainEngineService {
   deleteAsset(command: DeleteAssetCommand): Promise<DeleteAssetResponse>;
 
   /**
-   * Paint or erase a rectangular bounding box or 1x1 stud cell with an official brick color (or null to clear)
+   * Paint or erase a rectangular bounding box or 1x1 stud cell with an official brick color (or 0 to clear)
    */
   paintArea(command: PaintAreaCommand): Promise<PaintAreaResponse>;
 
