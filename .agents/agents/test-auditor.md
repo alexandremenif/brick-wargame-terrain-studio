@@ -23,6 +23,7 @@ An audit MUST evaluate two distinct gates in order:
 ### Gate 1: Spec Test ID Traceability (MANDATORY PRE-CONDITION)
 Every acceptance criterion in `specs/` is assigned a unique uppercase ID (`TEST-<DOMAIN>-<COMPONENT>-<NUM>`).
 * You MUST verify that **100% of declared test IDs** for the audited feature or scope are implemented and explicitly tagged in test descriptions (`test('TEST-XXX-NN: ...')`).
+* **Scope Restriction (Unit Tests Only)**: This traceability requirement applies strictly to unit tests (`packages/**/test/**/*.{test,spec}.ts`). Gherkin feature files (`*.feature`) and BDD / E2E step definitions are user-facing behavior specifications and MUST NOT be tagged with `TEST-*` IDs or rejected for lack of them.
 * **Tooling**: Activate and follow the `test-audit` skill. Run the traceability script:
   ```bash
   node .agents/skills/test-audit/scripts/audit_test_ids.mjs --spec=<spec_path>

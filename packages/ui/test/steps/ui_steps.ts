@@ -725,21 +725,21 @@ When(
 
 When('I scroll the mouse wheel up over the canvas viewport', async function (this: PlaywrightWorld) {
   const page = this.getPage();
-  await page.dispatchEvent('canvas[data-testid="canvas-viewport"]', 'wheel', {
-    deltaY: -100,
-    bubbles: true,
-    cancelable: true,
-  });
+  const canvas = page.locator('canvas[data-testid="canvas-viewport"]');
+  const box = await canvas.boundingBox();
+  assert.ok(box, 'Canvas bounding box must be available');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.wheel(0, -100);
   await page.waitForTimeout(50);
 });
 
 When('I scroll the mouse wheel down over the canvas viewport', async function (this: PlaywrightWorld) {
   const page = this.getPage();
-  await page.dispatchEvent('canvas[data-testid="canvas-viewport"]', 'wheel', {
-    deltaY: 100,
-    bubbles: true,
-    cancelable: true,
-  });
+  const canvas = page.locator('canvas[data-testid="canvas-viewport"]');
+  const box = await canvas.boundingBox();
+  assert.ok(box, 'Canvas bounding box must be available');
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.wheel(0, 100);
   await page.waitForTimeout(50);
 });
 

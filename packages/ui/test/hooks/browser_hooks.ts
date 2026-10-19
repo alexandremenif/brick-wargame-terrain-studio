@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import { Before, After, AfterAll, setDefaultTimeout } from '@cucumber/cucumber';
 import { PlaywrightWorld, closeSharedBrowser } from '../support/playwright_world.js';
 
@@ -18,10 +19,16 @@ Before({ tags: '@ui' }, async function (this: PlaywrightWorld) {
 });
 
 After({ tags: '@ui' }, async function (this: PlaywrightWorld) {
+  const errors = [...(this.consoleErrors ?? [])];
   if (this.page) {
     await this.page.close();
     this.page = null;
   }
+  assert.deepStrictEqual(
+    errors,
+    [],
+    `Browser console error(s) detected during scenario execution:\n${errors.join('\n')}`
+  );
 });
 
 AfterAll(async function () {

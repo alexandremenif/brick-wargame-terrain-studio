@@ -118,6 +118,8 @@ export class PlaywrightWorld extends World {
   public lastExportRequest: any = null;
   public initiatedDownloads: Array<{ filename: string; url?: string }> = [];
 
+  public consoleErrors: string[] = [];
+
   constructor(options: IWorldOptions) {
     super(options);
     this.loadColorsFromCsv();
@@ -152,6 +154,16 @@ export class PlaywrightWorld extends World {
         viewport: { width: 1280, height: 800 }
       });
     }
+
+    this.consoleErrors = [];
+    this.page.on('console', (msg) => {
+      if (msg.type() === 'error') {
+        this.consoleErrors.push(msg.text());
+      }
+    });
+    this.page.on('pageerror', (err) => {
+      this.consoleErrors.push(err.message);
+    });
 
     this.asset = {
       id: 'asset-test-1',

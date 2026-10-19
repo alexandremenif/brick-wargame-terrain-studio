@@ -115,7 +115,11 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
         accDeltaX: 0,
         accDeltaY: 0,
       };
-      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      try {
+        (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      } catch (_) {
+        // Ignored if pointer capture is not supported or pointer is inactive
+      }
       return;
     }
 
@@ -181,19 +185,28 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
     }
   };
 
-  // Wheel zoom handling across all tool modes
-  const handleWheel = (e: React.WheelEvent<HTMLElement>) => {
-    if (!onZoom) return;
-    e.preventDefault();
+  // Native non-passive wheel listener allowing preventDefault without browser passive listener violations
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || !onZoom) return;
 
-    if (e.deltaY < 0) {
-      // Zoom in (~25% reduction -> factor 0.8)
-      onZoom(0.8);
-    } else if (e.deltaY > 0) {
-      // Zoom out (~25% enlargement -> factor 1.25)
-      onZoom(1.25);
-    }
-  };
+    const handleNativeWheel = (e: WheelEvent) => {
+      e.preventDefault();
+
+      if (e.deltaY < 0) {
+        // Zoom in (~25% reduction -> factor 0.8)
+        onZoom(0.8);
+      } else if (e.deltaY > 0) {
+        // Zoom out (~25% enlargement -> factor 1.25)
+        onZoom(1.25);
+      }
+    };
+
+    canvas.addEventListener('wheel', handleNativeWheel, { passive: false });
+    return () => {
+      canvas.removeEventListener('wheel', handleNativeWheel);
+    };
+  }, [onZoom]);
 
   const getCursorStyle = () => {
     if (toolMode === 'Pan') {
@@ -220,7 +233,6 @@ export const CanvasViewport: React.FC<CanvasViewportProps> = ({
         onMouseDown={handlePointerDown as any}
         onMouseMove={handlePointerMove as any}
         onMouseUp={handlePointerUp as any}
-        onWheel={handleWheel}
         style={{
           cursor: getCursorStyle(),
         }}

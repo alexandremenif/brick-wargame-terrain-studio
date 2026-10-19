@@ -145,7 +145,7 @@ function extractSpecIds(specFilter, scopeFilter) {
   return specIds;
 }
 
-// 2. Extract implemented test IDs from packages/**/test/**/*.{ts,js} and specs/**/features/*.feature
+// 2. Extract implemented test IDs from packages/**/test/**/*.{ts,js}
 function extractImplementedTestIds(scopeFilter) {
   const testFiles = [
     ...walkFiles(PACKAGES_DIR, (name, fullPath) => {
@@ -153,7 +153,6 @@ function extractImplementedTestIds(scopeFilter) {
       const isTestFile = /\.(test|spec)\.(ts|js|tsx|jsx)$/.test(name);
       return isTestDir && isTestFile;
     }),
-    ...walkFiles(SPECS_DIR, (name) => name.endsWith('.feature')),
   ];
 
   const idPattern = /(TEST-[A-Z0-9]+(?:-[A-Z0-9]+)*)/g;
